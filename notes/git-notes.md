@@ -178,3 +178,99 @@ the first two chars of sha-1 value are directory
 the last 38 are filename
 
 if we do `git cat-file -p [hash]` where hash is the full 40, we should get the contents we originally saved
+
+# Git References
+
+If we wanted the history from commit `[hash]`, we can use `git log [hash]`
+But we have to remember the hash to use as the starting point.
+
+It would be easier if we could use a simple name instead of the raw hash.
+
+These simple names are called **references** or **refs**
+
+The `.git/refs` directory contains the following structure
+    * `.git/refs/heads`
+    * `.git/refs/tags`
+
+To create a new reference we could do something as simple as:
+    * `echo [hash] > .git/refs/heads/master`
+
+Now we can use the head reference in our git commands:
+ex) `git log master`
+
+Although we can create reference files maually, git provides a safer plumbing command: `git update-ref`
+
+ex) `git update-ref refs/heads/[refname] [hash]`
+
+This is what a branch is: a simple pointer or reference to the head of a line of work
+
+When we run a porcelain commaind like `git branch <branch>`, git runs the `update-ref` command to add the hash of the last commit of the branch we're on into whatever the new reference we want to create.
+
+# The HEAD
+
+When we run something like `git branch <branch>` git needs to know the SHA-1 of the latest commit
+
+The `HEAD` file is a symbolic reference to the branch we're currently on
+    * a pointer to another reference
+    * in rare cases may contain hash of a git object
+        * when checkout tag, commit, or remote branch which leaves us in detatched HEAD state
+
+Normally looks something like:
+```
+$ cat .git/HEAD
+ref: refs/heads/master
+```
+
+If we run `git checkout test` its updated as:
+```
+$ cat .git/HEAD
+ref: refs/heads/test
+```
+
+When we run `git commit` it creates commit object, specifying parent of the commit object to be the hash referenced by HEAD
+
+We can read value of HEAD with `git symbolic-ref HEAD`, which is safer than using `cat`
+
+We can set the value of head safley using `git symbolic-ref HEAD <path-to-ref>`
+
+You cant set symbolic reference to something outside of `refs/`
+
+# Tags
+
+Another object type
+
+Contains:
+    * tagger (author)
+    * a date
+    * a message
+    * a pointer
+
+Similiar to a commit message
+But it points to a commit, not a tree
+Like a branch reference, but never moves
+
+Types of tags:
+    * lightweight
+    * annotated
+
+A lightweight tag is a ref that never moves
+ex) `git update-ref refs/tags/<tag-name> <commit-hash>`
+
+An annotted tag is a tag object and writes a reference to point it rather than directly to the commit
+ex) `git tag -a <tag-name> <hash> -m <ref-name>`
+
+# Remotes
+
+Third type of reference
+
+If you add a remote and push to it, git stores value you last pushed to that remote for each branch in the `refs/remotes` directory
+
+For example, you can add a remote called `origin` and push `master` to it
+
+ex) `git remote add origin git@github.com/<repo>.git`
+
+Now we can see what the `master` branch on the `origin` remote was the last time we communicated with the server by checking `refs/remotes/origin/master` file
+
+remote references are different from heads because they are read only
+
+We can `git checkout` to one, but git wont symbollicly reference HEAD to one, so we'll never udpate it with a `commit` command
