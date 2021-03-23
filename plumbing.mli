@@ -1,32 +1,40 @@
-(** Representation of git internals.
+(** Representation of raw git commands.
 
-    This module represents the calling of git plumbing commands *)
+    This module represents the calling of calling git commands with
+    any command line arguments *)
 
-(** The abstract type of a git commit object *)
-type commit_object
+(** [init args] calls git init with arguments [args] *)
+val init : string list -> unit
 
-type object_id = string
+(** [hash_object args] calls git hash-object with arguments [args] and is the output to standard output *)
+val hash_object : string list -> string
 
-(** [init n] initializes a git repository in the current working directory if [n] is [None], otherwise initializes a git repository with name [n] as a subdirectory in the current working directory *)
-val init : string option -> unit
+(** [cat_file args] calls git cat-file with arguments [args] *)
+val cat_file : string list -> unit
 
-(** [hash_object f] calls git hash-object with command line arguments [-w] which stores data in file with filename [f] in a repositorie's .git/objects directory and is the object that refers to that data object *)
-val hash_object : string -> object_id
+(** [update_index args] calls git update-index with arguments [args] *)
+val update_index  : string list ->  unit
 
-(** [cat_file h o] calls git cat-file with command line argumet [o] on object [h] which displays the content of an object in the repository if [o] = -p or the type of the object if [o] = -t *)
-val cat_file : object_id -> string -> 'a  (** TODO: multiple different types of responses based on command line flag *)
+(** [write_tree args] calls git write-tree with arguments [args] *)
+val write_tree : string list -> unit
 
-(** [update_index h f] adds the object [h] with filename [f] to the staging area *)
-val update_index : object_id -> string -> unit
+(** [read_tree args] calls git read-tree  with arguments [args] *)
+val read_tree : string list -> unit
 
-(** [write_tree] writes the staging area out to a tree object and genereates a tree object from the state of the index if the tree does not yet exist *)
-val write_tree : unit -> object_id 
+(** [commit_tree args] calls git commit-tree with arguments [args] *)
+val commit_tree : string list -> unit
 
-(** [read_tree h p] reads tree object [h] into the staging area with prefix [p] *)
-val read_tree : object_id -> string -> unit
+(** [log args] calls git update-index with arguments [args] *)
+val log : string list -> unit 
 
-(** [commit_tree h m] creates and is a commit object from tree object [h] with commit message [m] *)
-val commit_tree : object_id -> string -> object_id
+(** [add args] calls git add with arguments [args] *)
+val add : string list -> unit
 
-(** [log h] is the list of commit objects that are reachable by following parents of commit [h] in reverse chronological order *)
-val log : object_id -> commit_object list
+(** [commit] calls git commit with arguments [args] *)
+val commit : string list -> unit
+
+(** [show args] calls git show with arguments [args] *)
+val show : string list  -> unit
+
+(** [diff args] calls git diff with arguments [args] *)
+val diff : string list -> unit
