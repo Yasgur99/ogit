@@ -4,7 +4,7 @@
   * commands that do low-level work and were designed to be chained together
 **Git Porcelain commands:**
   * commands that are user friendly
-  * ex) `git add [filenames...]`, `git commit -m ""`, `git push`
+  * ex) `git add [filenames...]`, `git commit -m <message>`, `git push`
 
 ## Git Init
 
@@ -73,11 +73,11 @@ $ git hash-object -w test.txt
 Then both objects are still stored
 
 At this point we can delete `test.txt` and retrieve either version:
-`get cat-file -p [hash]`
+`get cat-file -p <hash>`
 
 However, we are not storing the filename in our system, just the content
 This object type is called a **blob**
-We can check that its a blob using `git cat-file -t [hash]`
+We can check that its a blob using `git cat-file -t <hash>`
 
 ## Tree Objects
 
@@ -91,6 +91,7 @@ Also allows us to store a group of files together
 * An entry is
     * sha-1 hash of a blob or subtree
     * associated mode, type, and filename
+
 ex) 
 ```
 $ git cat-file -p master^{tree}
@@ -145,6 +146,7 @@ This will give us a new hash.
 We can look at the new commit object with `git cat-file -p [new-hash]`
 
 A commit message has following format
+
     * top level tree for snapshot of project at that point
     * parent commits if any
     * author/commiter info
@@ -163,6 +165,7 @@ We now have the low level operations to build up a git history for `git add` and
 Previously we mentioned there was a header stored with every object added to object database
 
 Its of the form:
+
 header = type sizeInBytes\0
 ex) "blob 16\u0000"
 
@@ -189,10 +192,12 @@ It would be easier if we could use a simple name instead of the raw hash.
 These simple names are called **references** or **refs**
 
 The `.git/refs` directory contains the following structure
+
     * `.git/refs/heads`
     * `.git/refs/tags`
 
 To create a new reference we could do something as simple as:
+
     * `echo [hash] > .git/refs/heads/master`
 
 Now we can use the head reference in our git commands:
@@ -211,6 +216,7 @@ When we run a porcelain commaind like `git branch <branch>`, git runs the `updat
 When we run something like `git branch <branch>` git needs to know the SHA-1 of the latest commit
 
 The `HEAD` file is a symbolic reference to the branch we're currently on
+
     * a pointer to another reference
     * in rare cases may contain hash of a git object
         * when checkout tag, commit, or remote branch which leaves us in detatched HEAD state
@@ -240,6 +246,7 @@ You cant set symbolic reference to something outside of `refs/`
 Another object type
 
 Contains:
+
     * tagger (author)
     * a date
     * a message
@@ -250,6 +257,7 @@ But it points to a commit, not a tree
 Like a branch reference, but never moves
 
 Types of tags:
+
     * lightweight
     * annotated
 
