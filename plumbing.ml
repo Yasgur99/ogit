@@ -1,5 +1,5 @@
 let init (args : string list) =
-  failwith "unimplemented"
+  Sys.command "echo hello"
 
 let hash_object (args : string list) =
   failwith "unimplemented"
