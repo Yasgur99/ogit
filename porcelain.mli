@@ -47,3 +47,15 @@ val log : unit -> commit_object list
 
 (** [log h] is the list of commit objects that are reachable by following parents of commit [h] in reverse chronological order *)
 val log : object_id -> commit_object list
+
+(** [add fnames] adds the files with filenames [fnames] to the staging area *)
+val add : string list -> unit
+
+(** [commit msg] commits the changes in the staging area with commit message [msg] *)
+val commit : string -> unit
+
+(** [show] shows the staged, unstaged, and untracked files *)
+val show : unit -> unit
+
+(** [diff] shows the diffs of tracked files *)
+val diff : unit -> unit
