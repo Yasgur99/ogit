@@ -2,13 +2,15 @@
 type result = { 
   stdout : string list;
   stderr : string list;
+  out_and_err : string list;
   (*exit_code : int;*)
 }
 
-let make_result out err =
+let make_result out err out_and_err =
   {
     stdout =  out;
     stderr = err;
+    out_and_err = out_and_err;
   }
 
 let get_stdout result = 
@@ -16,6 +18,9 @@ let get_stdout result =
 
 let get_stderr result =
   result.stderr
+
+let get_out result =
+  result.out_and_err
 
 (** Helper Methods *)
 
@@ -35,23 +40,30 @@ let read (fd : Unix.file_descr) : string list =
 (** [fork_and_execvp e a] is the result of executing program [exe] 
     with arguments [args]*)
 let fork_and_execv (exe : string) (args : string array) : result = 
-  let inp_stdout, out_stdout = Unix.pipe() in
-  let inp_stderr, out_stderr= Unix.pipe() in
+  let inp_stdout, out_stdout = Unix.pipe() in (* Pipe for stdout *)
+  let inp_stderr, out_stderr= Unix.pipe() in (* Pipe for stderr *)
+  let inp, out = Unix.pipe() in (* Pipe for both stdout and stderr *)
   let pid = Unix.fork () in
   if pid = 0 then (
     Unix.close inp_stdout; (* Not used by child *)
     Unix.close inp_stderr; (* Not used by child *)
-    Unix.dup2 out_stdout Unix.stdout; (* Bind pipe to stdout *)
-    Unix.dup2 out_stderr Unix.stderr; (* Bind pipe to stderr *)
+    Unix.close inp; (* Not used by child *)
+    Unix.dup2 out_stdout Unix.stdout; (* Bind stdout pipe to stdout *)
+    Unix.dup2 out_stderr Unix.stderr; (* Bind stderr pipe to stderr *)
+    Unix.dup2 out Unix.stdout; (* Bind out pipe to stdout *)
+    Unix.dup2 out Unix.stderr; (* Bind out pipe to stderr *)
     Unix.execvp exe args 
   ) else (
-    Unix.close out_stdout;
-    Unix.close out_stderr;
+    Unix.close out_stdout; (* Not used by parent*)
+    Unix.close out_stderr; (* Not used by parent*)
+    Unix.close out; (* Not used by parent*)
     let stdout = read inp_stdout in
     let stdin = read inp_stderr in
+    let out_and_err = read inp in
       Unix.close inp_stderr;
       Unix.close inp_stdout;
-      make_result stdout stdin
+      Unix.close inp;
+      make_result stdout stdin out_and_err
   )
 
 let init (args : string array) =

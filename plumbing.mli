@@ -16,10 +16,18 @@ val get_stdout : result -> string list
 (* [get_stdout r] is the lines of stderr *)
 val get_stderr : result -> string list
 
+(* [get_out r] is the lines of of both stdout and stderr in the order
+   that they were sent to their respective streams.
+
+   For example, if data was written to stdout, then stderr, and then stdout,
+   again, then [get_out r] follows that same order. *)
+val get_out: result -> string list
+
 (** [init args] calls git init with arguments [args] *)
 val init : string array -> result
 
-(** [hash_object args] calls git hash-object with arguments [args] and is the output to standard output *)
+(** [hash_object args] calls git hash-object with arguments [args] and is 
+    the output to standard output *)
 val hash_object : string array -> result
 
 (** [cat_file args] calls git cat-file with arguments [args] *)
