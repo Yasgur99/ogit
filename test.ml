@@ -117,8 +117,8 @@ let status_tests = [
 (** Tests for [Plumbing ] module *)
 let plumbing_tests =
   init_tests (*@ hash_object_tests @ cat_file_tests @ update_index_tests
-  @ write_tree_tests @ read_tree_tests @ commit_tree_tests*) @ log_tests
-  @ add_tests @ commit_tests @ show_tests @ diff_tests @ status_tests
+  @ write_tree_tests @ read_tree_tests @ commit_tree_tests*) (*@ log_tests
+  @ add_tests @ commit_tests @ show_tests @ diff_tests @ status_tests *)
 
 
 (** Tests for [Porcelain] module *)
