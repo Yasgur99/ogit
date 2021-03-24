@@ -108,4 +108,5 @@ let diff (args : string array) =
 let status (args : string array) =
   fork_and_execv "git" (Array.append [|"git"; "status"|] args)
  
-
+let git (args : string array) =
+  fork_and_execv "git" (Array.append [|"git";|] args)

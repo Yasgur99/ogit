@@ -62,3 +62,6 @@ val diff : string array -> result
 
 (** [status args] calls git status with arguments [args] *)
 val status: string array -> result
+
+(** [git args] calls git with arguments [args] *)
+val git : string array -> result
