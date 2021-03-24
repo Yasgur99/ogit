@@ -1,4 +1,4 @@
-MODULES=ogit command porcelain plumbing 
+MODULES=ogit command plumbing 
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)

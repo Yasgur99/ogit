@@ -1,11 +1,11 @@
 let fork_and_execv (exe : string) (args : string array) : string list = 
   let inp, out = Unix.pipe() in
   let pid = Unix.fork () in
-  if pid = 0 then
+  if pid = 0 then (
     Unix.close inp; (* Not used by child *)
     Unix.dup2 out Unix.stdout; (* Bind out pipe to stdout *)
     Unix.dup2 out Unix.stderr; (* Bind out pipe to stderr *)
-    Unix.execvp exe args
+    Unix.execvp exe args )
   else 
     let inc = Unix.in_channel_of_descr inp in
     let lines = ref [] in
