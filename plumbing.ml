@@ -1,24 +1,58 @@
-let fork_and_execv (exe : string) (args : string array) : string list = 
-  let inp, out = Unix.pipe() in
-  let pid = Unix.fork () in
-  if pid = 0 then (
-    Unix.close inp; (* Not used by child *)
-    Unix.dup2 out Unix.stdout; (* Bind out pipe to stdout *)
-    Unix.dup2 out Unix.stderr; (* Bind out pipe to stderr *)
-    Unix.execvp exe args )
-  else 
-    let inc = Unix.in_channel_of_descr inp in
-    let lines = ref [] in
-    Unix.close out;
-    try 
+(** Types and methods to access and construct the type *)
+type result = { 
+  stdout : string list;
+  stderr : string list;
+  (*exit_code : int;*)
+}
+
+let make_result out err =
+  {
+    stdout =  out;
+    stderr = err;
+  }
+
+let get_stdout result = 
+  result.stdout
+
+let get_stderr result =
+  result.stderr
+
+(** Helper Methods *)
+
+(** [read fd] is the lines of file referenced by descriptor [fd] *)
+let read (fd : Unix.file_descr) : string list =
+  let in_ch = Unix.in_channel_of_descr fd in
+  let lines = ref [] in
+  try 
       while true do
-        lines:= input_line inc :: !lines
+        lines:= input_line in_ch :: !lines
       done;
       !lines
     with End_of_file ->
-      close_in inc;
-      Unix.close inp;
+      close_in in_ch;
       !lines
+
+(** [fork_and_execvp e a] is the result of executing program [exe] 
+    with arguments [args]*)
+let fork_and_execv (exe : string) (args : string array) : result = 
+  let inp_stdout, out_stdout = Unix.pipe() in
+  let inp_stderr, out_stderr= Unix.pipe() in
+  let pid = Unix.fork () in
+  if pid = 0 then (
+    Unix.close inp_stdout; (* Not used by child *)
+    Unix.close inp_stderr; (* Not used by child *)
+    Unix.dup2 out_stdout Unix.stdout; (* Bind pipe to stdout *)
+    Unix.dup2 out_stderr Unix.stderr; (* Bind pipe to stderr *)
+    Unix.execvp exe args 
+  ) else (
+    Unix.close out_stdout;
+    Unix.close out_stderr;
+    let stdout = read inp_stdout in
+    let stdin = read inp_stderr in
+      Unix.close inp_stderr;
+      Unix.close inp_stdout;
+      make_result stdout stdin
+  )
 
 let init (args : string array) =
   fork_and_execv "git" (Array.append [|"git"; "init"|] args)
@@ -59,3 +93,4 @@ let diff (args : string array) =
 let status (args : string array) =
   fork_and_execv "git" (Array.append [|"git"; "status"|] args)
  
+
