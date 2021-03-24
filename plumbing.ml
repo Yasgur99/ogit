@@ -34,7 +34,7 @@ let read (fd : Unix.file_descr) : string list =
       done;
       !lines
     with End_of_file ->
-      close_in in_ch;
+      close_in in_ch; 
       !lines
 
 (** [fork_and_execvp e a] is the result of executing program [exe] 
@@ -60,9 +60,12 @@ let fork_and_execv (exe : string) (args : string array) : result =
     let stdout = read inp_stdout in
     let stdin = read inp_stderr in
     let out_and_err = read inp in
+      (* Does not close the pipes because [read fd] does that when
+         it closes the input channel it creates. 
+
       Unix.close inp_stderr;
       Unix.close inp_stdout;
-      Unix.close inp;
+      Unix.close inp; *)
       make_result stdout stdin out_and_err
   )
 

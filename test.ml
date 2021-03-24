@@ -1,14 +1,14 @@
 open OUnit2
 open Plumbing
-open Porcelain
+(*open Porcelain*)
 
 (** [plumbing_test n a ch cl] constructs an OUnit test named [n] that 
     asserts [ch] to check side effects and then calls [cl] which cleans
     up the side effects *)
 let plumbing_test
     (name : string)
-    (f : string list -> 'a)
-    (args : string list)
+    (f : string array -> 'a)
+    (args : string array)
     (check_side_effect : unit -> bool)
     (clean_side_effect : unit -> unit) : test =
   name >:: fun _ ->
@@ -21,8 +21,8 @@ let plumbing_test
 
 (** Tests for [Plumbing.init] *)
 let init_tests = [
-  plumbing_test "init no args" Plumbing.init [] (fun () -> Sys.file_exists ".git") (fun () -> Sys.remove ".git");
-  plumbing_test "init tmp" Plumbing.init ["tmp"] (fun () -> Sys.file_exists "tmp/.git") (fun () -> Sys.remove "tmp")
+  (*plumbing_test "init no args" Plumbing.init [||] (fun () -> Sys.file_exists ".git") (fun () -> Sys.remove ".git"); *)
+  plumbing_test "init tmp" Plumbing.init [|"tmp"|] (fun () -> Sys.file_exists "tmp/.git") (fun () -> Sys.remove "tmp")
 ]
 
 (** Tests for [Plumbing.hash_object] *)

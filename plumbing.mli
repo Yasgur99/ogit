@@ -8,7 +8,7 @@ type result
 
 (* [make result o e] is a result where [o] is the lines of stdout
    and [e] is the lines  of stderr *)
-val make_result : string list -> string list -> result
+val make_result : string list -> string list -> string list -> result
 
 (* [get_stdout r] is the lines of stdout *)
 val get_stdout : result -> string list
