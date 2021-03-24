@@ -59,3 +59,6 @@ val show : unit -> unit
 
 (** [diff] shows the diffs of tracked files *)
 val diff : unit -> unit
+
+(** [status] shows the status of the working tree *)
+val status : unit -> unit
