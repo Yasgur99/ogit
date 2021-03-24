@@ -1,9 +1,9 @@
-MODULES=git command state main 
+MODULES=ogit command porcelain plumbing 
 OBJECTS=$(MODULES:=.cmo)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
 TEST=test.byte
-MAIN=main.byte
+MAIN=ogit.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind
 
 default: build
