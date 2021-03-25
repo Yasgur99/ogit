@@ -1,5 +1,6 @@
-MODULES=ogit command plumbing 
+MODULES=ogit plumbing 
 OBJECTS=$(MODULES:=.cmo)
+BYTES=$(MODULES:=.byte)
 MLS=$(MODULES:=.ml)
 MLIS=$(MODULES:=.mli)
 TEST=test.byte
@@ -7,10 +8,12 @@ MAIN=ogit.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind
 
 default: build
+
+utop: build
 		OCAMLRUNPARAM=b utop
 
 build:
-		$(OCAMLBUILD) $(OBJECTS)
+		$(OCAMLBUILD) $(BYTES)
 
 test:
 		$(OCAMLBUILD) -tag 'debug' $(TEST) && ./$(TEST) -runner sequential
