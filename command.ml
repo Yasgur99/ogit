@@ -48,14 +48,14 @@ let parse_key k =
 
 let exec c =
   match c with
-  | Add file_name -> Porcelain.add file_name
-  | Remove file_name -> Porcelain.remove file_name
+  | Add f -> Porcelain.add f
+  | Remove f -> Porcelain.remove f
   | Commit msg -> Porcelain.commit msg
-  | Branch branch_name -> Porcelain.branch branch_name
-  | Checkout branch_name -> Porcelain.checkout branch_name
+  | Branch b -> Porcelain.branch b
+  | Checkout b -> Porcelain.checkout b
   | Fetch -> Porcelain.fetch
   | Push -> Porcelain.push
   | Pull -> Porcelain.pull
   | Status -> Porcelain.status
-  | Init -> Porcelain.init
+  | Init -> Porcelain.init 
 
