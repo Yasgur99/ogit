@@ -1,11 +1,18 @@
-let init_curses () =
-  let win = Curses.initscr () in
-  let r = Curses.cbreak in
-  let r = Curses.noecho in
-  let r = Curses.curs_set 0 in
-  Curses.clear ();
-  win
+(** [check_err f] check_errutes function [f] and raises check_errption if [f] is [true] *)
+let check_err err  =
+    if err  = true then
+      ()
+    else
+      failwith "error"
 
+
+let init_curses () : Curses.window =
+  let win = Curses.initscr () in
+  check_err (Curses.cbreak ());
+  check_err (Curses.noecho ());
+  check_err (Curses.curs_set 0);
+  Curses.clear ();
+  win 
 
 let enable_color color =
   Curses.attron color
@@ -23,21 +30,26 @@ let () =
     with
       cleanup; *)
 
-    let win = init_curses in
+    let win = init_curses () in
 
     (* Setup useful constants *)
-    let max_y, max_x = Curses.getmaxyx win in 
-    let red = Curses.init_pair Curses.Colors.red Curses.Colors.red in
-    let green = Curses.init_pair Curses.Colors.green Curses.Colors.green in
+(*    let max_y, max_x = Curses.getmaxyx win in 
+    let red = Curses.init_pair Curses.Colors.red Curses.Colors.black in
+    let green = Curses.init_pair Curses.Colors.green Curses.Colors.black in
+ *)   
+
+    check_err (Curses.waddstr win "Welcome to ogit");
+    check_err (Curses.wrefresh win);
+
+    while true do (
+      let key = Curses.wgetch win in
+      let cmd = Command.parse_key key in
+      let res = Command.exec cmd in
+        ()
+    ) done;
     
-    while true do
-      let key = Curses.getch in
-      let r = Curses.waddstr win "Welcome to ogit" in
-      let r = Curses.wrefresh win;
-    done
-    
-        (* Clean up curses *)
-    let r = Curses.curs_set 1 in
-    let r = Curses.echo in
-    let r = Curses.nocbreak in
+    (* Clean up curses *)
+    check_err (Curses.curs_set 1); 
+    check_err (Curses.echo ());
+    check_err (Curses.nocbreak ()); 
     Curses.endwin () 
