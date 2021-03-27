@@ -9,7 +9,7 @@ type key = int
 type cmd =
   | Add of file_name
   | Remove of file_name
-  | Commit of commit_msg 
+  | Commit of commit_msg
   | Branch of branch_name
   | Checkout of branch_name
   | Fetch
