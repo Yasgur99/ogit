@@ -47,10 +47,7 @@ let parse (str : string) =
     | _ -> raise (Invalid_cmd "Invalid command")
   with _ -> raise (Invalid_cmd "Invalid command")
 
-let check_err err  =
-    if err = true
-    then ()
-    else raise Program_terminate
+let check_err err = if err = true then () else raise Program_terminate
 
 let parse_key key =
   if key = int_of_char 's' then Status
@@ -58,12 +55,15 @@ let parse_key key =
   else raise (Invalid_cmd "Invalid command")
 
 let incr_e1 pair =
-  pair := (((fst !pair) + 1), (snd !pair));
+  pair := (fst !pair + 1, snd !pair);
   pair
 
 let red = Curses.init_pair 1 Curses.Color.red Curses.Color.black
-let green = Curses.init_pair 2 Curses.Color.green Curses.Color.black 
+
+let green = Curses.init_pair 2 Curses.Color.green Curses.Color.black
+
 let enable_color color = Curses.attron color
+
 let disable_color color = Curses.attroff color
 
 let exec_status win =
@@ -73,31 +73,31 @@ let exec_status win =
   let staged = Porcelain.get_staged status in
 
   let yx = ref (Curses.getyx win) in
-
-  check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) "untracked: ");
+  check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 "untracked: ");
   enable_color 1;
-  List.iter (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) f)) untracked;
-  check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) "tracked: ");
-  List.iter (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) f)) tracked;
-  check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) "staged: ");
+  List.iter
+    (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 f))
+    untracked;
+  check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 "tracked: ");
+  List.iter
+    (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 f))
+    tracked;
+  check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 "staged: ");
   disable_color 1;
   enable_color 2;
-  List.iter (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) f)) staged;
+  List.iter
+    (fun f ->
+      check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) f))
+    staged;
   disable_color 2;
   ()
 
 let exec c win =
   match c with
-  (*| Add f -> Porcelain.add f
-  | Remove f -> Porcelain.remove f
-  | Commit msg -> Porcelain.commit msg
-  | Branch b -> Porcelain.branch b
-  | Checkout b -> Porcelain.checkout b
-  | Fetch -> Porcelain.fetch
-  | Push -> Porcelain.push
-  | Pull -> Porcelain.pull
-  | Init -> Porcelain.init  *)
+  (*| Add f -> Porcelain.add f | Remove f -> Porcelain.remove f | Commit
+    msg -> Porcelain.commit msg | Branch b -> Porcelain.branch b |
+    Checkout b -> Porcelain.checkout b | Fetch -> Porcelain.fetch | Push
+    -> Porcelain.push | Pull -> Porcelain.pull | Init -> Porcelain.init *)
   | Status -> exec_status win
   | Quit -> raise Program_terminate
   | _ -> failwith "unimplemented command"
-
