@@ -52,9 +52,9 @@ let check_err err  =
     then ()
     else raise Program_terminate
 
-let parse_key k =
-  if k = int_of_char 's' then Status
-  else if k = int_of_char 'q' then Quit
+let parse_key key =
+  if key = int_of_char 's' then Status
+  else if key = int_of_char 'q' then Quit
   else raise (Invalid_cmd "Invalid command")
 
 let incr_e1 pair =
