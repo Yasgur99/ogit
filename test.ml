@@ -45,6 +45,36 @@ let plumbing_test
   name >:: fun _ ->
     assert_equal res (Plumbing.get_out (f args))
 
+(** [check_err_raises_test n err] constructs an OUnit test named [n] that asserts [Command.check_err] raises [Command.Program_terminate] *)
+let check_err_raises_test
+  (name : string)
+  (err : bool) : test =
+name >:: fun _ ->
+assert_raises (Command.Program_terminate) (fun () -> Command.check_err err)
+
+(** [parse_key_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key k] is exp*)
+let parse_key_test
+  (name : string)
+  (key : int)
+  (exp: Command.cmd) : test =
+name >:: fun _ ->
+assert_equal exp (Command.parse_key key) 
+
+(** [parse_key_raises_test n key] constructs an OUnit test named [n] that asserts [Command.parse_key] raises [Command.Invalid_cmd] *)
+let parse_key_raises_test
+  (name : string)
+  (key : int) : test =
+name >:: fun _ ->
+assert_raises (Command.Invalid_cmd "Invalid command") (fun () -> Command.parse_key key)
+
+(** [check_err_test err] constructs an OUnit test named [n] that asserts [Command.check_err] is unit *)
+let check_err_test
+  (name : string)
+  (err : bool) : test =
+name >:: fun _ ->
+assert_equal (Command.check_err err) ()
+
+
 (** Tests for [Plumbing.init] *)
 let init_tests = [
   plumbing_test_side_effect "init tmp" Plumbing.init [|"tmp"|] (fun () -> Sys.file_exists "tmp/.git") (fun () -> rmr "tmp")
@@ -124,9 +154,26 @@ let plumbing_tests =
 (** Tests for [Porcelain] module *)
 let porcelain_tests = []
 
+let check_err_tests = [
+  check_err_raises_test "false (an error occured)" false;
+  check_err_test "true (an error did not occur)" true
+]
+
+let parse_key_tests = [
+  parse_key_test "s is status" (int_of_char 's') Command.Status;
+  parse_key_test "q is quit" (int_of_char 'q') Command.Quit;
+  parse_key_raises_test "unsupported raises Invalid_cmd" 9999
+]
+
+(** Tests for [Command] module *)
+let command_tests =
+  check_err_tests
+  @ parse_key_tests
+  (*@ exec_tests*)
+
 
 let suite =
   "test suite for ogit"
-  >::: List.flatten [ plumbing_tests (*; porcelain_tests*) ]
+  >::: List.flatten [ plumbing_tests; command_tests (*; porcelain_tests*) ]
 
 let _ = run_test_tt_main suite
