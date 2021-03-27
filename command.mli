@@ -5,10 +5,13 @@
 type cmd
 
 (** Raised when an invalid command is parsed. *)
-exception Invalid_cmd
+exception Invalid_cmd of string
 
 (** Raised when an empty command is parsed. *)
-exception Empty_cmd
+exception Empty_cmd of string
+
+(** Raised when program should be terminated *)
+exception Program_terminate
 
 (** The type [file_name] represents the file name that can be part of a
     user command. *)
@@ -56,4 +59,4 @@ val parse_key : key -> cmd
 
 (** [exec cmd] executes [cmd].
     TODO: figure out what this should return and document it.*)
-val exec : cmd -> 'a
+val exec : cmd -> Curses.window -> Curses.err

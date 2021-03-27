@@ -4,6 +4,8 @@ type commit_msg = string
 
 type branch_name = string
 
+type key = int
+
 type cmd =
   | Add of file_name
   | Remove of file_name
@@ -15,10 +17,13 @@ type cmd =
   | Pull
   | Status
   | Init
+  | Quit
 
 exception Invalid_cmd of string
 
 exception Empty_cmd of string
+
+exception Program_terminate
 
 let parse (str : string) =
   try
@@ -44,11 +49,12 @@ let parse (str : string) =
 
 let parse_key k =
   if k = int_of_char 's' then Status
+  else if k = int_of_char 'q' then Quit
   else raise (Invalid_cmd "Invalid command")
 
-let exec c =
+let exec c win =
   match c with
-  | Add f -> Porcelain.add f
+  (*| Add f -> Porcelain.add f
   | Remove f -> Porcelain.remove f
   | Commit msg -> Porcelain.commit msg
   | Branch b -> Porcelain.branch b
@@ -56,6 +62,8 @@ let exec c =
   | Fetch -> Porcelain.fetch
   | Push -> Porcelain.push
   | Pull -> Porcelain.pull
-  | Status -> Porcelain.status
-  | Init -> Porcelain.init 
+  | Init -> Porcelain.init  *)
+  | Status -> Curses.waddstr win "our git status"
+  | Quit -> raise Program_terminate
+  | _ -> failwith "unimplemented other commands"
 
