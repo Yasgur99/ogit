@@ -1,4 +1,17 @@
-(** Parsing of git user commands. *)
+(** Parsing and execution of user commands. *)
+
+(** The type [cmd] represents a git command that is decomposed into a
+    verb and possibly a file_name, commit_msg, or branch_name. *)
+type cmd
+
+(** Raised when an invalid command is parsed. *)
+exception Invalid_cmd of string
+
+(** Raised when an empty command is parsed. *)
+exception Empty_cmd of string
+
+(** Raised when program should be terminated *)
+exception Program_terminate
 
 (** The type [file_name] represents the file name that can be part of a
     user command. *)
@@ -12,15 +25,12 @@ type commit_msg = string
     of a user command. *)
 type branch_name = string
 
-(** The type [cmd] represents a git command that is decomposed into a
-    verb and possibly a file_name, commit_msg, or branch_name. *)
-type cmd
-
-(** Raised when an invalid command is parsed. *)
-exception Invalid_cmd
-
-(** Raised when an empty command is parsed. *)
-exception Empty_cmd
+(** The type that represents a key. The interpretation of
+    a key is equivalent to the definition's in [Curses.Key].
+    [Curses.Key] does not expose a type key, and is instead
+    implemented using an integer and some functions that
+    map the name of a key to an integer. *)
+type key = int
 
 (** [parse str] parses a user's input into a [cmd], as follows. The
     first word (i.e., consecutive sequence of non-space characters) of
@@ -43,3 +53,13 @@ exception Empty_cmd
 
     Raises: [Invalid_cmd] if the command is not a valid git command.*)
 val parse : string -> cmd
+
+(** [check_err err] is unit if [err] is [false].
+    Raises [Command.Program_terminate] if [err] is [true].*)
+val check_err : Curses.err -> unit
+
+(** [parse_key key] parses a player's keystroke input into a [cmd] *)
+val parse_key : key -> cmd
+
+(** [exec cmd] executes [cmd]. *)
+val exec : cmd -> Curses.window -> unit

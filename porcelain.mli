@@ -13,7 +13,9 @@ type object_content
 
 type object_type
 
-(** [init n] initializes a git repository in the current working directory if [n] is [None], otherwise initializes a git repository with name [n] as a subdirectory in the current working directory *)
+type status_t
+
+(** [init d] initializes a git repository in the current working directory if [n] is [None], otherwise initializes a git repository with name [n] as a subdirectory in the current working directory *)
 val init : string option -> unit
 
 (** [hash_object f] calls [Plumbing.hash_object] with command line argument -w,
@@ -42,16 +44,17 @@ val read_tree_prefix : object_id -> string -> unit
 (** [commit_tree h m] creates and is a commit object from tree object [h] with commit message [m] *)
 val commit_tree : object_id -> string -> object_id
 
-(** [log] is the list of commit objects that are reachable from HEAD in reverse chronological order *)
-val log : unit -> commit_object list
-
-(** [log h] is the list of commit objects that are reachable by following parents of commit [h] in reverse chronological order *)
-val log : object_id -> commit_object list
+(** [log h] is the list of commit objects that are reachable from HEAD
+    in reverse chronological order if [h] is [None], otherwise the commit
+    objects that are reachable by following parents of commit [h] in reverse
+    chronological order *)
+val log : object_id option -> commit_object list
 
 (** [add fnames] adds the files with filenames [fnames] to the staging area *)
 val add : string list -> unit
 
-(** [commit msg] commits the changes in the staging area with commit message [msg] *)
+(** [commit msg] commits the changes in the staging area with commit 
+    message [msg] *)
 val commit : string -> unit
 
 (** [show] shows the staged, unstaged, and untracked files *)
@@ -61,4 +64,13 @@ val show : unit -> unit
 val diff : unit -> unit
 
 (** [status] shows the status of the working tree *)
-val status : unit -> unit
+val status : unit -> status_t
+
+(** [get_untracked s] is the untracked filenames in the status [s] *)
+val get_untracked: status_t -> string list
+
+(** [get_tracked s] is the untracked filenames in the status [s] *)
+val get_tracked : status_t -> string list 
+
+(** [get_staged s] is the staged filenames in the status [s] *)
+val get_staged : status_t -> string list
