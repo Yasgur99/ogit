@@ -1,57 +1,34 @@
-(** [check_err f] check_errutes function [f] and raises check_errption if [f] is [true] *)
-let check_err err  =
-    if err = true then
-      ()
-    else
-      failwith "error"
-
-let enable_color color =
-  Curses.attron color
-
-let disable_color color =
-  Curses.attroff color
-
 let init_curses () : Curses.window =
   let win = Curses.initscr () in
-  check_err (Curses.cbreak ());
-  check_err (Curses.noecho ());
-  check_err (Curses.curs_set 0);
+  Command.check_err (Curses.cbreak ());
+  Command.check_err (Curses.noecho ());
+  Command.check_err (Curses.curs_set 0);
   Curses.clear ();
   win 
 
 let run win () = 
-  (* Setup useful constants *)
-(*    let max_y, max_x = Curses.getmaxyx win in 
-    let red = Curses.init_pair Curses.Colors.red Curses.Colors.black in
-    let green = Curses.init_pair Curses.Colors.green Curses.Colors.black in
- *)   
-
-    check_err (Curses.waddstr win "Welcome to ogit");
-    check_err (Curses.wrefresh win);
+    Command.check_err (Curses.waddstr win "Welcome to ogit");
+    Command.check_err (Curses.wrefresh win);
 
     while true do (
       let key = Curses.wgetch win in
       let cmd = Command.parse_key key in
-      let res = Command.exec cmd win in
-        ()
+      Command.exec cmd win;
+      Command.check_err (Curses.wrefresh win);
     ) done
-  
 
 let cleanup () =
-    check_err (Curses.curs_set 1); 
-    check_err (Curses.echo ());
-    check_err (Curses.nocbreak ()); 
+    Command.check_err (Curses.curs_set 1); 
+    Command.check_err (Curses.echo ());
+    Command.check_err (Curses.nocbreak ()); 
     Curses.endwin () 
 
 let () = 
-(*    let args = Array.sub Sys.argv 1 (Array.length Sys.argv -1) in
-    let result = Plumbing.git args in
-    List.iter print_endline (Plumbing.get_out result)  *)
-
     try
       let win = init_curses () in
       run win ()
     with Command.Program_terminate ->
-      cleanup ()
+      cleanup ();
+      exit 0
 
     

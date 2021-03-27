@@ -1,4 +1,4 @@
-(** Parsing of git user commands. *)
+(** Parsing and execution of user commands. *)
 
 (** The type [cmd] represents a git command that is decomposed into a
     verb and possibly a file_name, commit_msg, or branch_name. *)
@@ -54,9 +54,12 @@ type key = int
     Raises: [Invalid_cmd] if the command is not a valid git command.*)
 val parse : string -> cmd
 
+(** [check_err err] is unit if [err] is [false].
+    Raises [Command.Program_terminate] if [err] is [true].*)
+val check_err : Curses.err -> unit
+
 (** [parse_key key] parses a player's keystroke input into a [cmd] *)
 val parse_key : key -> cmd
 
-(** [exec cmd] executes [cmd].
-    TODO: figure out what this should return and document it.*)
-val exec : cmd -> Curses.window -> Curses.err
+(** [exec cmd] executes [cmd]. *)
+val exec : cmd -> Curses.window -> unit
