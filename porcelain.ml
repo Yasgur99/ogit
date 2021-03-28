@@ -9,7 +9,7 @@ type commit_object = {
   msg : string;
 }
 
-type object_id = { header_hash : string }
+type object_id = string
 
 type object_content = unit
 
@@ -37,12 +37,12 @@ type status_t = {
 }
  
 
-let init dir : unit = failwith "unimplemented"
-  (* match dir with
+let init (dir : string option) : unit = failwith "Unimplemented"
+   (* match dir with
   | None -> Plumbing.init [||]
   | Some _ -> Plumbing.init [| dir |] *)
 
-  let hash_object file : object_id = failwith "unimplemented" (* Plumbing.hash_object [| "-w"; file |] *)
+let hash_object file : object_id = failwith "unimplemented" (* Plumbing.hash_object [| "-w"; file |] *)
 
 let cat_file hash = failwith "unimplemented"
 
@@ -61,20 +61,15 @@ let read_tree_prefix hash prefix = failwith "unimplemented"
 
 let commit_tree hash message = failwith "unimplemented"
 (* Plumbing.commit_tree [| hash; message |] *)
-let log hash = failwith "unimplemented"
-(* Plumbing.log [| hash |] *)
+let log hash = Plumbing.log [| hash |]
 
-let add files = failwith "unimplemented"
-(* Plumbing.add [| files |] *)
+let add files = Plumbing.add [| files |]
 
-let commit msg = failwith "unimplemented"
-(* Plumbing.commit [| "-m"; msg |] *)
+let commit msg = Plumbing.commit [| "-m"; msg |]
 
-let show () = failwith "unimplemented"
-(* Plumbing.show [||] *)
+let show () = Plumbing.show [||]
 
-let diff () = failwith "unimplemented"
-(* Plumbing.diff [||] *)
+let diff () = Plumbing.diff [||]
 
 let status () = {
   (** TODO: This impl is just for mocking since it wasnt ready.
