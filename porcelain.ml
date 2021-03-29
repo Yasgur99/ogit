@@ -85,7 +85,6 @@ let get_tracked status = status.tracked
 
 let get_staged status = status.staged 
 
-let banana = failwith "Not a function"
 
 
 
