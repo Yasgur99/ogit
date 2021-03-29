@@ -62,9 +62,9 @@ let red = Curses.init_pair 1 Curses.Color.red Curses.Color.black
 
 let green = Curses.init_pair 2 Curses.Color.green Curses.Color.black
 
-let enable_color color = Curses.attron color
+let enable_color color = Curses.attron (Curses.A.color_pair color)
 
-let disable_color color = Curses.attroff color
+let disable_color color = Curses.attroff (Curses.A.color_pair color)
 
 let exec_status win =
   let status = Porcelain.status () in
