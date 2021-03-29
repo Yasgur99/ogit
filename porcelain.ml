@@ -71,19 +71,87 @@ let show () = Plumbing.show [||]
 
 let diff () = Plumbing.diff [||]
 
-let status () = {
-  (** TODO: This impl is just for mocking since it wasnt ready.
-      Be sure to change it *)
+
+
+let empty_status_t = {
   untracked = [];
   tracked = [];
   staged = [];
 }
+let add_to_untracked status filename = {
+  tracked = status.tracked;
+  untracked = filename :: status.untracked;
+  staged = status.staged;
+}
+let add_to_tracked status filename = {
+  tracked = filename :: status.tracked;
+  untracked = status.untracked;
+  staged = status.staged;
+}
+
+let add_to_staged status filename = {
+  tracked = status.tracked;
+  untracked = status.untracked;
+  staged = filename :: status.staged;
+}
+
+let add_to_status_t status line =
+  let filename = String.sub line 2 (String.length line - 1) in
+  match String.sub line 0 2 with
+  | "??" -> add_to_untracked status filename
+  | " M" -> add_to_tracked status filename
+  | "M " -> add_to_staged status filename
+  | "MM" -> ??
+  | "MD" -> ??
+  | " A" -> add_to_tracked status filename (* not in documentation *)
+  | "A " -> add_to_staged status filename
+  | "AM" -> ??
+  | "AD" -> ??
+  | " D" -> add_to_tracked status filename
+  | "D " -> add_to_staged status filename (* not in documentation *)
+  | " R" -> add_to_tracked status filename
+  | "R " -> add_to_staged status filename
+  | "RM" -> ??
+  | "RD" -> ??
+  | " C" -> add_to_tracked status filename
+  | "C " -> add_to_staged status filename
+  | "CM" -> ??
+  | "CD" -> ??
+  | "DR" -> ??
+  | "DC" -> ??
+  | "DD" -> ??
+  | "AU" -> ??
+  | "UD" -> ??
+  | "UA" -> ??
+  | "DU" -> ??
+  | "AA" -> ??
+  | "UU" -> ??
+  | _ -> failwith "TODO throw some failure exception"
+
+let status_t_of_string_list lines = 
+  List.fold_left add_to_status_t empty_status_t lines
+
+let status () = 
+  let status = Plumbing.status [||] in
+  let lines = Plumbing.get_out status in
+    status_t_of_string_list lines
+
+
 
 let get_untracked status = status.untracked
 
 let get_tracked status = status.tracked
 
 let get_staged status = status.staged 
+
+
+
+
+
+
+
+
+
 
 
 
