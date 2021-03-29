@@ -58,9 +58,11 @@ let incr_e1 pair =
   pair := (fst !pair + 1, snd !pair);
   pair
 
-let red = Curses.init_pair 1 Curses.Color.red Curses.Color.black
+let red =
+  check_err (Curses.init_pair 1 Curses.Color.red Curses.Color.black)
 
-let green = Curses.init_pair 2 Curses.Color.green Curses.Color.black
+let green =
+  check_err (Curses.init_pair 2 Curses.Color.green Curses.Color.black)
 
 let enable_color color = Curses.attron (Curses.A.color_pair color)
 
