@@ -132,7 +132,7 @@ let status_t_of_string_list lines =
   List.fold_left add_to_status_t empty_status_t lines
 
 let status () = 
-  let status = Plumbing.status [||] in
+  let status = Plumbing.status [|"--porcelain"|] in
   let lines = Plumbing.get_out status in
     status_t_of_string_list lines
 
