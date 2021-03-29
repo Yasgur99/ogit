@@ -48,10 +48,10 @@ let cat_file hash = failwith "unimplemented"
 
 let cat_file_type hash = failwith "unimplemented"
 
-let update_index hash file : unit = failwith "unimplemented"
+let update_index hash file = failwith "unimplemented"
   (* Plumbing.update_index [| hash; file|] (* not sure of this one *) *)
 
-let write_tree = failwith "Unimplemented"
+let write_tree () = failwith "Unimplemented"
 
 let read_tree hash = failwith "unimplemented" 
 (* Plumbing.read_tree [| hash |] *)
@@ -61,17 +61,16 @@ let read_tree_prefix hash prefix = failwith "unimplemented"
 
 let commit_tree hash message = failwith "unimplemented"
 (* Plumbing.commit_tree [| hash; message |] *)
-let log hash = Plumbing.log [| hash |]
 
-let add files = Plumbing.add [| files |]
+let log hash = failwith "unimplemented" (*Plumbing.log [| hash |] *)
 
-let commit msg = Plumbing.commit [| "-m"; msg |]
+let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)
 
-let show () = Plumbing.show [||]
+let commit msg = failwith "unimplemented" (*Plumbing.commit [| "-m"; msg |]*)
 
-let diff () = Plumbing.diff [||]
+let show () = failwith "unimplemented" (*Plumbing.show [||]*)
 
-
+let diff () = failwith "unimplemented" (*Plumbing.diff [||]*)
 
 let empty_status_t = {
   untracked = [];
@@ -96,47 +95,45 @@ let add_to_staged status filename = {
 }
 
 let add_to_status_t status line =
-  let filename = String.sub line 2 (String.length line - 1) in
+  let filename = String.sub line 2 ((String.length line) - 2) in 
   match String.sub line 0 2 with
   | "??" -> add_to_untracked status filename
   | " M" -> add_to_tracked status filename
   | "M " -> add_to_staged status filename
-  | "MM" -> ??
-  | "MD" -> ??
+  | "MM" -> failwith "todo" 
+  | "MD" -> failwith "todo" 
   | " A" -> add_to_tracked status filename (* not in documentation *)
   | "A " -> add_to_staged status filename
-  | "AM" -> ??
-  | "AD" -> ??
+  | "AM" -> failwith "todo" 
+  | "AD" -> failwith "todo" 
   | " D" -> add_to_tracked status filename
   | "D " -> add_to_staged status filename (* not in documentation *)
   | " R" -> add_to_tracked status filename
   | "R " -> add_to_staged status filename
-  | "RM" -> ??
-  | "RD" -> ??
+  | "RM" -> failwith "todo" 
+  | "RD" -> failwith "todo" 
   | " C" -> add_to_tracked status filename
   | "C " -> add_to_staged status filename
-  | "CM" -> ??
-  | "CD" -> ??
-  | "DR" -> ??
-  | "DC" -> ??
-  | "DD" -> ??
-  | "AU" -> ??
-  | "UD" -> ??
-  | "UA" -> ??
-  | "DU" -> ??
-  | "AA" -> ??
-  | "UU" -> ??
+  | "CM" -> failwith "todo" 
+  | "CD" -> failwith "todo" 
+  | "DR" -> failwith "todo" 
+  | "DC" -> failwith "todo" 
+  | "DD" -> failwith "todo" 
+  | "AU" -> failwith "todo" 
+  | "UD" -> failwith "todo" 
+  | "UA" -> failwith "todo" 
+  | "DU" -> failwith "todo" 
+  | "AA" -> failwith "todo" 
+  | "UU" -> failwith "TODO throw some failure exception"
   | _ -> failwith "TODO throw some failure exception"
 
 let status_t_of_string_list lines = 
   List.fold_left add_to_status_t empty_status_t lines
 
 let status () = 
-  let status = Plumbing.status [||] in
+  let status = Plumbing.status [|"--porcelain"|] in
   let lines = Plumbing.get_out status in
     status_t_of_string_list lines
-
-
 
 let get_untracked status = status.untracked
 
