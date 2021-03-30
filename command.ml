@@ -58,11 +58,13 @@ let incr_e1 pair =
   pair := (fst !pair + 1, snd !pair);
   pair
 
-let red =
-  check_err (Curses.init_pair 1 Curses.Color.red Curses.Color.black)
+let yellow = 1
 
-let green =
-  check_err (Curses.init_pair 2 Curses.Color.green Curses.Color.black)
+let red_back = 2
+
+let cyan_back = 3
+
+let green_back = 4
 
 let enable_color color = Curses.attron (Curses.A.color_pair color)
 
@@ -75,23 +77,31 @@ let exec_status win =
   let staged = Porcelain.get_staged status in
 
   let yx = ref (Curses.getyx win) in
+  enable_color yellow;
   check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 "untracked: ");
-  enable_color 1;
+  disable_color yellow;
+  enable_color red_back;
   List.iter
     (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 f))
     untracked;
+  disable_color red_back;
+  enable_color yellow;
   check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 "tracked: ");
+  disable_color yellow;
+  enable_color cyan_back;
   List.iter
     (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 f))
     tracked;
+  disable_color cyan_back;
+  enable_color yellow;
   check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 "staged: ");
-  disable_color 1;
-  enable_color 2;
+  disable_color yellow;
+  enable_color green_back;
   List.iter
     (fun f ->
       check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) f))
     staged;
-  disable_color 2;
+  disable_color green_back;
   ()
 
 let exec c win =
