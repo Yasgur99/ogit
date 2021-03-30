@@ -56,9 +56,9 @@ assert_raises (Command.Program_terminate) (fun () -> Command.check_err err)
 let parse_key_test
   (name : string)
   (key : int)
-  (exp: Command.cmd) : test =
+  (exp: string) : test =
 name >:: fun _ ->
-assert_equal exp (Command.parse_key key) 
+assert_equal exp (Command.string_of_cmd (Command.parse_key key))
 
 (** [parse_key_raises_test n key] constructs an OUnit test named [n] that asserts [Command.parse_key] raises [Command.Invalid_cmd] *)
 let parse_key_raises_test
@@ -67,13 +67,22 @@ let parse_key_raises_test
 name >:: fun _ ->
 assert_raises (Command.Invalid_cmd "Invalid command") (fun () -> Command.parse_key key)
 
+(** [exec_test cmd] constructs an OUnit test named [n] that asserts 
+    [Command.exec cmd] *)
+let exec_test
+  (name : string)
+  (cmd : Command.cmd)
+  (exp: string) : test =
+name >:: fun _ ->
+assert_equal exp ""
+
+
 (** [check_err_test err] constructs an OUnit test named [n] that asserts [Command.check_err] is unit *)
 let check_err_test
   (name : string)
   (err : bool) : test =
 name >:: fun _ ->
 assert_equal (Command.check_err err) ()
-
 
 (** Tests for [Plumbing.init] *)
 let init_tests = [
@@ -154,22 +163,30 @@ let plumbing_tests =
 (** Tests for [Porcelain] module *)
 let porcelain_tests = []
 
+(** Tests for [Command.check_err] *)
 let check_err_tests = [
   check_err_raises_test "false (an error occured)" false;
   check_err_test "true (an error did not occur)" true
 ]
 
+(** Tests for [Command.parse_key] *)
 let parse_key_tests = [
-  parse_key_test "s is status" (int_of_char 's') Command.Status;
-  parse_key_test "q is quit" (int_of_char 'q') Command.Quit;
+  parse_key_test "s is status" (int_of_char 's') "status";
+  parse_key_test "q is quit" (int_of_char 'q') "quit";
   parse_key_raises_test "unsupported raises Invalid_cmd" 9999
+]
+
+(** Tests for [Command.exec] *)
+let exec_tests = [
+  exec_test "exec status" (Command.parse_key (int_of_char 's')) "";
+  exec_test "exec quit" (Command.parse_key (int_of_char 'q')) ""
 ]
 
 (** Tests for [Command] module *)
 let command_tests =
   check_err_tests
   @ parse_key_tests
-  (*@ exec_tests*)
+  @ exec_tests
 
 
 let suite =

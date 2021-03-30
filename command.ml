@@ -103,3 +103,20 @@ let exec c win =
   | Status -> exec_status win
   | Quit -> raise Program_terminate
   | _ -> failwith "unimplemented command"
+
+
+let string_of_cmd cmd =
+  match cmd with
+  | Add _ -> "add"
+  | Remove _ -> "remove"
+  | Commit _ -> "commit"
+  | Branch _ -> "branch"
+  | Checkout _ -> "checkout"
+  | Fetch -> "fetch"
+  | Push -> "push"
+  | Pull -> "pull"
+  | Status -> "status"
+  | Init -> "init"
+  | Quit -> "quit"
+
+
