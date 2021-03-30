@@ -31,28 +31,6 @@ exception Empty_cmd of string
 (** Raised when program should be terminated *)
 exception Program_terminate
 
-(** [parse str] parses a user's input into a [cmd], as follows. The
-    first word (i.e., consecutive sequence of non-space characters) of
-    [str] becomes the verb. The rest of the words, if any, become either
-    a file name or a commit message.
-
-    Requires: [str] begins with "add", "rm", "commit", "branch",
-    "checkout", "push", "pull", "status", "init", or "fetch". If [str]
-    begins with "add", it must be followed by a file name. If [str]
-    begins with "rm", it must be followed by a file name. If [str]
-    begins with "commit", it must be followed by a commit message. If
-    [str] begins with "branch", it must be followed by a branch name. If
-    [str] begins with "checkout", it must be followed by a branch name.
-
-    Examples of valid commands: "add file.ml", "rm file.ml", "commit
-    implemented file", "branch master", "checkout master", "push",
-    "pull", "status", "init", "fetch"
-
-    Raises: [Empty_cmd] if [str] is the empty string.
-
-    Raises: [Invalid_cmd] if the command is not a valid git command.*)
-val parse : string -> cmd
-
 (** [check_err err] is unit if [err] is [true]. Raises
     [Command.Program_terminate] if [err] is [false].*)
 val check_err : Curses.err -> unit
@@ -62,3 +40,6 @@ val parse_key : key -> cmd
 
 (** [exec cmd] executes [cmd]. *)
 val exec : cmd -> Curses.window -> unit
+
+(** [string_of_cmd cmd] is the string representation of [cmd] *)
+val string_of_cmd : cmd -> string
