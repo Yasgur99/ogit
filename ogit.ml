@@ -1,6 +1,17 @@
+let init_colors () =
+  Command.check_err (Curses.start_color ());
+  Command.check_err
+    (Curses.init_pair 1 Curses.Color.yellow Curses.Color.black);
+  Command.check_err
+    (Curses.init_pair 2 Curses.Color.black Curses.Color.red);
+  Command.check_err
+    (Curses.init_pair 3 Curses.Color.black Curses.Color.cyan);
+  Command.check_err
+    (Curses.init_pair 4 Curses.Color.black Curses.Color.green)
+
 let init_curses () : Curses.window =
   let win = Curses.initscr () in
-  Command.check_err (Curses.start_color ());
+  init_colors ();
   Command.check_err (Curses.cbreak ());
   Command.check_err (Curses.noecho ());
   Command.check_err (Curses.curs_set 0);
