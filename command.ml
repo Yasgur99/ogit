@@ -58,17 +58,35 @@ let incr_e1 pair =
   pair := (fst !pair + 1, snd !pair);
   pair
 
-let yellow = 1
+let get_color color =
+  let colors =
+    [
+      "red";
+      "green";
+      "yellow";
+      "blue";
+      "magenta";
+      "cyan";
+      "white";
+      "red_back";
+      "green_back";
+      "yellow_back";
+      "blue_back";
+      "magenta_back";
+      "cyan_back";
+      "white_back";
+    ]
+  in
+  let rec r_color color n =
+    if List.nth colors n = color then n + 1 else r_color color (n + 1)
+  in
+  r_color color 0
 
-let red_back = 2
+let enable_color color =
+  Curses.attron (Curses.A.color_pair (get_color color))
 
-let cyan_back = 3
-
-let green_back = 4
-
-let enable_color color = Curses.attron (Curses.A.color_pair color)
-
-let disable_color color = Curses.attroff (Curses.A.color_pair color)
+let disable_color color =
+  Curses.attroff (Curses.A.color_pair (get_color color))
 
 let exec_status win =
   let status = Porcelain.status () in
@@ -77,31 +95,31 @@ let exec_status win =
   let staged = Porcelain.get_staged status in
 
   let yx = ref (Curses.getyx win) in
-  enable_color yellow;
+  enable_color "yellow";
   check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 "untracked: ");
-  disable_color yellow;
-  enable_color red_back;
+  disable_color "yellow";
+  enable_color "red_back";
   List.iter
     (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 f))
     untracked;
-  disable_color red_back;
-  enable_color yellow;
+  disable_color "red_back";
+  enable_color "yellow";
   check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 "tracked: ");
-  disable_color yellow;
-  enable_color cyan_back;
+  disable_color "yellow";
+  enable_color "cyan_back";
   List.iter
     (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 f))
     tracked;
-  disable_color cyan_back;
-  enable_color yellow;
+  disable_color "cyan_back";
+  enable_color "yellow";
   check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 "staged: ");
-  disable_color yellow;
-  enable_color green_back;
+  disable_color "yellow";
+  enable_color "green_back";
   List.iter
     (fun f ->
       check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) f))
     staged;
-  disable_color green_back;
+  disable_color "green_back";
   ()
 
 let exec c win =
