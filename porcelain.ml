@@ -43,13 +43,16 @@ let hash_object file : object_id = failwith "unimplemented"
 (* Plumbing.hash_object [| "-w"; file |] *)
 
 let cat_file hash = failwith "unimplemented"
+(* Plumbing.cat_file [| "-p"; hash |]*)
 
 let cat_file_type hash = failwith "unimplemented"
+(* Plumbing.cat_file [|"-t"; hash|] *)
 
 let update_index hash file = failwith "unimplemented"
 (* Plumbing.update_index [| hash; file|] (* not sure of this one *) *)
 
 let write_tree () = failwith "Unimplemented"
+(* Plumbing.write_tree [||] *)
 
 let read_tree hash = failwith "unimplemented"
 (* Plumbing.read_tree [| hash |] *)
@@ -60,7 +63,7 @@ let read_tree_prefix hash prefix = failwith "unimplemented"
 let commit_tree hash message = failwith "unimplemented"
 
 (* Plumbing.commit_tree [| "-m"; message; hash|] *)
-(* not sure if -m "msg" comes before or after tree i see both in doc *)
+(* not sure if -m "msg" comes before or after hash I see both in doc *)
 
 let log hash = failwith "unimplemented"
 (* match hash with | None -> Plumbing.log [||] | Some -> Plumbing,log [|
