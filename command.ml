@@ -116,8 +116,7 @@ let exec_status win =
   disable_color "yellow";
   enable_color "green_back";
   List.iter
-    (fun f ->
-      check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) (snd !yx) f))
+    (fun f -> check_err (Curses.mvwaddstr win (fst !(incr_e1 yx)) 1 f))
     staged;
   disable_color "green_back";
   ()
@@ -132,7 +131,6 @@ let exec c win =
   | Quit -> raise Program_terminate
   | _ -> failwith "unimplemented command"
 
-
 let string_of_cmd cmd =
   match cmd with
   | Add _ -> "add"
@@ -146,5 +144,3 @@ let string_of_cmd cmd =
   | Status -> "status"
   | Init -> "init"
   | Quit -> "quit"
-
-
