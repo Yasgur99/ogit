@@ -58,9 +58,13 @@ let read_tree_prefix hash prefix = failwith "unimplemented"
 (* Plumbing.read_tree [| prefix; hash |] *)
 
 let commit_tree hash message = failwith "unimplemented"
-(* Plumbing.commit_tree [| hash; message |] *)
 
-let log hash = failwith "unimplemented" (*Plumbing.log [| hash |] *)
+(* Plumbing.commit_tree [| "-m"; message; hash|] *)
+(* not sure if -m "msg" comes before or after tree i see both in doc *)
+
+let log hash = failwith "unimplemented"
+(* match hash with | None -> Plumbing.log [||] | Some -> Plumbing,log [|
+   hash |] *)
 
 let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)
 
