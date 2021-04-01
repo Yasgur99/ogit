@@ -1,8 +1,25 @@
 open OUnit2
 open Plumbing
 open Porcelain
-
 (** Some Helper Methods *)
+
+(** [pp_string s] pretty-prints string [s]. *)
+let pp_string s = "\"" ^ s ^ "\""
+
+(** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt] to
+    pretty-print each element of [lst]. *)
+let pp_list pp_elt lst =
+  let pp_elts lst =
+    let rec loop n acc = function
+      | [] -> acc
+      | [ h ] -> acc ^ pp_elt h
+      | h1 :: (h2 :: t as t') ->
+          if n = 100 then acc ^ "..." (* stop printing long list *)
+          else loop (n + 1) (acc ^ pp_elt h1 ^ "; ") t'
+    in
+    loop 0 "" lst
+  in
+  "[" ^ pp_elts lst ^ "]"
 
 (** [rmr p] recursibley removes the direcory [p] and everything in it *)
 let rec rmr path =
@@ -259,28 +276,38 @@ let plumbing_tests = init_tests
 
 let get_untracked_test
     (name : string)
-    (func : unit -> unit)
-    (clean_up : unit -> unit)
-    (stat : status_t)
-    (exp_output : string list) : test =
+    (setup_func : unit -> unit)
+    (arg : status_t)
+    (exp_output : string list)
+    (clean_up : unit -> unit) : test =
   name >:: fun _ ->
-  assert_equal exp_output (Porcelain.get_untracked stat)
+    try
+      let ans = (assert_equal exp_output (Porcelain.get_untracked arg) 
+      ~printer:(pp_list pp_string) )in
+      clean_up ();
+      ans
+    with Failure f ->
+      clean_up ();
+      raise (Failure f)
+
+
+      
 
 let get_tracked_test
     (name : string)
-    (func : unit -> unit)
-    (clean_up : unit -> unit)
+    (setup_func : unit -> unit)
     (stat : status_t)
     (exp_output : string list) : test =
-  name >:: fun _ -> assert_equal exp_output (Porcelain.get_tracked stat)
+  name >:: fun _ -> assert_equal exp_output (Porcelain.get_tracked stat);
+  rmr "test"
 
 let get_staged_test
     (name : string)
-    (func : unit -> unit)
-    (clean_up : unit -> unit)
+    (setup_func : unit -> unit)
     (stat : status_t)
     (exp_output : string list) : test =
-  name >:: fun _ -> assert_equal exp_output (Porcelain.get_staged stat)
+  name >:: fun _ -> assert_equal exp_output (Porcelain.get_staged stat);
+  rmr "test"
 
 
   (* let get_tracked_and_staged_test
@@ -294,12 +321,13 @@ let get_staged_test
 
 
 let create_file filename =
-   let op = open_out filename in
+   let op = open_out ("test/" ^ filename) in
    close_out op
 
 
 let setup_untracked_test filename =
   init_repo "test";
+  Sys.chdir "test";
   create_file filename
 
 
@@ -328,14 +356,14 @@ let setup_tracked_and_staged_test filename =
 
 let status_tests = [
     get_untracked_test "One untracked file" (fun () -> setup_untracked_test 
-    "untracked.txt") 
-    (fun () -> rmr "test") (Porcelain.status ()) ["untracked.txt"];
+      "untracked.txt") (Porcelain.status ()) ["untracked.txt"] 
+      (fun () -> rmr "test");
 
     get_tracked_test "One tracked file" (fun () -> setup_tracked_test "tracked.txt") 
-    (fun () -> rmr "test") (Porcelain.status ()) ["tracked.txt"];
+     (Porcelain.status ()) ["tracked.txt"];
 
     get_staged_test "One staged file" (fun () -> setup_staged_test "staged.txt")
-    (fun () -> rmr "test") (Porcelain.status ()) ["staged.txt"]
+     (Porcelain.status ()) ["staged.txt"]
   ]
 
 (** Tests for [Porcelain] module *)
