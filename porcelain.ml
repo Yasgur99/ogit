@@ -1,3 +1,5 @@
+open Plumbing
+
 type commit_object = {
   tree : string;
   (* is this the SHA-1? *)
@@ -72,7 +74,7 @@ let log hash = failwith "unimplemented"
 let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)
 
 let commit msg = failwith "unimplemented"
-(*Plumbing.commit [| "-m"; msg |]*)
+(* Plumbing.commit [| "-m"; msg |] *)
 
 let show () = failwith "unimplemented" (*Plumbing.show [||]*)
 
@@ -101,37 +103,41 @@ let add_to_staged status filename =
     staged = filename :: status.staged;
   }
 
+let add_to_staged_and_tracked status filename =
+  let status' = add_to_staged status filename in
+  add_to_tracked status' filename
+
 let add_to_status_t status line =
   let filename = String.sub line 2 (String.length line - 2) in
   match String.sub line 0 2 with
   | "??" -> add_to_untracked status filename
   | " M" -> add_to_tracked status filename
   | "M " -> add_to_staged status filename
-  | "MM" -> failwith "todo"
-  | "MD" -> failwith "todo"
-  | " A" -> add_to_tracked status filename (* not in documentation *)
+  | "MM" -> add_to_staged_and_tracked status filename
+  | "MD" -> add_to_staged_and_tracked status filename
+  | " A" -> add_to_tracked status filename
   | "A " -> add_to_staged status filename
-  | "AM" -> failwith "todo"
-  | "AD" -> failwith "todo"
+  | "AM" -> add_to_staged_and_tracked status filename
+  | "AD" -> add_to_staged_and_tracked status filename
   | " D" -> add_to_tracked status filename
-  | "D " -> add_to_staged status filename (* not in documentation *)
+  | "D " -> add_to_staged status filename
   | " R" -> add_to_tracked status filename
   | "R " -> add_to_staged status filename
-  | "RM" -> failwith "todo"
-  | "RD" -> failwith "todo"
+  | "RM" -> add_to_staged_and_tracked status filename
+  | "RD" -> add_to_staged_and_tracked status filename
   | " C" -> add_to_tracked status filename
   | "C " -> add_to_staged status filename
-  | "CM" -> failwith "todo"
-  | "CD" -> failwith "todo"
-  | "DR" -> failwith "todo"
-  | "DC" -> failwith "todo"
-  | "DD" -> failwith "todo"
-  | "AU" -> failwith "todo"
-  | "UD" -> failwith "todo"
-  | "UA" -> failwith "todo"
-  | "DU" -> failwith "todo"
-  | "AA" -> failwith "todo"
-  | "UU" -> failwith "TODO throw some failure exception"
+  | "CM" -> add_to_staged_and_tracked status filename
+  | "CD" -> add_to_staged_and_tracked status filename
+  | "DR" -> add_to_staged_and_tracked status filename
+  | "DC" -> add_to_staged_and_tracked status filename
+  | "DD" -> add_to_staged_and_tracked status filename
+  | "AU" -> add_to_staged_and_tracked status filename
+  | "UD" -> add_to_staged_and_tracked status filename
+  | "UA" -> add_to_staged_and_tracked status filename
+  | "DU" -> add_to_staged_and_tracked status filename
+  | "AA" -> add_to_staged_and_tracked status filename
+  | "UU" -> add_to_staged_and_tracked status filename
   | _ -> failwith "TODO throw some failure exception"
 
 let status_t_of_string_list lines =

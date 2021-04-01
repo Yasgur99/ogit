@@ -1,6 +1,6 @@
 open OUnit2
 open Plumbing
-(*open Porcelain*)
+open Porcelain
 
 (** Some Helper Methods *)
 
@@ -151,14 +151,9 @@ let status_tests =
       [| "test.txt" |] [ "" ];
   ]
 
-(** Tests for [Plumbing ] module *)
-let plumbing_tests = init_tests
-(*@ hash_object_tests @ cat_file_tests @ update_index_tests @
-  write_tree_tests @ read_tree_tests @ commit_tree_tests*)
-(*@ log_tests @ add_tests @ commit_tests @ show_tests @ diff_tests @
-  status_tests *)
-
 (** 
+
+Porcelain Helper Functions
 
 let add_to_status_t_test
     (name : string)
@@ -252,12 +247,21 @@ let diff_test (name : string) (nothing : unit) (exp_output : unit) :
     test =
   name >:: fun _ -> assert_equal exp_output (Porcelain.diff nothing)
 
-let status_test (name : string) (nothing : unit) (exp_output : status_t)
-    : test =
-  name >:: fun _ -> assert_equal exp_output (Porcelain.status nothing)
+*)
+
+(** Tests for [Plumbing ] module *)
+let plumbing_tests = init_tests
+(*@ hash_object_tests @ cat_file_tests @ update_index_tests @
+  write_tree_tests @ read_tree_tests @ commit_tree_tests*)
+(*@ log_tests @ add_tests @ commit_tests @ show_tests @ diff_tests @
+  status_tests *)
+
+(**
 
 let get_untracked_test
     (name : string)
+    (func : string -> unit)
+    (clean_up : string -> unit)
     (stat : status_t)
     (exp_output : string list) : test =
   name >:: fun _ ->
@@ -265,19 +269,74 @@ let get_untracked_test
 
 let get_tracked_test
     (name : string)
+    (func : string -> unit)
+    (clean_up : string -> unit)
     (stat : status_t)
     (exp_output : string list) : test =
   name >:: fun _ -> assert_equal exp_output (Porcelain.get_tracked stat)
 
 let get_staged_test
     (name : string)
+    (func : string -> unit)
+    (clean_up : string -> unit)
     (stat : status_t)
     (exp_output : string list) : test =
   name >:: fun _ -> assert_equal exp_output (Porcelain.get_staged stat)
 
-  *)
+
+  let get_tracked_and_staged_test
+    (name : string)
+    (func : string -> unit)
+    (clean_up : string -> unit)
+    (stat : status_t)
+    (exp_output : string list) : test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.get_staged stat) (* append get_tracked *)
+
+let create_file filename = failwith "todo"
+
+let setup_untracked_test filename =
+  init_repo "test";
+  create_file filename;
+
+
+let setup_tracked_test filename =
+  init_repo "test";
+  create_file filename;
+  Plumbing.add [| filename |];
+  Plumbing.commit [|"-m"; "adding file for tracked test"|]
+  (* modify file somehow to get " M" XY value *)
+
+let setup_staged_test filename = 
+  init_repo "test";
+  create_file filename;
+  Plumbing.add [| filename |]
+
+let setup_tracked_and_staged_test filename =
+  init_repo "test";
+  create_file filename;
+  Plumbing.add [| filename |]
+  (* modify file *)
+
+
+
+let status_tests = 
+  [
+    get_untracked_test "One untracked file" (setup_untracked_test 
+    ("untracked.txt") 
+    (rmr "test") Porcelain.status ["untracked.txt"]
+
+    get_tracked_test "One tracked file" (setup_tracked_test "tracked.txt") 
+    (rmr "test") Porcelain.status ["tracked.txt"]
+
+    get_staged_test "One staged file" (setup_staged_test "staged.txt")
+    (rmr "test") Porcelain.status ["staged.txt"]
+
+  ]
+*)
+  
 (** Tests for [Porcelain] module *)
 let porcelain_tests = []
+  (** status_tests *)
 
 let check_err_tests =
   [
