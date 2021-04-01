@@ -1,6 +1,6 @@
 open OUnit2
 open Plumbing
-(*open Porcelain*)
+open Porcelain
 
 (** Some Helper Methods *)
 
@@ -16,7 +16,7 @@ let rec rmr path =
 let init_repo name =
   Plumbing.init [|name|]
 
-(** [plumbing_test n a ch cl] constructs an OUnit test named [n] that 
+(** [plumbing_test n a ch cl] constructs an OUnit test named [n] that
     asserts [ch] to check side effects and then calls [cl] which cleans
     up the side effects *)
 let plumbing_test_side_effect
@@ -35,7 +35,7 @@ let plumbing_test_side_effect
       clean_side_effect (); 
       raise (Failure f)
 
-(** [plumbing_test n a ch cl] constructs an OUnit test named [n] that 
+(** [plumbing_test n a ch cl] constructs an OUnit test named [n] that
     asserts [Plumbing.get_out (f args)] is equal to [res] *)
 let plumbing_test
     (name : string)
@@ -85,33 +85,30 @@ name >:: fun _ ->
 assert_equal (Command.check_err err) ()
 
 (** Tests for [Plumbing.init] *)
-let init_tests = [
-  plumbing_test_side_effect "init tmp" Plumbing.init [|"tmp"|] (fun () -> Sys.file_exists "tmp/.git") (fun () -> rmr "tmp")
-]
+let init_tests =
+  [
+    plumbing_test_side_effect "init tmp" Plumbing.init [| "tmp" |]
+      (fun () -> Sys.file_exists "tmp/.git")
+      (fun () -> rmr "tmp");
+  ]
 
 (** Tests for [Plumbing.hash_object] *)
-let hash_object_tests = [
-]
+let hash_object_tests = []
 
 (** Tests for [Plumbing.cat_file] *)
-let cat_file_tests = [
-]
+let cat_file_tests = []
 
 (** Tests for [Plumbing.update_index] *)
-let update_index_tests = [
-]
+let update_index_tests = []
 
 (** Tests for [Plumbing.write_tree] *)
-let write_tree_tests = [
-]
+let write_tree_tests = []
 
 (** Tests for [Plumbing.read_tree] *)
-let read_tree_tests = [
-]
+let read_tree_tests = []
 
 (** Tests for [Plumbing.commit_tree] *)
-let commit_tree_tests = [
-]
+let commit_tree_tests = []
 
 (** Tests for [Plumbing.log] *)
 let log_tests = [
@@ -146,22 +143,200 @@ let diff_tests = [
 ]
 
 (** Tests for [Plumbing.status] *)
-let status_tests = [
-  plumbing_test "no commits" Plumbing.status [||] [""];
-  plumbing_test "nothing to commit" Plumbing.status [||] [""];
-  plumbing_test "untracked files" Plumbing.status [||] [""];
-  plumbing_test "check file specifically" Plumbing.status [|"test.txt"|] [""]
-]
+let status_tests =
+  [
+    plumbing_test "no commits" Plumbing.status [||] [ "" ];
+    plumbing_test "nothing to commit" Plumbing.status [||] [ "" ];
+    plumbing_test "untracked files" Plumbing.status [||] [ "" ];
+    plumbing_test "check file specifically" Plumbing.status
+      [| "test.txt" |] [ "" ];
+  ]
+
+(** 
+
+Porcelain Helper Functions
+
+let add_to_status_t_test
+    (name : string)
+    (status : status_t)
+    (lines : string)
+    (exp_output : status_t) : test =
+  name >:: fun _ ->
+  assert_equal exp_output (Porcelain.add_to_status_t status lines)
+
+let init_test (name : string) (dir : string option) (exp_output : unit)
+    : test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.init dir)
+
+let hash_object_test
+    (name : string)
+    (file : string)
+    (exp_output : string) : test =
+  name >:: fun _ -> assert_equal exp_output Porcelain.hash_object
+
+let cat_file_test
+    (name : string)
+    (hash : object_id)
+    (exp_output : object_content) : test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.cat_file hash)
+
+let cat_file_type_test
+    (name : string)
+    (hash : object_id)
+    (exp_output : object_type) : test =
+  name >:: fun _ ->
+  assert_equal exp_output (Porcelain.cat_file_type hash)
+
+let update_index_test
+    (name : string)
+    (hash : object_id)
+    (filename : string)
+    (exp_output : unit) : test =
+  name >:: fun _ ->
+  assert_equal exp_output (Porcelain.update_index hash filename)
+
+let write_tree_test
+    (name : string)
+    (nothing : unit)
+    (exp_output : object_id) : test =
+  name >:: fun _ ->
+  assert_equal exp_output (Porcelain.write_tree nothing)
+
+let read_tree_test
+    (name : string)
+    (hash : object_id)
+    (exp_output : unit) : test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.read_tree hash)
+
+let read_tree_prefix_test
+    (name : string)
+    (ob_id : object_id)
+    (prefix : string)
+    (exp_output : unit) : test =
+  name >:: fun _ ->
+  assert_equal exp_output (Porcelain.read_tree_prefix ob_id prefix)
+
+let commit_tree_test
+    (name : string)
+    (hash : object_id)
+    (msg : string)
+    (exp_output : object_id) : test =
+  name >:: fun _ ->
+  assert_equal exp_output (Porcelain.commit_tree hash msg)
+
+let log_test
+    (name : string)
+    (ob_id : object_id option)
+    (exp_output : commit_object list) : test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.log ob_id)
+
+let add_test
+    (name : string)
+    (filenames : string list)
+    (exp_output : unit) : test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.add filenames)
+
+let commit_test (name : string) (msg : string) (exp_output : unit) :
+    test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.commit msg)
+
+let show_test (name : string) (nothing : unit) (exp_output : unit) :
+    test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.show nothing)
+
+let diff_test (name : string) (nothing : unit) (exp_output : unit) :
+    test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.diff nothing)
+
+*)
 
 (** Tests for [Plumbing ] module *)
-let plumbing_tests =
-  init_tests (*@ hash_object_tests @ cat_file_tests @ update_index_tests
-  @ write_tree_tests @ read_tree_tests @ commit_tree_tests*) (*@ log_tests
-  @ add_tests @ commit_tests @ show_tests @ diff_tests @ status_tests *)
+let plumbing_tests = init_tests
+(*@ hash_object_tests @ cat_file_tests @ update_index_tests @
+  write_tree_tests @ read_tree_tests @ commit_tree_tests*)
+(*@ log_tests @ add_tests @ commit_tests @ show_tests @ diff_tests @
+  status_tests *)
+
+(**
+
+let get_untracked_test
+    (name : string)
+    (func : string -> unit)
+    (clean_up : string -> unit)
+    (stat : status_t)
+    (exp_output : string list) : test =
+  name >:: fun _ ->
+  assert_equal exp_output (Porcelain.get_untracked stat)
+
+let get_tracked_test
+    (name : string)
+    (func : string -> unit)
+    (clean_up : string -> unit)
+    (stat : status_t)
+    (exp_output : string list) : test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.get_tracked stat)
+
+let get_staged_test
+    (name : string)
+    (func : string -> unit)
+    (clean_up : string -> unit)
+    (stat : status_t)
+    (exp_output : string list) : test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.get_staged stat)
 
 
+  let get_tracked_and_staged_test
+    (name : string)
+    (func : string -> unit)
+    (clean_up : string -> unit)
+    (stat : status_t)
+    (exp_output : string list) : test =
+  name >:: fun _ -> assert_equal exp_output (Porcelain.get_staged stat) (* append get_tracked *)
+
+let create_file filename = failwith "todo"
+
+let setup_untracked_test filename =
+  init_repo "test";
+  create_file filename;
+
+
+let setup_tracked_test filename =
+  init_repo "test";
+  create_file filename;
+  Plumbing.add [| filename |];
+  Plumbing.commit [|"-m"; "adding file for tracked test"|]
+  (* modify file somehow to get " M" XY value *)
+
+let setup_staged_test filename = 
+  init_repo "test";
+  create_file filename;
+  Plumbing.add [| filename |]
+
+let setup_tracked_and_staged_test filename =
+  init_repo "test";
+  create_file filename;
+  Plumbing.add [| filename |]
+  (* modify file *)
+
+
+
+let status_tests = 
+  [
+    get_untracked_test "One untracked file" (setup_untracked_test 
+    ("untracked.txt") 
+    (rmr "test") Porcelain.status ["untracked.txt"]
+
+    get_tracked_test "One tracked file" (setup_tracked_test "tracked.txt") 
+    (rmr "test") Porcelain.status ["tracked.txt"]
+
+    get_staged_test "One staged file" (setup_staged_test "staged.txt")
+    (rmr "test") Porcelain.status ["staged.txt"]
+
+  ]
+*)
+  
 (** Tests for [Porcelain] module *)
-let porcelain_tests = []
+let porcelain_tests = [(* status_tests *)]
 
 (** Tests for [Command.check_err] *)
 let check_err_tests = [
