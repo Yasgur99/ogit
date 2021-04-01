@@ -14,7 +14,7 @@ let rec rmr path =
   | false -> Sys.remove path
 
 let init_repo name =
-  Plumbing.init [|name|]
+  ignore (Plumbing.init [|name|])
 
 (** [plumbing_test n a ch cl] constructs an OUnit test named [n] that
     asserts [ch] to check side effects and then calls [cl] which cleans
@@ -259,8 +259,8 @@ let plumbing_tests = init_tests
 
 let get_untracked_test
     (name : string)
-    (func : string -> unit)
-    (clean_up : string -> unit)
+    (func : unit -> unit)
+    (clean_up : unit -> unit)
     (stat : status_t)
     (exp_output : string list) : test =
   name >:: fun _ ->
@@ -268,16 +268,16 @@ let get_untracked_test
 
 let get_tracked_test
     (name : string)
-    (func : string -> unit)
-    (clean_up : string -> unit)
+    (func : unit -> unit)
+    (clean_up : unit -> unit)
     (stat : status_t)
     (exp_output : string list) : test =
   name >:: fun _ -> assert_equal exp_output (Porcelain.get_tracked stat)
 
 let get_staged_test
     (name : string)
-    (func : string -> unit)
-    (clean_up : string -> unit)
+    (func : unit -> unit)
+    (clean_up : unit -> unit)
     (stat : status_t)
     (exp_output : string list) : test =
   name >:: fun _ -> assert_equal exp_output (Porcelain.get_staged stat)
@@ -293,61 +293,53 @@ let get_staged_test
   (* append get_tracked *) *)
 
 
-  (*
 let create_file filename =
    let op = open_out filename in
    close_out op
 
 
 let setup_untracked_test filename =
-   init_repo "test"
-   create_file filename;
-  
+  init_repo "test";
+  create_file filename
 
 
 let setup_tracked_test filename =
    init_repo "test";
    create_file filename;
-   Plumbing.add [| filename |];
-   Plumbing.commit [|"-m"; "adding file for tracked test"|]
-   let () =
-     let op = open_out filename in
+   ignore (Plumbing.add [| filename |]);
+   ignore (Plumbing.commit [|"-m"; "adding file for tracked test"|]);
+   let op = open_out filename in
      Printf.fprintf op "%s\n" "Modify";
-     close_out op;
+     close_out op
 
 
 let setup_staged_test filename = 
    init_repo "test";
    create_file filename;
-   Plumbing.add [| filename |]
+   ignore (Plumbing.add [| filename |])
 
 let setup_tracked_and_staged_test filename =
    init_repo "test";
    create_file filename;
-   Plumbing.add [| filename |]
-   let () =
-     let op = open_out filename in
+   ignore (Plumbing.add [| filename |]);
+   let op = open_out filename in
      Printf.fprintf op "%s\n" "Modify";
-     close_out op;
+     close_out op
 
-
-
-let status_tests = 
-  [
-    get_untracked_test "One untracked file" (setup_untracked_test 
+let status_tests = [
+    get_untracked_test "One untracked file" (fun () -> setup_untracked_test 
     "untracked.txt") 
-    (rmr "test") Porcelain.status ["untracked.txt"]
+    (fun () -> rmr "test") (Porcelain.status ()) ["untracked.txt"];
 
-    get_tracked_test "One tracked file" (setup_tracked_test "tracked.txt") 
-    (rmr "test") Porcelain.status ["tracked.txt"]
+    get_tracked_test "One tracked file" (fun () -> setup_tracked_test "tracked.txt") 
+    (fun () -> rmr "test") (Porcelain.status ()) ["tracked.txt"];
 
-    get_staged_test "One staged file" (setup_staged_test "staged.txt")
-    (rmr "test") Porcelain.status ["staged.txt"]
+    get_staged_test "One staged file" (fun () -> setup_staged_test "staged.txt")
+    (fun () -> rmr "test") (Porcelain.status ()) ["staged.txt"]
   ]
-*)
 
 (** Tests for [Porcelain] module *)
-let porcelain_tests = [(* status_tests *)]
+let porcelain_tests = status_tests
 
 (** Tests for [Command.check_err] *)
 let check_err_tests = [
@@ -377,6 +369,6 @@ let command_tests =
 
 let suite =
   "test suite for ogit"
-  >::: List.flatten [ plumbing_tests; command_tests (*; porcelain_tests*) ]
+  >::: List.flatten [ plumbing_tests; command_tests ; status_tests]
 
 let _ = run_test_tt_main suite
