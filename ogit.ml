@@ -55,7 +55,14 @@ let cleanup () =
   Command.check_err (Curses.nocbreak ());
   Curses.endwin ()
 
+let run_git args =
+  List.iter print_endline (Plumbing.get_out (Plumbing.git args))
+
 let () =
+  if Array.length Sys.argv > 1
+  then
+    run_git (Array.sub Sys.argv 1 (Array.length Sys.argv - 1))
+  else
   try
     let win = init_curses () in
     run win ()
