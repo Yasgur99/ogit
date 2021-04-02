@@ -281,6 +281,7 @@ let get_untracked_test
     (exp_output : string list)
     (clean_up : unit -> unit) : test =
   name >:: fun _ ->
+    setup_func ();
     try
       let ans = (assert_equal exp_output (Porcelain.get_untracked arg) 
       ~printer:(pp_list pp_string) )in
@@ -292,23 +293,41 @@ let get_untracked_test
 
 
       
-
 let get_tracked_test
     (name : string)
     (setup_func : unit -> unit)
-    (stat : status_t)
-    (exp_output : string list) : test =
-  name >:: fun _ -> assert_equal exp_output (Porcelain.get_tracked stat);
-  rmr "test"
+    (arg : status_t)
+    (exp_output : string list)
+    (clean_up : unit -> unit) : test =
+  name >:: fun _ ->
+    setup_func ();
+    try
+      let ans = (assert_equal exp_output (Porcelain.get_tracked arg) 
+      ~printer:(pp_list pp_string) )in
+      clean_up ();
+      ans
+    with Failure f ->
+      clean_up ();
+      raise (Failure f)
+
+
 
 let get_staged_test
     (name : string)
     (setup_func : unit -> unit)
-    (stat : status_t)
-    (exp_output : string list) : test =
-  name >:: fun _ -> assert_equal exp_output (Porcelain.get_staged stat);
-  rmr "test"
-
+    (arg : status_t)
+    (exp_output : string list)
+    (clean_up : unit -> unit) : test =
+  name >:: fun _ ->
+    setup_func ();
+    try
+      let ans = (assert_equal exp_output (Porcelain.get_staged arg) 
+      ~printer:(pp_list pp_string) )in
+      clean_up ();
+      ans
+    with Failure f ->
+      clean_up ();
+      raise (Failure f)
 
   (* let get_tracked_and_staged_test
     (name : string)
@@ -321,18 +340,17 @@ let get_staged_test
 
 
 let create_file filename =
-   let op = open_out ("test/" ^ filename) in
+   let op = open_out (filename) in
    close_out op
 
 
 let setup_untracked_test filename =
-  init_repo "test";
-  Sys.chdir "test";
+  init_repo "testing";
   create_file filename
 
 
 let setup_tracked_test filename =
-   init_repo "test";
+   init_repo "testing";
    create_file filename;
    ignore (Plumbing.add [| filename |]);
    ignore (Plumbing.commit [|"-m"; "adding file for tracked test"|]);
@@ -342,12 +360,12 @@ let setup_tracked_test filename =
 
 
 let setup_staged_test filename = 
-   init_repo "test";
+   init_repo "testing";
    create_file filename;
    ignore (Plumbing.add [| filename |])
 
 let setup_tracked_and_staged_test filename =
-   init_repo "test";
+   init_repo "testing";
    create_file filename;
    ignore (Plumbing.add [| filename |]);
    let op = open_out filename in
@@ -357,13 +375,13 @@ let setup_tracked_and_staged_test filename =
 let status_tests = [
     get_untracked_test "One untracked file" (fun () -> setup_untracked_test 
       "untracked.txt") (Porcelain.status ()) ["untracked.txt"] 
-      (fun () -> rmr "test");
+      (fun () -> rmr "testing");
 
     get_tracked_test "One tracked file" (fun () -> setup_tracked_test "tracked.txt") 
-     (Porcelain.status ()) ["tracked.txt"];
+     (Porcelain.status ()) ["tracked.txt"] (fun () -> rmr "testing");
 
     get_staged_test "One staged file" (fun () -> setup_staged_test "staged.txt")
-     (Porcelain.status ()) ["staged.txt"]
+     (Porcelain.status ()) ["staged.txt"] (fun () -> rmr "testing");
   ]
 
 (** Tests for [Porcelain] module *)
