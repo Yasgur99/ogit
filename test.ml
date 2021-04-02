@@ -351,7 +351,7 @@ let setup_untracked_test filename =
   
 
 let setup_tracked_test filename =
-   init_repo "testing";
+   (*init_repo "testing";*)
    create_file filename;
    ignore (Plumbing.add [| filename |]);
    ignore (Plumbing.commit [|"-m"; "adding file for tracked test"|]);
