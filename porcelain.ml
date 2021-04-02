@@ -109,6 +109,7 @@ let add_to_staged_and_tracked status filename =
 
 let add_to_status_t status line =
   let filename = String.sub line 2 (String.length line - 2) in
+  let filename = String.trim filename in
   match String.sub line 0 2 with
   | "??" -> add_to_untracked status filename
   | " M" -> add_to_tracked status filename

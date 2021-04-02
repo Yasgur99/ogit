@@ -345,9 +345,9 @@ let create_file filename =
 
 
 let setup_untracked_test filename =
-  init_repo "testing";
-  create_file filename;
-  Sys.chdir "testing"
+  (*init_repo "testing";*)
+  create_file filename
+  (*Sys.chdir "testing"*)
   
 
 let setup_tracked_test filename =
@@ -375,8 +375,8 @@ let setup_tracked_and_staged_test filename =
 
 let status_tests = [
     get_untracked_test "One untracked file" (fun () -> setup_untracked_test 
-      "testing/untracked.txt") ["untracked.txt"] 
-      (fun () -> rmr "testing")
+      "untracked.txt") ["untracked.txt"] 
+      (fun () -> rmr "untracked.txt")
 
     (*get_tracked_test "One tracked file" (fun () -> setup_tracked_test "tracked.txt") 
      (Porcelain.status ()) ["tracked.txt"] (fun () -> rmr "testing");
