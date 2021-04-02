@@ -379,7 +379,7 @@ let status_tests = [
       (fun () -> rmr "untracked.txt");
 
     get_tracked_test "One tracked file" (fun () -> setup_tracked_test "tracked.txt") 
-      ["tracked.txt"] (fun () -> rmr "tracked.txt");
+      ["tracked.txt"] (fun () -> ignore (Plumbing.add [|"tracked.txt"|]);rmr "tracked.txt");
 
     get_staged_test "One staged file" (fun () -> setup_staged_test "staged.txt")
       ["staged.txt"] (fun () -> ignore (Plumbing.add [|"staged.txt"|]); rmr "staged.txt")
