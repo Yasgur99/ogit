@@ -382,7 +382,7 @@ let status_tests = [
       ["tracked.txt"] (fun () -> rmr "tracked.txt");
 
     get_staged_test "One staged file" (fun () -> setup_staged_test "staged.txt")
-      ["staged.txt"] (fun () -> rmr "staged.txt")
+      ["staged.txt"] (fun () -> ignore (Plumbing.add [|"staged.txt"|]); rmr "staged.txt")
   ]
 
 (** Tests for [Porcelain] module *)
