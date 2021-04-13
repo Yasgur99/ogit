@@ -28,7 +28,7 @@ finalcheck:
 		@bash check.sh final
 
 zip:
-		zip project.zip *.ml* *.json *.sh _tags .merlin .ocamlformat .ocamlinit LICENSE Makefile	
+		zip project.zip *.ml* *.json *.sh _tags .merlin .ocamlformat .ocamlinit LICENSE Makefile INSTALL.md
 			
 clean:
 		ocamlbuild -clean
