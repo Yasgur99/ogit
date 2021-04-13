@@ -1,6 +1,6 @@
 open Plumbing
 
-type commit_object = {
+type commit_t = {
   tree : string;
   (* is this the SHA-1? *)
   parents : string;
@@ -22,7 +22,7 @@ type object_type =
       sha1 : string;
       name : string;
     }
-  | Commit of { com_ob : commit_object }
+  | Commit of { com_ob : commit_t}
   | Tag of {
       obj_name : string;
       (*?*)

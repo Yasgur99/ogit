@@ -5,7 +5,7 @@
     commands *)
 
 (** The abstract type of a git commit object *)
-type commit_object
+type commit_t
 
 type object_id = string
 
@@ -58,7 +58,7 @@ val commit_tree : object_id -> string -> object_id
     in reverse chronological order if [h] is [None], otherwise the
     commit objects that are reachable by following parents of commit [h]
     in reverse chronological order *)
-val log : object_id option -> commit_object list
+val log : object_id option -> commit_t list
 
 (** [add fnames] adds the files with filenames [fnames] to the staging
     area *)
