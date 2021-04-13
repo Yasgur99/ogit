@@ -18,9 +18,9 @@ type branch_name = string
     and some functions that map the name of a key to an integer. *)
 type key = int
 
-(** The type [cmd] represents a git command that is decomposed into a
+(** The type [t] represents a git command that is decomposed into a
     verb and possibly a file_name, commit_msg, or branch_name. *)
-type cmd
+type t 
 
 (** Raised when an invalid command is parsed. *)
 exception Invalid_cmd of string
@@ -36,10 +36,7 @@ exception Program_terminate
 val check_err : Curses.err -> unit
 
 (** [parse_key key] parses a player's keystroke input into a [cmd] *)
-val parse_key : key -> cmd
-
-(** [exec cmd] executes [cmd]. *)
-val exec : cmd -> Curses.window -> unit
+val parse_key : key -> t 
 
 (** [string_of_cmd cmd] is the string representation of [cmd] *)
-val string_of_cmd : cmd -> string
+val string_of_cmd : t -> string
