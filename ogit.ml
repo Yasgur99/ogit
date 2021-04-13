@@ -1,11 +1,8 @@
-let run win initial_st =
-  let rec aux st win =
-    Renderer.render st win;
-    let key = Curses.wgetch win in
-    let cmd = Command.parse_key key in
-    aux (State.exec st cmd) win 
-  in 
-  aux initial_st win
+let rec run win st =
+  Renderer.render st win;
+  let key = Curses.wgetch win in
+  let cmd = Command.parse_key key in
+  run win (State.exec st cmd) 
 
 let run_git args =
   List.iter print_endline (Plumbing.get_out (Plumbing.git args))
