@@ -69,8 +69,9 @@ let commit_tree hash message = failwith "unimplemented"
 
 let commit_t_of_commit_oneline line = 
   let hash = String.sub line 0 6 in
-  let tuple = String.sub line 7 ((String.length line) -1) in
-  let msg = String.sub tuple 1 ((String.length tuple) - 13) in
+
+  print_endline (string_of_int (String.length line));
+  let msg = String.sub line 7 ((String.length line) - 21) in
   {
     tree = hash;
     msg = msg;
