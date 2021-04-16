@@ -1,3 +1,5 @@
+open Curses 
+
 let init_colors () =
   Command.check_err (Curses.start_color ());
   Command.check_err
@@ -29,6 +31,35 @@ let init_colors () =
   Command.check_err
     (Curses.init_pair 14 Curses.Color.black Curses.Color.white)
 
+let get_color color =
+  let colors =
+    [
+      "red";
+      "green";
+      "yellow";
+      "blue";
+      "magenta";
+      "cyan";
+      "white";
+      "red_back";
+      "green_back";
+      "yellow_back";
+      "blue_back";
+      "magenta_back";
+      "cyan_back";
+      "white_back";
+    ]
+  in
+  let rec r_color color n =
+    if List.nth colors n = color then n + 1 else r_color color (n + 1)
+  in
+  r_color color 0
+
+let enable_color color =
+  Curses.attron (Curses.A.color_pair (get_color color))
+
+let disable_color color =
+  Curses.attroff (Curses.A.color_pair (get_color color))
 
 let init () : Curses.window =
   let win = Curses.initscr () in
@@ -45,4 +76,16 @@ let cleanup () =
   Command.check_err (Curses.nocbreak ());
   Curses.endwin ()
 
-let render state win = ()
+let render_line win (line : State.printable)=
+  enable_color line.color;
+  Command.check_err (Curses.waddstr win line.text);
+  disable_color line.color
+
+let render_lines win lines =
+  List.iter (render_line win) lines
+
+let render state win = 
+  let lines = State.printable_of_state state in
+  render_lines win lines 
+
+  

@@ -9,3 +9,5 @@ val init : unit  -> Curses.window
 val cleanup : unit -> unit
 
 val render : State.t -> Curses.window ->  unit
+
+val get_color : string -> int

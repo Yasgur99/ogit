@@ -1,6 +1,12 @@
 
+
 (** The abstract type of values representing the git state *)
 type t
+
+type printable = {
+  text : string;
+  color : string;
+}
 
 (** [init_state dir] is the state of the current working tree belonging to the
     repo rooted at [dir]. *)
@@ -23,5 +29,8 @@ val push : t -> Porcelain.commit_t option
 val exec : t -> Command.t -> t
 
 (** TODO: magit also has support for stashed changes *)
+
+(** [printable_of_state st] is a printable represnation of the state *)
+val printable_of_state : t -> printable list
 
 

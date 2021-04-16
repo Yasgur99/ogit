@@ -154,3 +154,7 @@ let get_untracked status = status.untracked
 let get_tracked status = status.tracked
 
 let get_staged status = status.staged
+
+let string_of_commit_t c =
+  c.tree ^ " " ^ c.msg
+

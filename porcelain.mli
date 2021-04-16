@@ -21,8 +21,7 @@ type status_t
 val init : string option -> unit
 
 (** [hash_object f] calls [Plumbing.hash_object] with command line
-    argument -w, which stores data in file with filename [f] in a
-    repository's .git/objects directory and is the object that refers to
+    argument -w, which stores data in file with filename [f] in a repository's .git/objects directory and is the object that refers to
     that data object *)
 val hash_object : string -> object_id
 
@@ -59,6 +58,9 @@ val commit_tree : object_id -> string -> object_id
     commit objects that are reachable by following parents of commit [h]
     in reverse chronological order *)
 val log : object_id option -> commit_t list
+
+(** [string_of_commit c] is a commit in the form [hash msg] *)
+val string_of_commit_t : commit_t -> string
 
 (** [add fnames] adds the files with filenames [fnames] to the staging
     area *)
