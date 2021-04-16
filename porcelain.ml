@@ -3,10 +3,10 @@ open Plumbing
 type commit_t = {
   tree : string;
   (* is this the SHA-1? *)
-  parents : string;
+  (*parents : string;*)
   (* previous SHA-1 *)
-  author : string;
-  committer : string;
+  (*author : string;*)
+  (*committer : string;*)
   msg : string;
 }
 
@@ -67,11 +67,29 @@ let commit_tree hash message = failwith "unimplemented"
 (* Plumbing.commit_tree [| "-m"; message; hash|] *)
 (* not sure if -m "msg" comes before or after hash I see both in doc *)
 
-let log hash = failwith "unimplemented"
-(* match hash with | None -> Plumbing.log [||] | Some -> Plumbing,log [|
-   hash |] *)
+let commit_t_of_commit_oneline line = 
+  let hash = String.sub line 0 6 in
+  let tuple = String.sub line 7 ((String.length line) -1) in
+  let msg = String.sub tuple 1 ((String.length tuple) - 13) in
+  {
+    tree = hash;
+    msg = msg;
+  }
 
-let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)
+let commit_t_list_of_res res =
+  let lines = Plumbing.get_out res in
+  List.map commit_t_of_commit_oneline lines
+
+let log hash = 
+ match hash with
+   | None -> 
+     let res = Plumbing.log [||] in
+     commit_t_list_of_res res
+   | Some h -> 
+     let res = Plumbing.log [|h|] in
+     commit_t_list_of_res res
+
+  let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)
 
 let commit msg = failwith "unimplemented"
 (* Plumbing.commit [| "-m"; msg |] *)

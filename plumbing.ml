@@ -91,7 +91,7 @@ let commit_tree (args : string array) =
   fork_and_execv "git" (Array.append [|"git"; "commit-tree"|] args)
 
 let log (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "--no-pager"; "log"|] args)
+  fork_and_execv "git" (Array.append [|"git"; "--no-pager"; "log"; "--format=reference"|] args)
 
 let add (args : string array) =
   fork_and_execv "git" (Array.append [|"git"; "add"|] args)

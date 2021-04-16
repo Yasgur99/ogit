@@ -1,9 +1,9 @@
 
 type t = {
   commit_history : Porcelain.commit_t list;
-  head : Porcelain.commit_t;
+  (*head : Porcelain.commit_t;
   merge : Porcelain.commit_t option;
-  push : Porcelain.commit_t option;
+  push : Porcelain.commit_t option;*)
 }
 
 type printable = {
@@ -16,9 +16,9 @@ let get_head () = failwith "unimplemented"
 let init_state dir = 
   {
     commit_history = Porcelain.log None;
-    head = get_head ();
+    (*head = get_head ();
     merge = None;
-    push = None;
+    push = None;*)
   }
 
 let commit_history st = 
