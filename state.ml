@@ -30,7 +30,9 @@ let merge st = failwith "Unimplemented"
 
 let push st = failwith "Unimplemented"
 
-let exec st cmd = failwith "Unimplemented"
+let exec st = function
+  | Command.Quit -> raise Command.Program_terminate
+  | _ -> st
 
 let printable_of_commit_t c =
   {
@@ -38,8 +40,14 @@ let printable_of_commit_t c =
     color = "white";
   }
 
+let commit_header = {
+  text = "Recent Commits";
+  color = "yellow";
+}
+
 let printable_of_state st =
   let commits = commit_history st in 
-  List.map printable_of_commit_t commits
+  let commits_printable = List.map printable_of_commit_t commits in
+  commit_header :: commits_printable
 
 

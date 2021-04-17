@@ -1,4 +1,4 @@
-(** Parsing and execution of user commands. *)
+(** Parsing of user commands. *)
 
 (** The type [file_name] represents the file name that can be part of a
     user command. *)
@@ -20,7 +20,18 @@ type key = int
 
 (** The type [t] represents a git command that is decomposed into a
     verb and possibly a file_name, commit_msg, or branch_name. *)
-type t 
+type t =
+  | Add of file_name
+  | Remove of file_name
+  | Commit of commit_msg
+  | Branch of branch_name
+  | Checkout of branch_name
+  | Fetch
+  | Push
+  | Pull
+  | Status
+  | Init
+  | Quit
 
 (** Raised when an invalid command is parsed. *)
 exception Invalid_cmd of string
