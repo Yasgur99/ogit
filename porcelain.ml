@@ -84,10 +84,10 @@ let commit_t_list_of_res res =
 let log hash = 
  match hash with
    | None -> 
-     let res = Plumbing.log [||] in
+     let res = Plumbing.log [|"-10"|] in
      commit_t_list_of_res res
    | Some h -> 
-     let res = Plumbing.log [|h|] in
+     let res = Plumbing.log [|h; "-10"|] in
      commit_t_list_of_res res
 
   let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)

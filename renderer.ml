@@ -76,17 +76,16 @@ let cleanup () =
   Command.check_err (Curses.nocbreak ());
   Curses.endwin ()
 
-let incr_curs_yx win y x =
+let cursor_nextline win =
   let yx = Curses.getyx win in
-  let new_yx = ((fst yx) + 1, (snd yx) + 0) in
+  let new_yx = ((fst yx + 1) , 0) in 
   Command.check_err (Curses.wmove win (fst new_yx) (snd new_yx))
-
 
 let render_line win (line : State.printable)=
   enable_color line.color;
   Command.check_err (Curses.waddstr win line.text);
   disable_color line.color;
-  incr_curs_yx win 1 0
+  cursor_nextline win 
 
 let render_lines win lines =
   List.iter (render_line win) lines
