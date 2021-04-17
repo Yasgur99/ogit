@@ -1,4 +1,4 @@
-(** Parsing and execution of user commands. *)
+(** Parsing of user commands. *)
 
 (** The type [file_name] represents the file name that can be part of a
     user command. *)

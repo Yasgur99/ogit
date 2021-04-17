@@ -99,16 +99,6 @@ let exec_status win =
   disable_color "green_back";
   ()
 
-let exec c win =
-  match c with
-  (*| Add f -> Porcelain.add f | Remove f -> Porcelain.remove f | Commit
-    msg -> Porcelain.commit msg | Branch b -> Porcelain.branch b |
-    Checkout b -> Porcelain.checkout b | Fetch -> Porcelain.fetch | Push
-    -> Porcelain.push | Pull -> Porcelain.pull | Init -> Porcelain.init *)
-  | Status -> exec_status win
-  | Quit -> raise Program_terminate
-  | _ -> failwith "unimplemented command"
-
 let string_of_cmd cmd =
   match cmd with
   | Add _ -> "add"
