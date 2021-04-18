@@ -95,7 +95,10 @@ let log (args : string array) =
 
 let add (args : string array) =
   fork_and_execv "git" (Array.append [|"git"; "add"|] args)
-  
+
+let restore (args : string array) =
+  fork_and_execv "git" (Array.append [|"git"; "restore"|] args)
+ 
 let commit (args : string array) =
   fork_and_execv "git" (Array.append [|"git"; "commit"|] args)
 
