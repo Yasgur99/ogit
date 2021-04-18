@@ -33,4 +33,6 @@ val exec : t -> Command.t -> t
 (** [printable_of_state st] is a printable represnation of the state *)
 val printable_of_state : t -> printable list
 
+val get_user_curs_y : t -> int
 
+val set_user_curs_y : t -> int -> t

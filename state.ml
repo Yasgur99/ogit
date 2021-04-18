@@ -4,6 +4,7 @@ type t = {
   (*head : Porcelain.commit_t;
   merge : Porcelain.commit_t option;
   push : Porcelain.commit_t option;*)
+  user_curs_y : int;
 }
 
 type printable = {
@@ -19,6 +20,7 @@ let init_state dir =
     (*head = get_head ();
     merge = None;
     push = None;*)
+    user_curs_y = 0;
   }
 
 let commit_history st = 
