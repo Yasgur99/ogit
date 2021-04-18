@@ -66,6 +66,10 @@ val string_of_commit_t : commit_t -> string
     area *)
 val add : string list -> unit
 
+(** [restore_staged fnames] restores staged files [fnames] from the staging
+    area *)
+val restore_staged : string list -> unit
+
 (** [commit msg] commits the changes in the staging area with commit
     message [msg] *)
 val commit : string -> unit
