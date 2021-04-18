@@ -32,8 +32,19 @@ let merge st = failwith "Unimplemented"
 
 let push st = failwith "Unimplemented"
 
+
+let exec_add st f = 
+  Porcelain.add [f];
+  st
+
+let exec_unstage st f = 
+  Porcelain.restore_staged [f];
+  st
+
 let exec st = function
   | Command.Quit -> raise Command.Program_terminate
+  | Command.Stage f -> exec_add st f
+  | Command.Unstage f -> exec_unstage st f
   | _ -> st
 
 let printable_of_commit_t c =
