@@ -122,4 +122,4 @@ let exec st = function
   | Command.Stage -> exec_add st
   | Command.Unstage -> exec_unstage st
   | Command.Quit -> raise Command.Program_terminate
-  | _ -> st
+  | Command.Nop -> st
