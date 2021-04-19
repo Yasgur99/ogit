@@ -29,10 +29,10 @@ exception Program_terminate
 let check_err err = if err = true then () else raise Program_terminate
 
 let parse_key key =
-  if key = int_of_char 's' then Stage ("TODO")
-  else if key = int_of_char 'u' then Unstage ("TODO")
-  else if key = int_of_char 'k' then NavUp
-  else if key = int_of_char 'j' then NavDown
+  if key = int_of_char 's' then Stage "TODO"
+  else if key = int_of_char 'u' then Unstage "TODO"
+  else if key = Curses.Key.up then NavUp
+  else if key = Curses.Key.down then NavDown
   else if key = int_of_char 'q' then Quit
   else raise (Invalid_cmd ("Invalid command " ^ string_of_int key))
 

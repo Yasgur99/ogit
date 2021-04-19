@@ -57,6 +57,7 @@ let init () : Curses.window =
   check_err (Curses.cbreak ());
   check_err (Curses.noecho ());
   check_err (Curses.curs_set 0);
+  check_err (Curses.keypad win true);
   Curses.clear ();
   win
 
