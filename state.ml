@@ -19,9 +19,9 @@ let init_state dir =
   {
     commit_history = Porcelain.log None;
     (*head = get_head (); merge = None; push = None;*)
-    untracked = [];
-    tracked = [];
-    staged = [];
+    untracked = Porcelain.get_untracked (Porcelain.status ());
+    tracked = Porcelain.get_tracked (Porcelain.status ());
+    staged = Porcelain.get_staged (Porcelain.status ());
     user_curs_y = 0;
   }
 
