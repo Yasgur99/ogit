@@ -18,6 +18,8 @@ type t =
   | Status
   | Init
   | Quit
+  | NavUp
+  | NavDown
 
 exception Invalid_cmd of string
 
@@ -30,7 +32,9 @@ let check_err err = if err = true then () else raise Program_terminate
 let parse_key key =
   if key = int_of_char 's' then Status
   else if key = int_of_char 'q' then Quit
-  else raise (Invalid_cmd "Invalid command")
+  else if key = int_of_char 'u' then NavUp
+  else if key = int_of_char 'd' then NavDown
+  else raise (Invalid_cmd ("Invalid command " ^ string_of_int key))
 
 let incr_e1 pair =
   pair := (fst !pair + 1, snd !pair);
@@ -111,4 +115,6 @@ let string_of_cmd cmd =
   | Pull -> "pull"
   | Status -> "status"
   | Init -> "init"
+  | NavUp -> "up"
+  | NavDown -> "down"
   | Quit -> "quit"

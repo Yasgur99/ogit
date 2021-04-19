@@ -1,37 +1,25 @@
-open Curses 
+open Curses
 
-let check_err err = if err = true then () else raise Command.Program_terminate
+let check_err err =
+  if err = true then () else raise Command.Program_terminate
 
 let init_colors () =
   check_err (Curses.start_color ());
-  check_err
-    (Curses.init_pair 1 Curses.Color.red Curses.Color.black);
-  check_err
-    (Curses.init_pair 2 Curses.Color.green Curses.Color.black);
-  check_err
-    (Curses.init_pair 3 Curses.Color.yellow Curses.Color.black);
-  check_err
-    (Curses.init_pair 4 Curses.Color.blue Curses.Color.black);
-  check_err
-    (Curses.init_pair 5 Curses.Color.magenta Curses.Color.black);
-  check_err
-    (Curses.init_pair 6 Curses.Color.cyan Curses.Color.black);
-  check_err
-    (Curses.init_pair 7 Curses.Color.white Curses.Color.black);
-  check_err
-    (Curses.init_pair 8 Curses.Color.black Curses.Color.red);
-  check_err
-    (Curses.init_pair 9 Curses.Color.black Curses.Color.green);
-  check_err
-    (Curses.init_pair 10 Curses.Color.black Curses.Color.yellow);
-  check_err
-    (Curses.init_pair 11 Curses.Color.black Curses.Color.blue);
+  check_err (Curses.init_pair 1 Curses.Color.red Curses.Color.black);
+  check_err (Curses.init_pair 2 Curses.Color.green Curses.Color.black);
+  check_err (Curses.init_pair 3 Curses.Color.yellow Curses.Color.black);
+  check_err (Curses.init_pair 4 Curses.Color.blue Curses.Color.black);
+  check_err (Curses.init_pair 5 Curses.Color.magenta Curses.Color.black);
+  check_err (Curses.init_pair 6 Curses.Color.cyan Curses.Color.black);
+  check_err (Curses.init_pair 7 Curses.Color.white Curses.Color.black);
+  check_err (Curses.init_pair 8 Curses.Color.black Curses.Color.red);
+  check_err (Curses.init_pair 9 Curses.Color.black Curses.Color.green);
+  check_err (Curses.init_pair 10 Curses.Color.black Curses.Color.yellow);
+  check_err (Curses.init_pair 11 Curses.Color.black Curses.Color.blue);
   check_err
     (Curses.init_pair 12 Curses.Color.black Curses.Color.magenta);
-  check_err
-    (Curses.init_pair 13 Curses.Color.black Curses.Color.cyan);
-  check_err
-    (Curses.init_pair 14 Curses.Color.black Curses.Color.white)
+  check_err (Curses.init_pair 13 Curses.Color.black Curses.Color.cyan);
+  check_err (Curses.init_pair 14 Curses.Color.black Curses.Color.white)
 
 let get_color color =
   let colors =
@@ -80,21 +68,40 @@ let cleanup () =
 
 let cursor_nextline win =
   let yx = Curses.getyx win in
-  let new_yx = ((fst yx + 1) , 0) in 
+  let new_yx = (fst yx + 1, 0) in
   check_err (Curses.wmove win (fst new_yx) (snd new_yx))
 
-let render_line win (line : State.printable)=
-  enable_color line.color;
-  check_err (Curses.waddstr win line.text);
-  disable_color line.color;
-  cursor_nextline win 
+let cursor_reset win = check_err (Curses.wmove win 0 0)
 
-let render_lines win lines =
-  List.iter (render_line win) lines
+let render_user_line win (line : State.printable) =
+  enable_color "cyan_back";
+  try
+    let fst_char = String.sub line.text 0 1 in
+    let rest = String.sub line.text 1 (String.length line.text - 1) in
+    check_err (Curses.waddstr win fst_char);
+    disable_color "cyan_back";
+    enable_color line.color;
+    check_err (Curses.waddstr win rest);
+    disable_color line.color;
+    cursor_nextline win
+  with _ ->
+    enable_color "cyan_back";
+    check_err (Curses.waddstr win line.text);
+    disable_color "cyan_back"
 
-let render state win = 
+let render_line win user_curs_y (line : State.printable) =
+  let yx = Curses.getyx win in
+  if fst yx = user_curs_y then render_user_line win line
+  else (
+    enable_color line.color;
+    check_err (Curses.waddstr win line.text);
+    disable_color line.color;
+    cursor_nextline win)
+
+let render_lines win lines user_curs_y =
+  List.iter (render_line win user_curs_y) lines
+
+let render state win =
   let lines = State.printable_of_state state in
-  render_lines win lines;
+  render_lines win lines (State.get_user_curs_y state);
   check_err (Curses.wrefresh win)
-
-  
