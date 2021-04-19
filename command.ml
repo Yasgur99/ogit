@@ -15,7 +15,6 @@ type t =
   | Fetch
   | Push
   | Pull
-  | Status
   | Init
   | Quit
   | NavUp
@@ -30,10 +29,11 @@ exception Program_terminate
 let check_err err = if err = true then () else raise Program_terminate
 
 let parse_key key =
-  if key = int_of_char 's' then Status
+  if key = int_of_char 's' then Stage ("TODO")
+  else if key = int_of_char 'u' then Unstage ("TODO")
   else if key = int_of_char 'q' then Quit
-  else if key = int_of_char 'u' then NavUp
-  else if key = int_of_char 'd' then NavDown
+  else if key = int_of_char 'k' then NavUp
+  else if key = int_of_char 'j' then NavDown
   else raise (Invalid_cmd ("Invalid command " ^ string_of_int key))
 
 let string_of_cmd cmd =
@@ -46,7 +46,6 @@ let string_of_cmd cmd =
   | Fetch -> "fetch"
   | Push -> "push"
   | Pull -> "pull"
-  | Status -> "status"
   | Init -> "init"
   | NavUp -> "up"
   | NavDown -> "down"
