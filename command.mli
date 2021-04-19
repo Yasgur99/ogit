@@ -21,8 +21,8 @@ type key = int
 (** The type [t] represents a git command that is decomposed into a verb
     and possibly a file_name, commit_msg, or branch_name. *)
 type t =
-  | Add of file_name
-  | Remove of file_name
+  | Stage of file_name
+  | Unstage of file_name
   | Commit of commit_msg
   | Branch of branch_name
   | Checkout of branch_name

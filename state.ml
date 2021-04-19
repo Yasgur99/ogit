@@ -33,10 +33,20 @@ let set_user_curs_y st i =
   let new_y = if get_user_curs_y st = 0 then 0 else i in
   { commit_history = st.commit_history; user_curs_y = new_y }
 
+let exec_add st f =
+  Porcelain.add [ f ];
+  st
+
+let exec_unstage st f =
+  Porcelain.restore_staged [ f ];
+  st
+
 let exec st = function
   | Command.Quit -> raise Command.Program_terminate
   | Command.NavUp -> set_user_curs_y st (get_user_curs_y st - 1)
   | Command.NavDown -> set_user_curs_y st (get_user_curs_y st + 1)
+  | Command.Stage f -> exec_add st f
+  | Command.Unstage f -> exec_unstage st f
   | _ -> st
 
 let printable_of_commit_t c =

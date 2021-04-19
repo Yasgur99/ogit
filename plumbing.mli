@@ -51,6 +51,9 @@ val log : string array -> result
 (** [add args] calls git add with arguments [args] *)
 val add : string array -> result
 
+(** [restore args] calls git restore with arguments [args] *)
+val restore: string array -> result
+
 (** [commit] calls git commit with arguments [args] *)
 val commit : string array -> result
 

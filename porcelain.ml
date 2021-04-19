@@ -90,7 +90,12 @@ let log hash =
      let res = Plumbing.log [|h; "-10"|] in
      commit_t_list_of_res res
 
-  let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)
+let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)
+
+let restore_staged files = 
+  let args_lst = "--staged" :: files in
+  let args_arr = Array.of_list args_lst  in
+  ignore (Plumbing.restore args_arr)
 
 let commit msg = failwith "unimplemented"
 (* Plumbing.commit [| "-m"; msg |] *)
