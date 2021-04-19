@@ -7,8 +7,8 @@ type branch_name = string
 type key = int
 
 type t =
-  | Stage of file_name
-  | Unstage of file_name
+  | Stage 
+  | Unstage 
   | Commit of commit_msg
   | Branch of branch_name
   | Checkout of branch_name
@@ -29,8 +29,8 @@ exception Program_terminate
 let check_err err = if err = true then () else raise Program_terminate
 
 let parse_key key =
-  if key = int_of_char 's' then Stage "TODO"
-  else if key = int_of_char 'u' then Unstage "TODO"
+  if key = int_of_char 's' then Stage 
+  else if key = int_of_char 'u' then Unstage 
   else if key = int_of_char 'k' || key = Curses.Key.up then NavUp
   else if key = int_of_char 'j' || key = Curses.Key.down then NavDown
   else if key = int_of_char 'q' then Quit
@@ -38,8 +38,8 @@ let parse_key key =
 
 let string_of_cmd cmd =
   match cmd with
-  | Stage _ -> "stage"
-  | Unstage _ -> "unstage"
+  | Stage -> "stage"
+  | Unstage -> "unstage"
   | Commit _ -> "commit"
   | Branch _ -> "branch"
   | Checkout _ -> "checkout"

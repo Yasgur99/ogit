@@ -1,3 +1,4 @@
+(** The representation type for state. *)
 type t = {
   commit_history : Porcelain.commit_t list;
   (*head : Porcelain.commit_t; merge : Porcelain.commit_t option; push :
@@ -13,8 +14,9 @@ type printable = {
   color : string;
 }
 
-let get_head () = failwith "unimplemented"
-
+(** [init_state dir] is the state of the directory [dir]. The cursor
+    points to the first line of the terminal.
+    Requires [dir] is a directory containing a valid .git directory *)
 let init_state dir =
   {
     commit_history = Porcelain.log None;
@@ -25,8 +27,22 @@ let init_state dir =
     user_curs_y = 0;
   }
 
-let commit_history st = st.commit_history
+(** [update_git_state st] updates commit_history, untracked, tracked
+    and staged files according to the git directory *)
+let update_git_state st =
+  {
+    commit_history = Porcelain.log None;
+    (*head = get_head (); merge = None; push = None;*)
+    untracked = Porcelain.get_untracked (Porcelain.status ());
+    tracked = Porcelain.get_tracked (Porcelain.status ());
+    staged = Porcelain.get_staged (Porcelain.status ());
+    user_curs_y = st.user_curs_y;
+  }
 
+
+(*********************************************************)
+(* Access/Mutate state *)
+(*********************************************************)
 let head st = failwith "Unimplemented"
 
 let merge st = failwith "Unimplemented"
@@ -38,6 +54,8 @@ let untracked st = st.untracked
 let tracked st = st.tracked
 
 let staged st = st.staged
+
+let commit_history st = st.commit_history
 
 let get_user_curs_y st = st.user_curs_y
 
@@ -51,24 +69,8 @@ let set_user_curs_y st i =
     user_curs_y = new_y;
   }
 
-let exec_add st f =
-  Porcelain.add [ f ];
-  st
-
-let exec_unstage st f =
-  Porcelain.restore_staged [ f ];
-  st
-
-let exec st = function
-  | Command.Quit -> raise Command.Program_terminate
-  | Command.NavUp -> set_user_curs_y st (get_user_curs_y st - 1)
-  | Command.NavDown -> set_user_curs_y st (get_user_curs_y st + 1)
-  | Command.Stage f -> exec_add st f
-  | Command.Unstage f -> exec_unstage st f
-  | _ -> st
-
 (*********************************************************)
-(* Printable stuff *)
+(* Printable *)
 (*********************************************************)
 let printable_of_file f = { text = f; color = "white" }
 
@@ -95,3 +97,32 @@ let printable_of_state st =
   @ (staged_header :: staged_printable)
   @ [blank_line]
   @ (commit_header :: commits_printable)
+
+(*********************************************************)
+(* Exec *)
+(*********************************************************)
+
+let get_curs_content st =
+  let printables = printable_of_state st in
+  let printable = List.nth printables st.user_curs_y in
+  printable.text
+
+let exec_add st =
+  let curs_content = get_curs_content st in
+  Porcelain.add [ curs_content ];
+  update_git_state st 
+
+let exec_unstage st =
+  let curs_content = get_curs_content st in
+  Porcelain.restore_staged [ curs_content ];
+  update_git_state st 
+
+let exec st = function
+  | Command.Quit -> raise Command.Program_terminate
+  | Command.NavUp -> set_user_curs_y st (get_user_curs_y st - 1)
+  | Command.NavDown -> set_user_curs_y st (get_user_curs_y st + 1)
+  | Command.Stage -> exec_add st
+  | Command.Unstage -> exec_unstage st
+  | _ -> st
+
+
