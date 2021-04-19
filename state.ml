@@ -42,8 +42,7 @@ let staged st = st.staged
 let get_user_curs_y st = st.user_curs_y
 
 let set_user_curs_y st i =
-<<<<<<< HEAD
-  let new_y = if get_user_curs_y st = 0 then 0 else i in
+  let new_y = if i < 0 then 0 else i in
   {
     commit_history = st.commit_history;
     untracked = st.untracked;
@@ -51,10 +50,6 @@ let set_user_curs_y st i =
     staged = st.staged;
     user_curs_y = new_y;
   }
-=======
-  let new_y = if i < 0 then 0 else i in
-  { commit_history = st.commit_history; user_curs_y = new_y }
->>>>>>> ed78d72af219191911f0aa4c8863d09341366994
 
 let exec_add st f =
   Porcelain.add [ f ];
