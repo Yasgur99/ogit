@@ -26,9 +26,7 @@ type t =
   | Quit
   | NavUp
   | NavDown
-
-(** Raised when an invalid command is parsed. *)
-exception Invalid_cmd of string
+  | Nop 
 
 (** Raised when program should be terminated *)
 exception Program_terminate
