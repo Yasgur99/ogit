@@ -1,4 +1,4 @@
-MODULES=plumbing porcelain command state renderer ogit 
+MODULES=plumbing porcelain state command renderer ogit 
 OBJECTS=$(MODULES:=.cmo)
 BYTES=$(MODULES:=.byte)
 MLS=$(MODULES:=.ml)

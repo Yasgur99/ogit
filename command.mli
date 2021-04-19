@@ -29,7 +29,6 @@ type t =
   | Fetch
   | Push
   | Pull
-  | Status
   | Init
   | Quit
   | NavUp
