@@ -67,9 +67,9 @@ let exec st = function
   | Command.Unstage f -> exec_unstage st f
   | _ -> st
 
-let printable_of_commit_t c =
-  { text = Porcelain.string_of_commit_t c; color = "white" }
-
+(*********************************************************)
+(* Printable stuff *)
+(*********************************************************)
 let printable_of_file f = { text = f; color = "white" }
 
 let commit_header = { text = "Recent Commits"; color = "yellow" }
@@ -80,13 +80,18 @@ let tracked_header = { text = "Tracked"; color = "yellow" }
 
 let staged_header = { text = "Staged"; color = "yellow" }
 
+let blank_line = { text = ""; color = "white" }
+
+let printable_of_commit_t c =
+  { text = Porcelain.string_of_commit_t c; color = "white" }
+
 let printable_of_state st =
-  let commits = commit_history st in
-  let commits_printable = List.map printable_of_commit_t commits in
+  let commits_printable = List.map printable_of_commit_t (commit_history st) in
   let untracked_printable = List.map printable_of_file (untracked st) in
   let tracked_printable = List.map printable_of_file (tracked st) in
   let staged_printable = List.map printable_of_file (staged st) in
   (untracked_header :: untracked_printable)
   @ (tracked_header :: tracked_printable)
   @ (staged_header :: staged_printable)
+  @ [blank_line]
   @ (commit_header :: commits_printable)
