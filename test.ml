@@ -1,6 +1,7 @@
 open OUnit2
 open Plumbing
 open Porcelain
+open Renderer
 (** Some Helper Methods *)
 
 (** [pp_string s] pretty-prints string [s]. *)
@@ -63,11 +64,12 @@ let plumbing_test
     assert_equal res (Plumbing.get_out (f args))
 
 (** [check_err_raises_test n err] constructs an OUnit test named [n] that asserts [Command.check_err] raises [Command.Program_terminate] *)
-let check_err_raises_test
+(*let check_err_raises_test
   (name : string)
   (err : bool) : test =
 name >:: fun _ ->
-assert_raises (Command.Program_terminate) (fun () -> Command.check_err err)
+assert_raises (Command.Program_terminate) (fun () -> Renderer.check_err err)
+  *)
 
 (** [exec_test cmd] constructs an OUnit test named [n] that asserts 
     [Command.exec cmd] *)
@@ -80,12 +82,12 @@ assert_equal exp ""
 
 
 (** [check_err_test err] constructs an OUnit test named [n] that asserts [Command.check_err] is unit *)
-let check_err_test
+(*let check_err_test
   (name : string)
   (err : bool) : test =
 name >:: fun _ ->
-assert_equal (Command.check_err err) ()
-
+assert_equal (Renderer.check_err err) ()
+*)
 (** Tests for [Plumbing.init] *)
 let init_tests =
   [
@@ -384,13 +386,6 @@ let parse_key_test
   (exp: string) : test =
 name >:: fun _ ->
 assert_equal exp (Command.string_of_cmd (Command.parse_key key))
-
-(** [parse_key_raises_test n key] constructs an OUnit test named [n] that asserts [Command.parse_key] raises [Command.Invalid_cmd] *)
-let parse_key_raises_test
-  (name : string)
-  (key : int) : test =
-name >:: fun _ ->
-assert_raises (Command.Invalid_cmd "Invalid command") (fun () -> Command.parse_key key)
 
 (** Tests for [Command.parse_key] *)
 let parse_key_tests = [
