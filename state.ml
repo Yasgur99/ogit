@@ -63,4 +63,11 @@ let printable_of_state st =
   let commits_printable = List.map printable_of_commit_t commits in
   commit_header :: commits_printable
 
+let get_user_curs_y st = st.user_curs_y
+
+let set_user_curs_y st y =
+  {
+    commit_history = st.commit_history;
+    user_curs_y = y;
+  }
 
