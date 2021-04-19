@@ -22,7 +22,7 @@ type object_type =
       sha1 : string;
       name : string;
     }
-  | Commit of { com_ob : commit_t}
+  | Commit of { com_ob : commit_t }
   | Tag of {
       obj_name : string;
       (*?*)
@@ -38,28 +38,36 @@ type status_t = {
 }
 
 let init (dir : string option) : unit = failwith "Unimplemented"
+
 (* match dir with | None -> Plumbing.init [||] | Some _ -> Plumbing.init
    [| dir |] *)
 
 let hash_object file : object_id = failwith "unimplemented"
+
 (* Plumbing.hash_object [| "-w"; file |] *)
 
 let cat_file hash = failwith "unimplemented"
+
 (* Plumbing.cat_file [| "-p"; hash |]*)
 
 let cat_file_type hash = failwith "unimplemented"
+
 (* Plumbing.cat_file [|"-t"; hash|] *)
 
 let update_index hash file = failwith "unimplemented"
+
 (* Plumbing.update_index [| hash; file|] (* not sure of this one *) *)
 
 let write_tree () = failwith "Unimplemented"
+
 (* Plumbing.write_tree [||] *)
 
 let read_tree hash = failwith "unimplemented"
+
 (* Plumbing.read_tree [| hash |] *)
 
 let read_tree_prefix hash prefix = failwith "unimplemented"
+
 (* Plumbing.read_tree [| prefix; hash |] *)
 
 let commit_tree hash message = failwith "unimplemented"
@@ -67,37 +75,35 @@ let commit_tree hash message = failwith "unimplemented"
 (* Plumbing.commit_tree [| "-m"; message; hash|] *)
 (* not sure if -m "msg" comes before or after hash I see both in doc *)
 
-let commit_t_of_commit_oneline line = 
+let commit_t_of_commit_oneline line =
   let hash = String.sub line 0 6 in
 
   print_endline (string_of_int (String.length line));
-  let msg = String.sub line 7 ((String.length line) - 21) in
-  {
-    tree = hash;
-    msg = msg;
-  }
+  let msg = String.sub line 7 (String.length line - 20) ^ ")" in
+  { tree = hash; msg }
 
 let commit_t_list_of_res res =
   let lines = Plumbing.get_out res in
   List.map commit_t_of_commit_oneline lines
 
-let log hash = 
- match hash with
-   | None -> 
-     let res = Plumbing.log [|"-10"|] in
-     commit_t_list_of_res res
-   | Some h -> 
-     let res = Plumbing.log [|h; "-10"|] in
-     commit_t_list_of_res res
+let log hash =
+  match hash with
+  | None ->
+      let res = Plumbing.log [| "-10" |] in
+      commit_t_list_of_res res
+  | Some h ->
+      let res = Plumbing.log [| h; "-10" |] in
+      commit_t_list_of_res res
 
 let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)
 
-let restore_staged files = 
+let restore_staged files =
   let args_lst = "--staged" :: files in
-  let args_arr = Array.of_list args_lst  in
+  let args_arr = Array.of_list args_lst in
   ignore (Plumbing.restore args_arr)
 
 let commit msg = failwith "unimplemented"
+
 (* Plumbing.commit [| "-m"; msg |] *)
 
 let show () = failwith "unimplemented" (*Plumbing.show [||]*)
@@ -179,6 +185,4 @@ let get_tracked status = status.tracked
 
 let get_staged status = status.staged
 
-let string_of_commit_t c =
-  c.tree ^ " " ^ c.msg
-
+let string_of_commit_t c = c.tree ^ " " ^ c.msg
