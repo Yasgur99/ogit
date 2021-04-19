@@ -74,21 +74,22 @@ let cursor_nextline win =
 
 let cursor_reset win = check_err (Curses.wmove win 0 0)
 
-let render_user_line win (line : State.printable) =
+let rec render_user_line win (line : State.printable) =
   enable_color "cyan_back";
-  try
-    let fst_char = String.sub line.text 0 1 in
-    let rest = String.sub line.text 1 (String.length line.text - 1) in
-    check_err (Curses.waddstr win fst_char);
-    disable_color "cyan_back";
-    enable_color line.color;
-    check_err (Curses.waddstr win rest);
-    disable_color line.color;
-    cursor_nextline win
-  with _ ->
-    enable_color "cyan_back";
-    check_err (Curses.waddstr win line.text);
-    disable_color "cyan_back"
+  let fst_char =
+    if String.length line.text = 0 then " "
+    else String.sub line.text 0 1
+  in
+  let rest =
+    if String.length line.text <= 1 then " "
+    else String.sub line.text 1 (String.length line.text - 1)
+  in
+  check_err (Curses.waddstr win fst_char);
+  disable_color "cyan_back";
+  enable_color line.color;
+  check_err (Curses.waddstr win rest);
+  disable_color line.color;
+  cursor_nextline win
 
 let render_line win curs (line : State.printable) =
   let yx = Curses.getyx win in
@@ -99,8 +100,7 @@ let render_line win curs (line : State.printable) =
     disable_color line.color;
     cursor_nextline win)
 
-let render_lines win lines curs =
-  List.iter (render_line win curs) lines
+let render_lines win lines curs = List.iter (render_line win curs) lines
 
 let render state win =
   let lines = State.printable_of_state state in
