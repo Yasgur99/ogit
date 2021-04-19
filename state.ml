@@ -118,11 +118,11 @@ let exec_unstage st =
   update_git_state st 
 
 let exec st = function
-  | Command.Quit -> raise Command.Program_terminate
   | Command.NavUp -> set_user_curs_y st (get_user_curs_y st - 1)
   | Command.NavDown -> set_user_curs_y st (get_user_curs_y st + 1)
   | Command.Stage -> exec_add st
   | Command.Unstage -> exec_unstage st
+  | Command.Quit -> raise Command.Program_terminate
   | _ -> st
 
 
