@@ -104,4 +104,5 @@ let render_lines win lines user_curs_y =
 let render state win =
   let lines = State.printable_of_state state in
   render_lines win lines (State.get_user_curs_y state);
-  check_err (Curses.wrefresh win)
+  check_err (Curses.wrefresh win);
+  check_err (Curses.wmove win 0 0)
