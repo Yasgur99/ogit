@@ -6,7 +6,7 @@ type t = {
   untracked : string list;
   tracked : string list;
   staged : string list;
-  user_curs_y : int;
+  curs : int;
 }
 
 type printable = {
@@ -24,19 +24,18 @@ let init_state dir =
     untracked = Porcelain.get_untracked (Porcelain.status ());
     tracked = Porcelain.get_tracked (Porcelain.status ());
     staged = Porcelain.get_staged (Porcelain.status ());
-    user_curs_y = 0;
+    curs = 0;
   }
 
 (** [update_git_state st] updates commit_history, untracked, tracked
     and staged files according to the git directory *)
 let update_git_state st =
   {
-    commit_history = Porcelain.log None;
-    (*head = get_head (); merge = None; push = None;*)
+    commit_history = Porcelain.log None; (*head = get_head (); merge = None; push = None;*)
     untracked = Porcelain.get_untracked (Porcelain.status ());
     tracked = Porcelain.get_tracked (Porcelain.status ());
     staged = Porcelain.get_staged (Porcelain.status ());
-    user_curs_y = st.user_curs_y;
+    curs = st.curs;
   }
 
 
@@ -57,16 +56,16 @@ let staged st = st.staged
 
 let commit_history st = st.commit_history
 
-let get_user_curs_y st = st.user_curs_y
+let get_curs st = st.curs
 
-let set_user_curs_y st i =
+let set_curs st i =
   let new_y = if i < 0 then 0 else i in
   {
     commit_history = st.commit_history;
     untracked = st.untracked;
     tracked = st.tracked;
     staged = st.staged;
-    user_curs_y = new_y;
+    curs = new_y;
   }
 
 (*********************************************************)
@@ -104,7 +103,7 @@ let printable_of_state st =
 
 let get_curs_content st =
   let printables = printable_of_state st in
-  let printable = List.nth printables st.user_curs_y in
+  let printable = List.nth printables st.curs in
   printable.text
 
 let exec_add st =
@@ -118,11 +117,9 @@ let exec_unstage st =
   update_git_state st 
 
 let exec st = function
-  | Command.NavUp -> set_user_curs_y st (get_user_curs_y st - 1)
-  | Command.NavDown -> set_user_curs_y st (get_user_curs_y st + 1)
+  | Command.NavUp -> set_curs st (get_curs st - 1)
+  | Command.NavDown -> set_curs st (get_curs st + 1)
   | Command.Stage -> exec_add st
   | Command.Unstage -> exec_unstage st
   | Command.Quit -> raise Command.Program_terminate
-  | _ -> st
-
-
+  | Command.Nop -> st

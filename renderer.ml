@@ -90,20 +90,20 @@ let render_user_line win (line : State.printable) =
     check_err (Curses.waddstr win line.text);
     disable_color "cyan_back"
 
-let render_line win user_curs_y (line : State.printable) =
+let render_line win curs (line : State.printable) =
   let yx = Curses.getyx win in
-  if fst yx = user_curs_y then render_user_line win line
+  if fst yx = curs then render_user_line win line
   else (
     enable_color line.color;
     check_err (Curses.waddstr win line.text);
     disable_color line.color;
     cursor_nextline win)
 
-let render_lines win lines user_curs_y =
-  List.iter (render_line win user_curs_y) lines
+let render_lines win lines curs =
+  List.iter (render_line win curs) lines
 
 let render state win =
   let lines = State.printable_of_state state in
-  render_lines win lines (State.get_user_curs_y state);
+  render_lines win lines (State.get_curs state);
   check_err (Curses.wrefresh win);
   check_err (Curses.wmove win 0 0)

@@ -1,8 +1,8 @@
-
-
 (** The abstract type of values representing the git state *)
 type t
 
+(** The representation type that specifies what [color] [text]
+    should be printed as. *)
 type printable = {
   text : string;
   color : string;
@@ -28,11 +28,12 @@ val push : t -> Porcelain.commit_t option
 (** [exec st c] is the state after executing command [c] from state [st]. *)
 val exec : t -> Command.t -> t
 
-(** TODO: magit also has support for stashed changes *)
-
 (** [printable_of_state st] is a printable represnation of the state *)
 val printable_of_state : t -> printable list
 
-val get_user_curs_y : t -> int
+(** [get_curs st] is the y index of the position into state. *)
+val get_curs : t -> int
 
-val set_user_curs_y : t -> int -> t
+(** [set_curs st y] is the state whose cursor is [y]. The rest
+    of the state says the same. *)
+val set_curs : t -> int -> t
