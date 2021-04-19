@@ -123,5 +123,3 @@ let exec st = function
   | Command.Unstage -> exec_unstage st
   | Command.Quit -> raise Command.Program_terminate
   | _ -> st
-
-

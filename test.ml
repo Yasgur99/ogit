@@ -378,9 +378,28 @@ let porcelain_tests = status_tests
 (*****************************************************)
 (* State Tests *)
 (*****************************************************)
+
+let exec_test
+  (name : string) : test =
+name >:: fun _ ->
+assert_equal true false
+
 let init_state_tests = []
 let commit_history_tests = []
-let exec_tests = []
+let exec_tests = [
+  exec_test "stage staged file";
+  exec_test "stage untracked file";
+  exec_test "stage tracked file";
+  exec_test "unstage staged file back to tracked";
+  exec_test "unstage file back to untracked";
+  exec_test "stage while not on file";
+  exec_test "navup at top of file";
+  exec_test "navup in middle of file";
+  exec_test "navdown at bottom of file";
+  exec_test "navdown in middle of file";
+  exec_test "quit"
+]
+
 let printable_of_state_tests = []
 let get_curs_tests = []
 let set_curs_tests = []
