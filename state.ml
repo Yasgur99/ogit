@@ -30,7 +30,7 @@ let push st = failwith "Unimplemented"
 let get_user_curs_y st = st.user_curs_y
 
 let set_user_curs_y st i =
-  let new_y = if get_user_curs_y st = 0 then 0 else i in
+  let new_y = if i < 0 then 0 else i in
   { commit_history = st.commit_history; user_curs_y = new_y }
 
 let exec_add st f =
