@@ -95,7 +95,9 @@ let log hash =
       let res = Plumbing.log [| h; "-10" |] in
       commit_t_list_of_res res
 
-let add files = failwith "unimplemented" (*Plumbing.add [| files |]*)
+let add files = 
+  let args_arr = Array.of_list files in 
+  ignore (Plumbing.add args_arr)
 
 let restore_staged files =
   let args_lst = "--staged" :: files in
