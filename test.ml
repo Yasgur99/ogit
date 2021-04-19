@@ -69,26 +69,11 @@ let check_err_raises_test
 name >:: fun _ ->
 assert_raises (Command.Program_terminate) (fun () -> Command.check_err err)
 
-(** [parse_key_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key k] is exp*)
-let parse_key_test
-  (name : string)
-  (key : int)
-  (exp: string) : test =
-name >:: fun _ ->
-assert_equal exp (Command.string_of_cmd (Command.parse_key key))
-
-(** [parse_key_raises_test n key] constructs an OUnit test named [n] that asserts [Command.parse_key] raises [Command.Invalid_cmd] *)
-let parse_key_raises_test
-  (name : string)
-  (key : int) : test =
-name >:: fun _ ->
-assert_raises (Command.Invalid_cmd "Invalid command") (fun () -> Command.parse_key key)
-
 (** [exec_test cmd] constructs an OUnit test named [n] that asserts 
     [Command.exec cmd] *)
 let exec_test
   (name : string)
-  (cmd : Command.cmd)
+  (cmd : Command.t)
   (exp: string) : test =
 name >:: fun _ ->
 assert_equal exp ""
@@ -388,34 +373,43 @@ let status_tests = [
 (** Tests for [Porcelain] module *)
 let porcelain_tests = status_tests
 
-(** Tests for [Command.check_err] *)
-let check_err_tests = [
-  check_err_raises_test "false (an error occured)" false;
-  check_err_test "true (an error did not occur)" true
-]
+(*****************************************************)
+(* Command Tests *)
+(*****************************************************)
+
+(** [parse_key_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key k] is exp*)
+let parse_key_test
+  (name : string)
+  (key : int)
+  (exp: string) : test =
+name >:: fun _ ->
+assert_equal exp (Command.string_of_cmd (Command.parse_key key))
+
+(** [parse_key_raises_test n key] constructs an OUnit test named [n] that asserts [Command.parse_key] raises [Command.Invalid_cmd] *)
+let parse_key_raises_test
+  (name : string)
+  (key : int) : test =
+name >:: fun _ ->
+assert_raises (Command.Invalid_cmd "Invalid command") (fun () -> Command.parse_key key)
 
 (** Tests for [Command.parse_key] *)
 let parse_key_tests = [
-  parse_key_test "s is status" (int_of_char 's') "status";
+  parse_key_test "s is stage" (int_of_char 's') "stage";
+  parse_key_test "u is unstage" (int_of_char 'u') "unstage";
+  parse_key_test "k is NavUp" (int_of_char 'k') "navup";
+  parse_key_test "j is NavDown" (int_of_char 'j') "navdown";
+  parse_key_test "Up is NavUp" (Curses.Key.up) "navup";
+  parse_key_test "Down is NavDown" (Curses.Key.down) "navdown";
   parse_key_test "q is quit" (int_of_char 'q') "quit";
-  parse_key_raises_test "unsupported raises Invalid_cmd" 9999
-]
-
-(** Tests for [Command.exec] *)
-let exec_tests = [
-  exec_test "exec status" (Command.parse_key (int_of_char 's')) "";
-  exec_test "exec quit" (Command.parse_key (int_of_char 'q')) ""
+  parse_key_test "unsupported is nop" (int_of_char '[') "nop"
 ]
 
 (** Tests for [Command] module *)
 let command_tests =
-  check_err_tests
-  @ parse_key_tests
-  @ exec_tests
-
+   parse_key_tests
 
 let suite =
   "test suite for ogit"
-  >::: List.flatten [ plumbing_tests; command_tests ; status_tests]
+  >::: List.flatten [ command_tests; (*plumbing_tests; state_tests; porcelain_tests *)]
 
 let _ = run_test_tt_main suite

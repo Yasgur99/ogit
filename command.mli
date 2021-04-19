@@ -23,13 +23,6 @@ type key = int
 type t =
   | Stage 
   | Unstage 
-  | Commit of commit_msg
-  | Branch of branch_name
-  | Checkout of branch_name
-  | Fetch
-  | Push
-  | Pull
-  | Init
   | Quit
   | NavUp
   | NavDown
@@ -37,18 +30,21 @@ type t =
 (** Raised when an invalid command is parsed. *)
 exception Invalid_cmd of string
 
-(** Raised when an empty command is parsed. *)
-exception Empty_cmd of string
-
 (** Raised when program should be terminated *)
 exception Program_terminate
 
-(** [check_err err] is unit if [err] is [true]. Raises
-    [Command.Program_terminate] if [err] is [false].*)
-val check_err : Curses.err -> unit
-
-(** [parse_key key] parses a player's keystroke input into a [cmd] *)
+(** [parse_key key] parses a user's keystroke input into a [cmd].
+    If a keystroke is not suported, it returns [Nop].
+    Examples:
+      Key: s    -> Stage
+      Key: u    -> Unstage
+      Key: k    -> NavUp
+      Key: Up   -> NavUp
+      Key: j    -> NavDown
+      Key: Down -> NavDown
+      Key: q    -> Quit
+*)
 val parse_key : key -> t
 
-(** [string_of_cmd cmd] is the string representation of [cmd] *)
+(** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)
 val string_of_cmd : t -> string
