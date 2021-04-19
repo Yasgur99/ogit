@@ -86,7 +86,7 @@ let printable_of_state st =
   let untracked_printable = List.map printable_of_file (untracked st) in
   let tracked_printable = List.map printable_of_file (tracked st) in
   let staged_printable = List.map printable_of_file (staged st) in
-  (commit_header :: commits_printable)
-  @ (untracked_header :: untracked_printable)
+  (untracked_header :: untracked_printable)
   @ (tracked_header :: tracked_printable)
   @ (staged_header :: staged_printable)
+  @ (commit_header :: commits_printable)
