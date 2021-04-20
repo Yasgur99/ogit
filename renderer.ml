@@ -81,7 +81,7 @@ let rec render_user_line win (line : State.printable) =
     else String.sub line.text 0 1
   in
   let rest =
-    if String.length line.text <= 1 then " "
+    if String.length line.text <= 1 then ""
     else String.sub line.text 1 (String.length line.text - 1)
   in
   check_err (Curses.waddstr win fst_char);

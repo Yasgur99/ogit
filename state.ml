@@ -88,7 +88,7 @@ let tracked_header = { text = "Tracked"; color = "yellow" }
 
 let staged_header = { text = "Staged"; color = "yellow" }
 
-let blank_line = { text = ""; color = "white" }
+let blank_line = { text = " "; color = "white" }
 
 let printable_of_commit_t c =
   { text = Porcelain.string_of_commit_t c; color = "white" }
