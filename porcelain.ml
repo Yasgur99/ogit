@@ -2,9 +2,7 @@ open Plumbing
 
 type commit_t = {
   tree : string;
-  (* is this the SHA-1? *)
   (*parents : string;*)
-  (* previous SHA-1 *)
   (*author : string;*)
   (*committer : string;*)
   msg : string;
