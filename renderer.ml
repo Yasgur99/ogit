@@ -96,39 +96,50 @@ let rec render_user_line win (line : State.printable) =
   disable_color line.color;
   cursor_nextline win
 
-let render_line win curs (line : State.printable) =
+let render_line win curs render_curs (line : State.printable) =
   let yx = Curses.getyx win in
-  if fst yx = curs then render_user_line win line
+  if fst yx = curs && render_curs then render_user_line win line
   else (
     enable_color line.color;
     check_err (Curses.waddstr win line.text);
     disable_color line.color;
     cursor_nextline win)
 
-let render_lines win lines curs = List.iter (render_line win curs) lines
+let render_lines win lines curs render_curs =
+  List.iter (render_line win curs render_curs) lines
 
 let rec parse_string win str =
   check_err (Curses.echo ());
-  let key = Curses.wgetch win in
-  if key = 10 then str
-  else if key = Curses.Key.backspace then (
-    let new_str =
-      if str = "" then str else String.sub str 0 (String.length str - 1)
-    in
-    Curses.clrtoeol ();
-    parse_string win new_str)
-  else parse_string win (str ^ String.make 1 (char_of_int key))
+  enable_color "cyan_back";
+  check_err (Curses.waddstr win " ");
+  disable_color "cyan_back";
+  let yx = Curses.getyx win in
+  check_err (Curses.wmove win (fst yx) (snd yx - 1));
+  try
+    let key = Curses.wgetch win in
+    if key = 10 then str
+    else if key = Curses.Key.backspace then (
+      let new_str =
+        if str = "" then str
+        else String.sub str 0 (String.length str - 1)
+      in
+      Curses.clrtoeol ();
+      parse_string win new_str)
+    else parse_string win (str ^ String.make 1 (char_of_int key))
+  with _ -> parse_string win str
 
 let render state win =
   let lines = State.printable_of_state state in
   cursor_reset win;
-  render_lines win lines (State.get_curs state);
+  let render_curs = State.get_mode state = Normal in
+  render_lines win lines (State.get_curs state) render_curs;
   check_err (Curses.wrefresh win)
 
 let render_commit_mode state win =
   render state win;
-  render_line win (State.get_curs state) { text = ""; color = "white" };
-  render_line win (State.get_curs state)
+  render_line win (State.get_curs state) false
+    { text = ""; color = "white" };
+  render_line win (State.get_curs state) false
     { text = "Enter your commit message: "; color = "green" };
   let msg = parse_string win "" in
   check_err (Curses.noecho ());
@@ -136,4 +147,5 @@ let render_commit_mode state win =
   cursor_prevline win;
   Curses.clrtoeol ();
   check_err (Curses.wrefresh win);
+  render (State.update_mode state Command.Nop) win;
   msg
