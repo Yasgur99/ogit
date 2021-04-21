@@ -128,24 +128,36 @@ let rec parse_string win str =
     else parse_string win (str ^ String.make 1 (char_of_int key))
   with _ -> parse_string win str
 
+let commit_msg_prompt : State.printable =
+  { text = "Enter your commit message: "; color = "green" }
+
+let commit_failed : State.printable =
+  { text = "No changes to commit."; color = "red" }
+
+let commit_done : State.printable =
+  { text = "Commit done."; color = "green" }
+
+let blank_line : State.printable = { text = " "; color = "white" }
+
 let render state win =
+  Curses.werase win;
   let lines = State.printable_of_state state in
   cursor_reset win;
-  let render_curs = State.get_mode state = Normal in
+  let render_curs = State.get_mode state <> CommitMode in
   render_lines win lines (State.get_curs state) render_curs;
+  render_line win (State.get_curs state) false blank_line;
+  if State.get_mode state = CommitDone then
+    render_line win (State.get_curs state) false commit_done
+  else if State.get_mode state = CommitFailed then
+    render_line win (State.get_curs state) false commit_failed
+  else ();
   check_err (Curses.wrefresh win)
 
 let render_commit_mode state win =
   render state win;
-  render_line win (State.get_curs state) false
-    { text = ""; color = "white" };
-  render_line win (State.get_curs state) false
-    { text = "Enter your commit message: "; color = "green" };
+  render_line win (State.get_curs state) false blank_line;
+  render_line win (State.get_curs state) false commit_msg_prompt;
   let msg = parse_string win "" in
   check_err (Curses.noecho ());
-  Curses.clrtoeol ();
-  cursor_prevline win;
-  Curses.clrtoeol ();
-  check_err (Curses.wrefresh win);
   render (State.update_mode state Command.Nop) win;
   msg

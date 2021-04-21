@@ -48,10 +48,14 @@ val get_curs : t -> int
     state says the same. *)
 val set_curs : t -> int -> t
 
-(** [get_mode st] is the rendering mode for st. *)
+(** [get_mode st] is the rendering mode for [st]. *)
 val get_mode : t -> render_mode
 
-(** [update_mode st] changes the mode of st to the appropriate mode
-    based on the most recent command. The rest of the state stays the
-    same. *)
+(** [set_mode st new_mode] manually changes the mode of [st] to
+    [new_mode]. *)
+val set_mode : t -> render_mode -> t
+
+(** [update_mode st cmd] automatically changes the mode of [st] to the
+    appropriate mode based on the command [cmd]. The rest of the state
+    stays the same. *)
 val update_mode : t -> Command.t -> t
