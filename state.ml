@@ -104,7 +104,7 @@ let update_mode st cmd =
   set_mode st new_mode
 
 (*********************************************************)
-(* Printable *)
+(* Printable  *)
 (*********************************************************)
 let printable_of_file f = { text = f; color = "white" }
 
