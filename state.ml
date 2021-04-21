@@ -1,3 +1,7 @@
+type render_mode =
+  | Normal
+  | CommitMode
+
 (** The representation type for state. *)
 type t = {
   commit_history : Porcelain.commit_t list;
@@ -7,6 +11,7 @@ type t = {
   tracked : string list;
   staged : string list;
   curs : int;
+  mode : render_mode;
 }
 
 type printable = {
@@ -25,6 +30,7 @@ let init_state dir =
     tracked = Porcelain.get_tracked (Porcelain.status ());
     staged = Porcelain.get_staged (Porcelain.status ());
     curs = 0;
+    mode = Normal;
   }
 
 (** [update_git_state st] updates commit_history, untracked, tracked and
@@ -37,6 +43,7 @@ let update_git_state st =
     tracked = Porcelain.get_tracked (Porcelain.status ());
     staged = Porcelain.get_staged (Porcelain.status ());
     curs = st.curs;
+    mode = Normal;
   }
 
 (*********************************************************)
@@ -58,6 +65,8 @@ let commit_history st = st.commit_history
 
 let get_curs st = st.curs
 
+let get_mode st = st.mode
+
 let get_max_y st =
   List.length st.commit_history
   + List.length st.untracked
@@ -73,6 +82,20 @@ let set_curs st i =
     tracked = st.tracked;
     staged = st.staged;
     curs = new_y;
+    mode = st.mode;
+  }
+
+let update_mode st cmd =
+  let new_mode =
+    match cmd with Command.Commit _ -> CommitMode | _ -> Normal
+  in
+  {
+    commit_history = st.commit_history;
+    untracked = st.untracked;
+    tracked = st.tracked;
+    staged = st.staged;
+    curs = st.curs;
+    mode = new_mode;
   }
 
 (*********************************************************)
@@ -125,10 +148,15 @@ let exec_unstage st =
   Porcelain.restore_staged [ curs_content ];
   update_git_state st
 
+let exec_commit st msg =
+  Porcelain.commit msg;
+  update_git_state st
+
 let exec st = function
   | Command.NavUp -> set_curs st (get_curs st - 1)
   | Command.NavDown -> set_curs st (get_curs st + 1)
   | Command.Stage -> exec_add st
   | Command.Unstage -> exec_unstage st
+  | Command.Commit msg -> if msg = "" then st else exec_commit st msg
   | Command.Quit -> raise Command.Program_terminate
   | Command.Nop -> st

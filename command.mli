@@ -21,27 +21,21 @@ type key = int
 (** The type [t] represents a git command that is decomposed into a verb
     and possibly a file_name, commit_msg, or branch_name. *)
 type t =
-  | Stage 
-  | Unstage 
+  | Stage
+  | Unstage
   | Quit
   | NavUp
   | NavDown
-  | Nop 
+  | Commit of string
+  | Nop
 
 (** Raised when program should be terminated *)
 exception Program_terminate
 
-(** [parse_key key] parses a user's keystroke input into a [cmd].
-    If a keystroke is not suported, it returns [Nop].
-    Examples:
-      Key: s    -> Stage
-      Key: u    -> Unstage
-      Key: k    -> NavUp
-      Key: Up   -> NavUp
-      Key: j    -> NavDown
-      Key: Down -> NavDown
-      Key: q    -> Quit
-*)
+(** [parse_key key] parses a user's keystroke input into a [cmd]. If a
+    keystroke is not suported, it returns [Nop]. Examples: Key: s ->
+    Stage Key: u -> Unstage Key: k -> NavUp Key: Up -> NavUp Key: j ->
+    NavDown Key: Down -> NavDown Key: q -> Quit *)
 val parse_key : key -> t
 
 (** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)

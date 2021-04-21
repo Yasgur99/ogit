@@ -72,6 +72,11 @@ let cursor_nextline win =
   let new_yx = (fst yx + 1, 0) in
   check_err (Curses.wmove win (fst new_yx) (snd new_yx))
 
+let cursor_prevline win =
+  let yx = Curses.getyx win in
+  let new_yx = (fst yx - 1, 0) in
+  check_err (Curses.wmove win (fst new_yx) (snd new_yx))
+
 let cursor_reset win = check_err (Curses.wmove win 0 0)
 
 let rec render_user_line win (line : State.printable) =
@@ -102,8 +107,31 @@ let render_line win curs (line : State.printable) =
 
 let render_lines win lines curs = List.iter (render_line win curs) lines
 
+let rec parse_string win str =
+  check_err (Curses.echo ());
+  let key = Curses.wgetch win in
+  if key = 10 then str
+  else if key = Curses.Key.backspace then (
+    let new_str =
+      if str = "" then str else String.sub str 0 (String.length str - 1)
+    in
+    Curses.clrtoeol ();
+    parse_string win new_str)
+  else parse_string win (str ^ String.make 1 (char_of_int key))
+
 let render state win =
   let lines = State.printable_of_state state in
+  cursor_reset win;
   render_lines win lines (State.get_curs state);
-  check_err (Curses.wrefresh win);
-  check_err (Curses.wmove win 0 0)
+  check_err (Curses.wrefresh win)
+
+let render_commit_mode state win =
+  render_line win (State.get_curs state) { text = ""; color = "white" };
+  render_line win (State.get_curs state)
+    { text = "Enter your commit message: "; color = "green" };
+  let msg = parse_string win "" in
+  check_err (Curses.noecho ());
+  Curses.clrtoeol ();
+  cursor_prevline win;
+  Curses.clrtoeol ();
+  msg

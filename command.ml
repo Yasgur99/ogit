@@ -7,21 +7,23 @@ type branch_name = string
 type key = int
 
 type t =
-  | Stage 
-  | Unstage 
+  | Stage
+  | Unstage
   | Quit
   | NavUp
   | NavDown
+  | Commit of string
   | Nop
 
 exception Program_terminate
 
 let parse_key key =
-  if key = int_of_char 's' then Stage 
-  else if key = int_of_char 'u' then Unstage 
+  if key = int_of_char 's' then Stage
+  else if key = int_of_char 'u' then Unstage
   else if key = int_of_char 'k' || key = Curses.Key.up then NavUp
   else if key = int_of_char 'j' || key = Curses.Key.down then NavDown
   else if key = int_of_char 'q' then Quit
+  else if key = int_of_char 'c' then Commit ""
   else Nop
 
 let string_of_cmd cmd =
@@ -30,5 +32,6 @@ let string_of_cmd cmd =
   | Unstage -> "unstage"
   | NavUp -> "navup"
   | NavDown -> "navdown"
+  | Commit _ -> "commit"
   | Quit -> "quit"
   | Nop -> "nop"
