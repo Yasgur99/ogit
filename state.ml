@@ -1,6 +1,8 @@
 type render_mode =
   | Normal
   | CommitMode
+  | CommitDone
+  | CommitFailed
 
 (** The representation type for state. *)
 type t = {
@@ -85,10 +87,7 @@ let set_curs st i =
     mode = st.mode;
   }
 
-let update_mode st cmd =
-  let new_mode =
-    match cmd with Command.Commit _ -> CommitMode | _ -> Normal
-  in
+let set_mode st new_mode =
   {
     commit_history = st.commit_history;
     untracked = st.untracked;
@@ -97,6 +96,12 @@ let update_mode st cmd =
     curs = st.curs;
     mode = new_mode;
   }
+
+let update_mode st cmd =
+  let new_mode =
+    match cmd with Command.Commit _ -> CommitMode | _ -> st.mode
+  in
+  set_mode st new_mode
 
 (*********************************************************)
 (* Printable *)
@@ -149,8 +154,10 @@ let exec_unstage st =
   update_git_state st
 
 let exec_commit st msg =
-  Porcelain.commit msg;
-  update_git_state st
+  if List.length st.staged = 0 then set_mode st CommitFailed
+  else (
+    Porcelain.commit msg;
+    set_mode (update_git_state st) CommitDone)
 
 let exec st = function
   | Command.NavUp -> set_curs st (get_curs st - 1)
