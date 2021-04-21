@@ -126,6 +126,7 @@ let render state win =
   check_err (Curses.wrefresh win)
 
 let render_commit_mode state win =
+  render state win;
   render_line win (State.get_curs state) { text = ""; color = "white" };
   render_line win (State.get_curs state)
     { text = "Enter your commit message: "; color = "green" };
@@ -134,4 +135,5 @@ let render_commit_mode state win =
   Curses.clrtoeol ();
   cursor_prevline win;
   Curses.clrtoeol ();
+  check_err (Curses.wrefresh win);
   msg
