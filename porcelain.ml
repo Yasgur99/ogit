@@ -184,3 +184,9 @@ let get_tracked status = status.tracked
 let get_staged status = status.staged
 
 let string_of_commit_t c = c.tree ^ " " ^ c.msg
+
+(* 
+
+   Welcome! s = Stage u = Unstage c = Commit q = Quit Use Up and Down
+   arrows to navigate. Hover over a file and hit a key to move it where
+   you want *)
