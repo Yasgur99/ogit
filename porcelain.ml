@@ -77,7 +77,7 @@ let commit_t_of_commit_oneline line =
   let hash = String.sub line 0 7 in
 
   (*print_endline (string_of_int (String.length line));*)
-  let msg = String.sub line 7 (String.length line - 20) ^ ")" in
+  let msg = "  " ^ String.sub line 9 (String.length line - 22) in
   { tree = hash; msg }
 
 let commit_t_list_of_res res =
