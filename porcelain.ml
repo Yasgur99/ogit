@@ -74,7 +74,7 @@ let commit_tree hash message = failwith "unimplemented"
 (* not sure if -m "msg" comes before or after hash I see both in doc *)
 
 let commit_t_of_commit_oneline line =
-  let hash = String.sub line 0 6 in
+  let hash = String.sub line 0 7 in
 
   (*print_endline (string_of_int (String.length line));*)
   let msg = String.sub line 7 (String.length line - 20) ^ ")" in
