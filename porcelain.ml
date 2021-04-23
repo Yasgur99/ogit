@@ -102,9 +102,19 @@ let restore_staged files =
   let args_arr = Array.of_list args_lst in
   ignore (Plumbing.restore args_arr)
 
+let rec rm_leading_spaces str =
+  match String.split_on_char ' ' str with
+  | [] -> str
+  | [ "" ] -> str
+  | "" :: t ->
+      rm_leading_spaces (String.sub str 0 (String.length str - 1))
+  | h :: t -> str
+
 let commit msg =
-  String.concat "\n"
-    (Plumbing.get_out (Plumbing.commit [| "-m"; msg |]))
+  Plumbing.commit [| "-m"; msg |]
+  |> Plumbing.get_out
+  |> List.map rm_leading_spaces
+  |> List.rev |> String.concat "\n"
 
 let show () = failwith "unimplemented" (*Plumbing.show [||]*)
 

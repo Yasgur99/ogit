@@ -6,8 +6,7 @@ type t
 type render_mode =
   | Normal
   | CommitMode
-  | CommitDone
-  | CommitFailed of string
+  | CommitDone of string
 
 (** The representation type that specifies what [color] [text] should be
     printed as. *)

@@ -131,10 +131,15 @@ let rec parse_string win str =
 let commit_msg_prompt : State.printable =
   { text = "Enter your commit message: "; color = "green" }
 
-let commit_done : State.printable =
-  { text = "Commit done."; color = "green" }
+let commit_header : State.printable =
+  { text = "Commit results: "; color = "green" }
 
 let blank_line : State.printable = { text = " "; color = "white" }
+
+let render_commit_done state win msg =
+  render_line win (State.get_curs state) false commit_header;
+  render_line win (State.get_curs state) false
+    { text = msg; color = "white" }
 
 let render state win =
   Curses.werase win;
@@ -144,18 +149,13 @@ let render state win =
   render_lines win lines (State.get_curs state) render_curs;
   render_line win (State.get_curs state) false blank_line;
   match State.get_mode state with
-  | CommitDone ->
-      render_line win (State.get_curs state) false commit_done
-  | CommitFailed err ->
-      render_line win (State.get_curs state) false
-        { text = err; color = "red" }
+  | CommitDone msg -> render_commit_done state win msg
   | _ ->
       ();
       check_err (Curses.wrefresh win)
 
 let render_commit_mode state win =
   render state win;
-  render_line win (State.get_curs state) false blank_line;
   render_line win (State.get_curs state) false commit_msg_prompt;
   let msg = parse_string win "" in
   check_err (Curses.noecho ());
