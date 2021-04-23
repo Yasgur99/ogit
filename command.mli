@@ -35,7 +35,7 @@ exception Program_terminate
 (** [parse_key key] parses a user's keystroke input into a [cmd]. If a
     keystroke is not suported, it returns [Nop]. Examples: Key: s ->
     Stage Key: u -> Unstage Key: k -> NavUp Key: Up -> NavUp Key: j ->
-    NavDown Key: Down -> NavDown Key: q -> Quit *)
+    NavDown Key: Down -> NavDown Key: q -> Quit test*)
 val parse_key : key -> t
 
 (** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)
