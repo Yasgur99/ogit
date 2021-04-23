@@ -102,7 +102,9 @@ let restore_staged files =
   let args_arr = Array.of_list args_lst in
   ignore (Plumbing.restore args_arr)
 
-let commit msg = ignore (Plumbing.commit [| "-m"; msg |])
+let commit msg =
+  String.concat "\n"
+    (Plumbing.get_out (Plumbing.commit [| "-m"; msg |]))
 
 let show () = failwith "unimplemented" (*Plumbing.show [||]*)
 

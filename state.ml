@@ -2,7 +2,7 @@ type render_mode =
   | Normal
   | CommitMode
   | CommitDone
-  | CommitFailed
+  | CommitFailed of string
 
 (** The representation type for state. *)
 type t = {
@@ -154,10 +154,9 @@ let exec_unstage st =
   update_git_state st
 
 let exec_commit st msg =
-  if List.length st.staged = 0 then set_mode st CommitFailed
-  else (
-    Porcelain.commit msg;
-    set_mode (update_git_state st) CommitDone)
+  let err = Porcelain.commit msg in
+  if err = "" then set_mode (update_git_state st) CommitDone
+  else set_mode (update_git_state st) (CommitFailed err)
 
 let exec st = function
   | Command.NavUp -> set_curs st (get_curs st - 1)

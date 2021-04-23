@@ -21,7 +21,8 @@ type status_t
 val init : string option -> unit
 
 (** [hash_object f] calls [Plumbing.hash_object] with command line
-    argument -w, which stores data in file with filename [f] in a repository's .git/objects directory and is the object that refers to
+    argument -w, which stores data in file with filename [f] in a
+    repository's .git/objects directory and is the object that refers to
     that data object *)
 val hash_object : string -> object_id
 
@@ -66,13 +67,13 @@ val string_of_commit_t : commit_t -> string
     area *)
 val add : string list -> unit
 
-(** [restore_staged fnames] restores staged files [fnames] from the staging
-    area *)
+(** [restore_staged fnames] restores staged files [fnames] from the
+    staging area *)
 val restore_staged : string list -> unit
 
 (** [commit msg] commits the changes in the staging area with commit
-    message [msg] *)
-val commit : string -> unit
+    message [msg] and returns any errors that were produced. *)
+val commit : string -> string
 
 (** [show] shows the staged, unstaged, and untracked files *)
 val show : unit -> unit
