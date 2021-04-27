@@ -93,6 +93,8 @@ let log hash =
       let res = Plumbing.log [| h; "-10" |] in
       commit_t_list_of_res res
 
+let get_head = function [] -> { tree = ""; msg = "" } | h :: t -> h
+
 let add files =
   let args_arr = Array.of_list files in
   ignore (Plumbing.add args_arr)
@@ -118,7 +120,11 @@ let commit msg =
 
 let show () = failwith "unimplemented" (*Plumbing.show [||]*)
 
-let diff () = failwith "unimplemented" (*Plumbing.diff [||]*)
+let diff () =
+  Plumbing.diff [||]
+  |> Plumbing.get_out
+  |> List.map rm_leading_spaces
+  |> List.rev |> String.concat "\n"
 
 let empty_status_t = { untracked = []; tracked = []; staged = [] }
 

@@ -60,6 +60,8 @@ val commit_tree : object_id -> string -> object_id
     in reverse chronological order *)
 val log : object_id option -> commit_t list
 
+val get_head : commit_t list -> commit_t
+
 (** [string_of_commit c] is a commit in the form [hash msg] *)
 val string_of_commit_t : commit_t -> string
 
@@ -79,7 +81,7 @@ val commit : string -> string
 val show : unit -> unit
 
 (** [diff] shows the diffs of tracked files *)
-val diff : unit -> unit
+val diff : unit -> string
 
 (** [status] shows the status of the working tree *)
 val status : unit -> status_t

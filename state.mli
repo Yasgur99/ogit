@@ -7,6 +7,7 @@ type render_mode =
   | Normal
   | CommitMode
   | CommitDone of string
+  | DiffMode of string
 
 (** The representation type that specifies what [color] [text] should be
     printed as. *)

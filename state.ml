@@ -2,12 +2,13 @@ type render_mode =
   | Normal
   | CommitMode
   | CommitDone of string
+  | DiffMode of string
 
 (** The representation type for state. *)
 type t = {
   commit_history : Porcelain.commit_t list;
-  (*head : Porcelain.commit_t; merge : Porcelain.commit_t option; push :
-    Porcelain.commit_t option;*)
+  head : Porcelain.commit_t;
+  (*merge : Porcelain.commit_t option; push : Porcelain.commit_t option;*)
   untracked : string list;
   tracked : string list;
   staged : string list;
@@ -26,7 +27,8 @@ type printable = {
 let init_state dir =
   {
     commit_history = Porcelain.log None;
-    (*head = get_head (); merge = None; push = None;*)
+    head = Porcelain.get_head (Porcelain.log None);
+    (* merge = None; push = None;*)
     untracked = Porcelain.get_untracked (Porcelain.status ());
     tracked = Porcelain.get_tracked (Porcelain.status ());
     staged = Porcelain.get_staged (Porcelain.status ());
@@ -39,7 +41,8 @@ let init_state dir =
 let update_git_state st =
   {
     commit_history = Porcelain.log None;
-    (*head = get_head (); merge = None; push = None;*)
+    head = Porcelain.get_head (Porcelain.log None);
+    (* merge = None; push = None;*)
     untracked = Porcelain.get_untracked (Porcelain.status ());
     tracked = Porcelain.get_tracked (Porcelain.status ());
     staged = Porcelain.get_staged (Porcelain.status ());
@@ -50,7 +53,7 @@ let update_git_state st =
 (*********************************************************)
 (* Access/Mutate state *)
 (*********************************************************)
-let head st = failwith "Unimplemented"
+let head st = st.head
 
 let merge st = failwith "Unimplemented"
 
@@ -79,6 +82,7 @@ let set_curs st i =
   in
   {
     commit_history = st.commit_history;
+    head = st.head;
     untracked = st.untracked;
     tracked = st.tracked;
     staged = st.staged;
@@ -89,6 +93,7 @@ let set_curs st i =
 let set_mode st new_mode =
   {
     commit_history = st.commit_history;
+    head = st.head;
     untracked = st.untracked;
     tracked = st.tracked;
     staged = st.staged;
@@ -103,11 +108,13 @@ let update_mode st cmd =
   set_mode st new_mode
 
 (*********************************************************)
-(* Printable  *)
+(* Printable *)
 (*********************************************************)
 let printable_of_file f = { text = f; color = "white" }
 
 let commit_header = { text = "Recent Commits"; color = "yellow" }
+
+let head_header = { text = "Head"; color = "yellow" }
 
 let untracked_header = { text = "Untracked"; color = "yellow" }
 
@@ -124,14 +131,16 @@ let printable_of_state st =
   let commits_printable =
     List.map printable_of_commit_t (commit_history st)
   in
+  let head_printable = printable_of_commit_t (head st) in
   let untracked_printable = List.map printable_of_file (untracked st) in
   let tracked_printable = List.map printable_of_file (tracked st) in
   let staged_printable = List.map printable_of_file (staged st) in
-  untracked_header :: untracked_printable
-  @ tracked_header :: tracked_printable
-  @ staged_header :: staged_printable
+  (untracked_header :: untracked_printable)
+  @ (tracked_header :: tracked_printable)
+  @ (staged_header :: staged_printable)
   @ [ blank_line ]
-  @ commit_header :: commits_printable
+  @ [ head_header; head_printable ]
+  @ (commit_header :: commits_printable)
 
 (*********************************************************)
 (* Exec *)
@@ -156,11 +165,20 @@ let exec_commit st msg =
   let output = Porcelain.commit msg in
   set_mode (update_git_state st) (CommitDone output)
 
+let exec_diff st =
+  Porcelain.add st.untracked;
+  Porcelain.add st.tracked;
+  let out = Porcelain.diff () in
+  Porcelain.restore_staged st.untracked;
+  Porcelain.restore_staged st.tracked;
+  set_mode st (DiffMode out)
+
 let exec st = function
   | Command.NavUp -> set_curs st (get_curs st - 1)
   | Command.NavDown -> set_curs st (get_curs st + 1)
   | Command.Stage -> exec_add st
   | Command.Unstage -> exec_unstage st
   | Command.Commit msg -> if msg = "" then st else exec_commit st msg
+  | Command.Diff -> exec_diff st
   | Command.Quit -> raise Command.Program_terminate
   | Command.Nop -> st

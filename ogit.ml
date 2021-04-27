@@ -3,9 +3,12 @@ let run_commit_mode win st =
   let cmd = Command.Commit msg in
   State.exec st cmd
 
+let run_diff_mode win st = State.exec st Command.Diff
+
 let rec run win st =
   match State.get_mode st with
   | State.CommitMode -> run win (run_commit_mode win st)
+  | State.DiffMode _ -> run win (run_diff_mode win st)
   | _ ->
       Renderer.render st win;
       let key = Curses.wgetch win in

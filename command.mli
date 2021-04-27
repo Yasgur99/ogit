@@ -27,6 +27,7 @@ type t =
   | NavUp
   | NavDown
   | Commit of string
+  | Diff
   | Nop
 
 (** Raised when program should be terminated *)

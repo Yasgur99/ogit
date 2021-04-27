@@ -13,6 +13,7 @@ type t =
   | NavUp
   | NavDown
   | Commit of string
+  | Diff
   | Nop
 
 exception Program_terminate
@@ -24,6 +25,7 @@ let parse_key key =
   else if key = int_of_char 'j' || key = Curses.Key.down then NavDown
   else if key = int_of_char 'q' then Quit
   else if key = int_of_char 'c' then Commit ""
+  else if key = int_of_char 'd' then Diff
   else Nop
 
 let string_of_cmd cmd =
@@ -33,5 +35,6 @@ let string_of_cmd cmd =
   | NavUp -> "navup"
   | NavDown -> "navdown"
   | Commit _ -> "commit"
+  | Diff -> "diff"
   | Quit -> "quit"
   | Nop -> "nop"
