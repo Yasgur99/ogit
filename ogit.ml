@@ -1,3 +1,12 @@
+open Plumbing
+open State
+open Renderer
+
+module Plumbing = ProdPlumbing
+module State = StateImpl (Plumbing)
+module Renderer = Renderer (State)
+
+
 let run_commit_mode win st =
   let msg = Renderer.render_commit_mode st win in
   let cmd = Command.Commit msg in
@@ -21,8 +30,8 @@ let () =
     run_git (Array.sub Sys.argv 1 (Array.length Sys.argv - 1))
   else
     try
-      let win = Renderer.init () in
       let initial_st = State.init_state "." in
+      let win = Renderer.init () in
       run win initial_st
     with Command.Program_terminate ->
       Renderer.cleanup ();
