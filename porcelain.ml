@@ -96,8 +96,22 @@ let log hash =
       commit_t_list_of_res res
 
 let get_head =
-  Plumbing.get_out (Plumbing.head [||])
-  |> List.fold_left (fun acc x -> acc ^ x) ""
+  let long_ref =
+    match Plumbing.get_out (Plumbing.head [||]) with
+    | [] -> ""
+    | h :: t -> h
+  in
+  let start =
+    match long_ref with
+    | "" -> 0
+    | _ ->
+        Str.search_backward (Str.regexp "heads") long_ref
+          (String.length long_ref - 1)
+        + 6
+  in
+  String.sub long_ref start (String.length long_ref - start)
+
+let merges = commit_t_list_of_res (Plumbing.log [| "merges" |])
 
 let add files =
   let args_arr = Array.of_list files in

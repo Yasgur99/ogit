@@ -129,9 +129,14 @@ let printable_of_commit_t c =
 
 let printable_of_state st =
   let commits_printable =
-    List.map printable_of_commit_t (commit_history st)
+    List.map printable_of_commit_t (commit_history st) |> List.rev
   in
-  let head_printable = { text = head st; color = "white" } in
+  let recent_msg =
+    match commits_printable with [] -> "" | h :: t -> h.text
+  in
+  let head_printable =
+    { text = head st ^ " " ^ recent_msg; color = "white" }
+  in
   let untracked_printable = List.map printable_of_file (untracked st) in
   let tracked_printable = List.map printable_of_file (tracked st) in
   let staged_printable = List.map printable_of_file (staged st) in

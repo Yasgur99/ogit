@@ -1,3 +1,4 @@
 #require "ounit2";;
 #require "curses";;
+#require "str";;
 #directory "_build";;
