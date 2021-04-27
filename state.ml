@@ -27,7 +27,7 @@ type printable = {
 let init_state dir =
   {
     commit_history = Porcelain.log None;
-    head = Porcelain.get_head (Porcelain.log None);
+    head = Porcelain.get_head (Porcelain.log None |> List.rev);
     (* merge = None; push = None;*)
     untracked = Porcelain.get_untracked (Porcelain.status ());
     tracked = Porcelain.get_tracked (Porcelain.status ());
