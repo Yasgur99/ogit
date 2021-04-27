@@ -103,7 +103,7 @@ let render_line win curs render_curs (line : State.printable) =
     enable_color line.color;
     check_err (Curses.waddstr win line.text);
     disable_color line.color;
-    cursor_nextline win )
+    cursor_nextline win)
 
 let render_lines win lines curs render_curs =
   List.iter (render_line win curs render_curs) lines
@@ -124,7 +124,7 @@ let rec parse_string win str =
         else String.sub str 0 (String.length str - 1)
       in
       Curses.clrtoeol ();
-      parse_string win new_str )
+      parse_string win new_str)
     else parse_string win (str ^ String.make 1 (char_of_int key))
   with _ -> parse_string win str
 
@@ -135,7 +135,7 @@ let commit_header : State.printable =
   { text = "Commit results: "; color = "green" }
 
 let diff_header : State.printable =
-  { text = "Diff results: "; color = "orange" }
+  { text = "Diff results: "; color = "magenta" }
 
 let blank_line : State.printable = { text = " "; color = "white" }
 
