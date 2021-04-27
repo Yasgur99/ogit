@@ -1,115 +1,267 @@
-(** Types and methods to access and construct the type *)
-type result = { 
-  stdout : string list;
-  stderr : string list;
-  out_and_err : string list;
-  (*exit_code : int;*)
-}
 
-let make_result out err out_and_err =
-  {
-    stdout =  out;
-    stderr = err;
-    out_and_err = out_and_err;
+(*******************************************)
+(* Plumbing *)
+(*******************************************)
+module type Plumbing = sig
+  (** Representation of raw git commands.
+
+      This module represents the calling of calling git commands with any
+      command line arguments *)
+
+  (** The representation of the result of executing a git command *)
+  type result
+
+  (* [make result o e] is a result where [o] is the lines of stdout and
+     [e] is the lines of stderr *)
+  val make_result : string list -> string list -> string list -> result
+
+  (* [get_stdout r] is the lines of stdout *)
+  val get_stdout : result -> string list
+
+  (* [get_stdout r] is the lines of stderr *)
+  val get_stderr : result -> string list
+
+  (* [get_out r] is the lines of of both stdout and stderr in the order
+     that they were sent to their respective streams.
+
+     For example, if data was written to stdout, then stderr, and then
+     stdout, again, then [get_out r] follows that same order. *)
+  val get_out : result -> string list
+
+  (** [init args] calls git init with arguments [args] *)
+  val init : string array -> result
+
+  (** [hash_object args] calls git hash-object with arguments [args] and
+      is the output to standard output *)
+  val hash_object : string array -> result
+
+  (** [cat_file args] calls git cat-file with arguments [args] *)
+  val cat_file : string array -> result
+
+  (** [update_index args] calls git update-index with arguments [args] *)
+  val update_index : string array -> result
+
+  (** [write_tree args] calls git write-tree with arguments [args] *)
+  val write_tree : string array -> result
+
+  (** [read_tree args] calls git read-tree with arguments [args] *)
+  val read_tree : string array -> result
+
+  (** [commit_tree args] calls git commit-tree with arguments [args] *)
+  val commit_tree : string array -> result
+
+  (** [log args] calls git update-index with arguments [args] *)
+  val log : string array -> result
+
+  (** [add args] calls git add with arguments [args] *)
+  val add : string array -> result
+
+  (** [restore args] calls git restore with arguments [args] *)
+  val restore: string array -> result
+
+  (** [commit] calls git commit with arguments [args] *)
+  val commit : string array -> result
+
+  (** [show args] calls git show with arguments [args] *)
+  val show : string array -> result
+
+  (** [diff args] calls git diff with arguments [args] *)
+  val diff : string array -> result
+
+  (** [status args] calls git status with arguments [args] *)
+  val status : string array -> result
+
+  (** [git args] calls git with arguments [args] *)
+  val git : string array -> result
+end
+
+module type PlumbingWithSet = sig
+  include Plumbing
+  
+  (** TODO: add setup methods **)
+end
+
+module ProdPlumbing : Plumbing = struct
+
+  (** Types and methods to access and construct the type *)
+  type result = { 
+    stdout : string list;
+    stderr : string list;
+    out_and_err : string list;
+    (*exit_code : int;*)
   }
 
-let get_stdout result = 
-  result.stdout
+  let make_result out err out_and_err =
+    {
+      stdout =  out;
+      stderr = err;
+      out_and_err = out_and_err;
+    }
 
-let get_stderr result =
-  result.stderr
+  let get_stdout result = 
+    result.stdout
 
-let get_out result =
-  result.out_and_err
+  let get_stderr result =
+    result.stderr
 
-(** Helper Methods *)
+  let get_out result =
+    result.out_and_err
 
-(** [read fd] is the lines of file referenced by descriptor [fd] *)
-let read (fd : Unix.file_descr) : string list =
-  let in_ch = Unix.in_channel_of_descr fd in
-  let lines = ref [] in
-  try 
-      while true do
-        lines:= input_line in_ch :: !lines
-      done;
-      !lines
-    with End_of_file ->
-      close_in in_ch; 
-      !lines
+  (** Helper Methods *)
 
-(** [fork_and_execvp e a] is the result of executing program [exe] 
-    with arguments [args]*)
-let fork_and_execv (exe : string) (args : string array) : result = 
-  let inp_stdout, out_stdout = Unix.pipe() in (* Pipe for stdout *)
-  let inp_stderr, out_stderr= Unix.pipe() in (* Pipe for stderr *)
-  let inp, out = Unix.pipe() in (* Pipe for both stdout and stderr *)
-  let pid = Unix.fork () in
-  if pid = 0 then (
-    Unix.close inp_stdout; (* Not used by child *)
-    Unix.close inp_stderr; (* Not used by child *)
-    Unix.close inp; (* Not used by child *)
-    Unix.dup2 out_stdout Unix.stdout; (* Bind stdout pipe to stdout *)
-    Unix.dup2 out_stderr Unix.stderr; (* Bind stderr pipe to stderr *)
-    Unix.dup2 out Unix.stdout; (* Bind out pipe to stdout *)
-    Unix.dup2 out Unix.stderr; (* Bind out pipe to stderr *)
-    Unix.execvp exe args 
-  ) else (
-    Unix.close out_stdout; (* Not used by parent*)
-    Unix.close out_stderr; (* Not used by parent*)
-    Unix.close out; (* Not used by parent*)
-    let stdout = read inp_stdout in
-    let stdin = read inp_stderr in
-    let out_and_err = read inp in
-      (* Does not close the pipes because [read fd] does that when
-         it closes the input channel it creates. 
+  (** [read fd] is the lines of file referenced by descriptor [fd] *)
+  let read (fd : Unix.file_descr) : string list =
+    let in_ch = Unix.in_channel_of_descr fd in
+    let lines = ref [] in
+    try 
+        while true do
+          lines:= input_line in_ch :: !lines
+        done;
+        !lines
+      with End_of_file ->
+        close_in in_ch; 
+        !lines
 
-      Unix.close inp_stderr;
-      Unix.close inp_stdout;
-      Unix.close inp; *)
-      make_result stdout stdin out_and_err
-  )
+  (** [fork_and_execvp e a] is the result of executing program [exe] 
+      with arguments [args]*)
+  let fork_and_execv (exe : string) (args : string array) : result = 
+    let inp_stdout, out_stdout = Unix.pipe() in (* Pipe for stdout *)
+    let inp_stderr, out_stderr= Unix.pipe() in (* Pipe for stderr *)
+    let inp, out = Unix.pipe() in (* Pipe for both stdout and stderr *)
+    let pid = Unix.fork () in
+    if pid = 0 then (
+      Unix.close inp_stdout; (* Not used by child *)
+      Unix.close inp_stderr; (* Not used by child *)
+      Unix.close inp; (* Not used by child *)
+      Unix.dup2 out_stdout Unix.stdout; (* Bind stdout pipe to stdout *)
+      Unix.dup2 out_stderr Unix.stderr; (* Bind stderr pipe to stderr *)
+      Unix.dup2 out Unix.stdout; (* Bind out pipe to stdout *)
+      Unix.dup2 out Unix.stderr; (* Bind out pipe to stderr *)
+      Unix.execvp exe args 
+    ) else (
+      Unix.close out_stdout; (* Not used by parent*)
+      Unix.close out_stderr; (* Not used by parent*)
+      Unix.close out; (* Not used by parent*)
+      let stdout = read inp_stdout in
+      let stdin = read inp_stderr in
+      let out_and_err = read inp in
+        (* Does not close the pipes because [read fd] does that when
+           it closes the input channel it creates. 
 
-let init (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "init"|] args)
+        Unix.close inp_stderr;
+        Unix.close inp_stdout;
+        Unix.close inp; *)
+        make_result stdout stdin out_and_err
+    )
 
-let hash_object (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "hash-object"|] args)
+  let init (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "init"|] args)
 
-let cat_file (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "cat-file"|] args)
+  let hash_object (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "hash-object"|] args)
 
-let update_index (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "update-index"|] args)
+  let cat_file (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "cat-file"|] args)
 
-let write_tree (args : string array) = 
-  fork_and_execv "git" (Array.append [|"git"; "write-tree"|] args)
+  let update_index (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "update-index"|] args)
 
-let read_tree (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "read-tree"|] args)
+  let write_tree (args : string array) = 
+    fork_and_execv "git" (Array.append [|"git"; "write-tree"|] args)
 
-let commit_tree (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "commit-tree"|] args)
+  let read_tree (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "read-tree"|] args)
 
-let log (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "--no-pager"; "log"; "--format=reference"|] args)
+  let commit_tree (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "commit-tree"|] args)
 
-let add (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "add"|] args)
+  let log (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "--no-pager"; "log"; "--format=reference"|] args)
 
-let restore (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "restore"|] args)
- 
-let commit (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "commit"|] args)
+  let add (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "add"|] args)
 
-let show (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "--no-pager"; "show"|] args)
+  let restore (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "restore"|] args)
+   
+  let commit (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "commit"|] args)
 
-let diff (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "--no-pager"; "diff"|] args)
- 
-let status (args : string array) =
-  fork_and_execv "git" (Array.append [|"git"; "status"|] args)
- 
-let git (args : string array) =
-  fork_and_execv "git" (Array.append [|"git";|] args)
+  let show (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "--no-pager"; "show"|] args)
+
+  let diff (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "--no-pager"; "diff"|] args)
+   
+  let status (args : string array) =
+    fork_and_execv "git" (Array.append [|"git"; "status"|] args)
+   
+  let git (args : string array) =
+    fork_and_execv "git" (Array.append [|"git";|] args)
+end
+
+module MockPlumbing : PlumbingWithSet = struct
+  (** Types and methods to access and construct the type *)
+  type result = { 
+    stdout : string list;
+    stderr : string list;
+    out_and_err : string list;
+    (*exit_code : int;*)
+  }
+
+  let get_stdout result = 
+    failwith "unimplemented"
+
+  let get_stderr result =
+    failwith "unimplemented"
+
+  let get_out result =
+    failwith "unimplemented"
+
+  let make_result out err out_and_err = failwith "unimpelented"
+
+  let init (args : string array) =
+    failwith "unimplemented"
+
+  let hash_object (args : string array) =
+    failwith "unimplemented"
+
+  let cat_file (args : string array) =
+    failwith "unimplemented"
+
+  let update_index (args : string array) =
+    failwith "unimplemented"
+
+  let write_tree (args : string array) = 
+    failwith "unimplemented"
+
+  let read_tree (args : string array) =
+    failwith "unimplemented"
+
+  let commit_tree (args : string array) =
+    failwith "unimplemented"
+
+  let log (args : string array) =
+    failwith "unimplemented"
+
+  let add (args : string array) =
+    failwith "unimplemented"
+
+  let restore (args : string array) =
+    failwith "unimplemented"
+   
+  let commit (args : string array) =
+    failwith "unimplemented"
+
+  let show (args : string array) =
+    failwith "unimplemented"
+
+  let diff (args : string array) =
+    failwith "unimplemented"
+   
+  let status (args : string array) =
+    failwith "unimplemented"
+   
+  let git (args : string array) =
+    failwith "unimplemented"
+end
