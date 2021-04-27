@@ -63,6 +63,10 @@ val log : object_id option -> commit_t list
 (** [get_head] is the value of HEAD *)
 val get_head : string
 
+(** [merges] is the list of merge commit objects that are reachable from
+    HEAD in reverse chronological order.*)
+val merges : commit_t list
+
 (** [string_of_commit c] is a commit in the form [hash msg] *)
 val string_of_commit_t : commit_t -> string
 
