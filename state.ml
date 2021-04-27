@@ -7,7 +7,7 @@ type render_mode =
 (** The representation type for state. *)
 type t = {
   commit_history : Porcelain.commit_t list;
-  head : Porcelain.commit_t;
+  head : string;
   (*merge : Porcelain.commit_t option; push : Porcelain.commit_t option;*)
   untracked : string list;
   tracked : string list;
@@ -27,7 +27,7 @@ type printable = {
 let init_state dir =
   {
     commit_history = Porcelain.log None;
-    head = Porcelain.get_head (Porcelain.log None |> List.rev);
+    head = Porcelain.get_head;
     (* merge = None; push = None;*)
     untracked = Porcelain.get_untracked (Porcelain.status ());
     tracked = Porcelain.get_tracked (Porcelain.status ());
@@ -41,7 +41,7 @@ let init_state dir =
 let update_git_state st =
   {
     commit_history = Porcelain.log None;
-    head = Porcelain.get_head (Porcelain.log None);
+    head = Porcelain.get_head;
     (* merge = None; push = None;*)
     untracked = Porcelain.get_untracked (Porcelain.status ());
     tracked = Porcelain.get_tracked (Porcelain.status ());
@@ -131,7 +131,7 @@ let printable_of_state st =
   let commits_printable =
     List.map printable_of_commit_t (commit_history st)
   in
-  let head_printable = printable_of_commit_t (head st) in
+  let head_printable = { text = head st; color = "white" } in
   let untracked_printable = List.map printable_of_file (untracked st) in
   let tracked_printable = List.map printable_of_file (tracked st) in
   let staged_printable = List.map printable_of_file (staged st) in

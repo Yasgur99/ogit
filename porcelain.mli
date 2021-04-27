@@ -60,7 +60,8 @@ val commit_tree : object_id -> string -> object_id
     in reverse chronological order *)
 val log : object_id option -> commit_t list
 
-val get_head : commit_t list -> commit_t
+(** [get_head] is the value of HEAD *)
+val get_head : string
 
 (** [string_of_commit c] is a commit in the form [hash msg] *)
 val string_of_commit_t : commit_t -> string

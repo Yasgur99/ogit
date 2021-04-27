@@ -52,7 +52,7 @@ val log : string array -> result
 val add : string array -> result
 
 (** [restore args] calls git restore with arguments [args] *)
-val restore: string array -> result
+val restore : string array -> result
 
 (** [commit] calls git commit with arguments [args] *)
 val commit : string array -> result
@@ -65,6 +65,9 @@ val diff : string array -> result
 
 (** [status args] calls git status with arguments [args] *)
 val status : string array -> result
+
+(** [head args] calls git symbolic-ref HEAD with arguments [args]*)
+val head : string array -> result
 
 (** [git args] calls git with arguments [args] *)
 val git : string array -> result

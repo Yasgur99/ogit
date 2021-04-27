@@ -93,7 +93,9 @@ let log hash =
       let res = Plumbing.log [| h; "-10" |] in
       commit_t_list_of_res res
 
-let get_head = function [] -> { tree = ""; msg = "" } | h :: t -> h
+let get_head =
+  Plumbing.get_out (Plumbing.head [||])
+  |> List.fold_left (fun acc x -> acc ^ x) ""
 
 let add files =
   let args_arr = Array.of_list files in

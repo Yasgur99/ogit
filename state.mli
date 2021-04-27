@@ -23,9 +23,8 @@ val init_state : string -> t
 (** [commit_history st] is the commit history of the current state [st] *)
 val commit_history : t -> Porcelain.commit_t list
 
-(** [head st] is the commit pointed to by the head in the current state
-    [st] *)
-val head : t -> Porcelain.commit_t
+(** [head st] is current HEAD *)
+val head : t -> string
 
 (** [merge st] is the commit pointed to by the upstream branch of the
     current branch *)
