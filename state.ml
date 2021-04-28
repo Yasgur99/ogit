@@ -178,7 +178,9 @@ let exec_diff st =
   Porcelain.restore_staged st.tracked;
   set_mode st (DiffMode out)
 
-(* let exec_pull st = Porcelain.pull (); update_git_state st *)
+let exec_pull st =
+  Porcelain.pull ();
+  update_git_state st
 
 let exec st = function
   | Command.NavUp -> set_curs st (get_curs st - 1)
@@ -187,6 +189,6 @@ let exec st = function
   | Command.Unstage -> exec_unstage st
   | Command.Commit msg -> if msg = "" then st else exec_commit st msg
   | Command.Diff -> exec_diff st
-  (* | Command.Pull -> exec_pull st *)
+  | Command.Pull -> exec_pull st
   | Command.Quit -> raise Command.Program_terminate
   | Command.Nop -> st

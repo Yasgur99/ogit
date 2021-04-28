@@ -28,7 +28,7 @@ type t =
   | NavDown
   | Commit of string
   | Diff
-  (* | Pull *)
+  | Pull
   | Nop
 
 (** Raised when program should be terminated *)

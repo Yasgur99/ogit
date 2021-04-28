@@ -40,7 +40,7 @@ let init (dir : string option) : unit = failwith "Unimplemented"
 (* match dir with | None -> Plumbing.init [||] | Some _ -> Plumbing.init
    [| dir |] *)
 
-(* let pull () = ignore (Plumbing.pull [||]) *)
+let pull () = ignore (Plumbing.pull [||])
 
 let hash_object file : object_id = failwith "unimplemented"
 

@@ -14,7 +14,7 @@ type t =
   | NavDown
   | Commit of string
   | Diff
-  (* | Pull *)
+  | Pull
   | Nop
 
 exception Program_terminate
@@ -27,7 +27,7 @@ let parse_key key =
   else if key = int_of_char 'q' then Quit
   else if key = int_of_char 'c' then Commit ""
   else if key = int_of_char 'd' then Diff
-    (* else if key = int_of_char 'p' then Pull *)
+  else if key = int_of_char 'p' then Pull
   else Nop
 
 let string_of_cmd cmd =
@@ -38,6 +38,6 @@ let string_of_cmd cmd =
   | NavDown -> "navdown"
   | Commit _ -> "commit"
   | Diff -> "diff"
-  (* | Pull -> "pull" *)
+  | Pull -> "pull"
   | Quit -> "quit"
   | Nop -> "nop"
