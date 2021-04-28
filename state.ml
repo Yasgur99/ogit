@@ -190,10 +190,6 @@ let exec st = function
   | Command.Commit msg -> if msg = "" then st else exec_commit st msg
   | Command.Diff -> exec_diff st
   | Command.Clear -> set_mode st Normal
-<<<<<<< HEAD
-  (* | Command.Pull -> exec_pull st *)
-=======
   | Command.Pull -> exec_pull st
->>>>>>> bff2ee56ee50fe0c11e9e0ae6438c386b890584d
   | Command.Quit -> raise Command.Program_terminate
   | Command.Nop -> st

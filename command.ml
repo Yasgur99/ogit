@@ -41,5 +41,6 @@ let string_of_cmd cmd =
   | Commit _ -> "commit"
   | Diff -> "diff"
   | Pull -> "pull"
+  | Clear -> "clear"
   | Quit -> "quit"
   | Nop -> "nop"
