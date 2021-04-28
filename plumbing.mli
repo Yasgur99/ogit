@@ -60,6 +60,9 @@ val commit : string array -> result
 (** [show args] calls git show with arguments [args] *)
 val show : string array -> result
 
+(** [revparse args] calls git rev-parse with arguments [args] *)
+val revparse : string array -> result
+
 (** [diff args] calls git diff with arguments [args] *)
 val diff : string array -> result
 

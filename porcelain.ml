@@ -109,7 +109,21 @@ let get_head =
   in
   String.sub long_ref start (String.length long_ref - start)
 
-let merges = commit_t_list_of_res (Plumbing.log [| "merges" |])
+let get_last_msg =
+  Plumbing.get_out (Plumbing.log [| "-1"; "--format=%s" |])
+  |> List.fold_left (fun acc x -> acc ^ x) ""
+
+let get_upstream =
+  Plumbing.get_out
+    (Plumbing.revparse
+       [| "--abbrev-ref"; "--symbolic-full-name"; "@{upstream}" |])
+  |> List.fold_left (fun acc x -> acc ^ x) ""
+
+let get_push =
+  Plumbing.get_out
+    (Plumbing.revparse
+       [| "--abbrev-ref"; "--symbolic-full-name"; "@{push}" |])
+  |> List.fold_left (fun acc x -> acc ^ x) ""
 
 let add files =
   let args_arr = Array.of_list files in

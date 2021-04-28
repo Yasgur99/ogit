@@ -112,6 +112,9 @@ let show (args : string array) =
   fork_and_execv "git"
     (Array.append [| "git"; "--no-pager"; "show" |] args)
 
+let revparse (args : string array) =
+  fork_and_execv "git" (Array.append [| "git"; "rev-parse" |] args)
+
 let diff (args : string array) =
   fork_and_execv "git"
     (Array.append [| "git"; "--no-pager"; "diff" |] args)

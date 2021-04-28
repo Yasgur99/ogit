@@ -28,10 +28,10 @@ val head : t -> string
 
 (** [merge st] is the commit pointed to by the upstream branch of the
     current branch *)
-val merge : t -> Porcelain.commit_t option
+val merge : t -> string
 
 (** [push st] is the branch that the current branch is being pushed to *)
-val push : t -> Porcelain.commit_t option
+val push : t -> string
 
 (** [exec st c] is the state after executing command [c] from state
     [st]. *)

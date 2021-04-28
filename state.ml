@@ -8,7 +8,8 @@ type render_mode =
 type t = {
   commit_history : Porcelain.commit_t list;
   head : string;
-  (*merge : Porcelain.commit_t option; push : Porcelain.commit_t option;*)
+  merge : string;
+  push : string;
   untracked : string list;
   tracked : string list;
   staged : string list;
@@ -28,7 +29,8 @@ let init_state dir =
   {
     commit_history = Porcelain.log None;
     head = Porcelain.get_head;
-    (* merge = None; push = None;*)
+    merge = Porcelain.get_upstream;
+    push = Porcelain.get_push;
     untracked = Porcelain.get_untracked (Porcelain.status ());
     tracked = Porcelain.get_tracked (Porcelain.status ());
     staged = Porcelain.get_staged (Porcelain.status ());
@@ -42,7 +44,8 @@ let update_git_state st =
   {
     commit_history = Porcelain.log None;
     head = Porcelain.get_head;
-    (* merge = None; push = None;*)
+    merge = Porcelain.get_upstream;
+    push = Porcelain.get_push;
     untracked = Porcelain.get_untracked (Porcelain.status ());
     tracked = Porcelain.get_tracked (Porcelain.status ());
     staged = Porcelain.get_staged (Porcelain.status ());
@@ -55,9 +58,9 @@ let update_git_state st =
 (*********************************************************)
 let head st = st.head
 
-let merge st = failwith "Unimplemented"
+let merge st = st.merge
 
-let push st = failwith "Unimplemented"
+let push st = st.push
 
 let untracked st = st.untracked
 
@@ -83,6 +86,8 @@ let set_curs st i =
   {
     commit_history = st.commit_history;
     head = st.head;
+    merge = st.merge;
+    push = st.push;
     untracked = st.untracked;
     tracked = st.tracked;
     staged = st.staged;
@@ -94,6 +99,8 @@ let set_mode st new_mode =
   {
     commit_history = st.commit_history;
     head = st.head;
+    push = st.push;
+    merge = st.merge;
     untracked = st.untracked;
     tracked = st.tracked;
     staged = st.staged;
@@ -116,6 +123,10 @@ let commit_header = { text = "Recent Commits"; color = "yellow" }
 
 let head_header = { text = "Head"; color = "yellow" }
 
+let merge_header = { text = "Merge"; color = "yellow" }
+
+let push_header = { text = "Push"; color = "yellow" }
+
 let untracked_header = { text = "Untracked"; color = "yellow" }
 
 let tracked_header = { text = "Tracked"; color = "yellow" }
@@ -131,12 +142,11 @@ let printable_of_state st =
   let commits_printable =
     List.map printable_of_commit_t (commit_history st) |> List.rev
   in
-  let recent_msg =
-    match commits_printable with [] -> "" | h :: t -> h.text
-  in
   let head_printable =
-    { text = head st ^ " " ^ recent_msg; color = "white" }
+    { text = head st ^ "   " ^ Porcelain.get_last_msg; color = "white" }
   in
+  let merge_printable = { text = merge st; color = "white" } in
+  let push_printable = { text = push st; color = "white" } in
   let untracked_printable = List.map printable_of_file (untracked st) in
   let tracked_printable = List.map printable_of_file (tracked st) in
   let staged_printable = List.map printable_of_file (staged st) in
@@ -145,6 +155,9 @@ let printable_of_state st =
   @ (staged_header :: staged_printable)
   @ [ blank_line ]
   @ [ head_header; head_printable ]
+  @ [ merge_header; merge_printable ]
+  @ [ push_header; push_printable ]
+  @ [ blank_line ]
   @ (commit_header :: commits_printable)
 
 (*********************************************************)

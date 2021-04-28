@@ -60,12 +60,17 @@ val commit_tree : object_id -> string -> object_id
     in reverse chronological order *)
 val log : object_id option -> commit_t list
 
-(** [get_head] is the value of HEAD *)
+(** [get_head] is the abbreviated refname of HEAD *)
 val get_head : string
 
-(** [merges] is the list of merge commit objects that are reachable from
-    HEAD in reverse chronological order.*)
-val merges : commit_t list
+(** [get_last_msg] is the last commit message *)
+val get_last_msg : string
+
+(** [get_upstream] is the refname of the upstream branch *)
+val get_upstream : string
+
+(** [get_push] is the refname of the branch where we would push to *)
+val get_push : string
 
 (** [string_of_commit c] is a commit in the form [hash msg] *)
 val string_of_commit_t : commit_t -> string
