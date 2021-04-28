@@ -29,6 +29,7 @@ type t =
   | Commit of string
   | Diff
   | Pull
+  | Clear
   | Nop
 
 (** Raised when program should be terminated *)

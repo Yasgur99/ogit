@@ -15,6 +15,7 @@ type t =
   | Commit of string
   | Diff
   | Pull
+  | Clear
   | Nop
 
 exception Program_terminate
@@ -28,6 +29,7 @@ let parse_key key =
   else if key = int_of_char 'c' then Commit ""
   else if key = int_of_char 'd' then Diff
   else if key = int_of_char 'p' then Pull
+  else if key = int_of_char ' ' then Clear
   else Nop
 
 let string_of_cmd cmd =

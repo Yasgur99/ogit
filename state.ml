@@ -74,7 +74,7 @@ let get_mode st = st.mode
 let get_max_y st =
   List.length st.commit_history
   + List.length st.untracked
-  + List.length st.tracked + List.length st.staged + 4
+  + List.length st.tracked + List.length st.staged + 6
 
 let set_curs st i =
   let new_y =
@@ -189,6 +189,11 @@ let exec st = function
   | Command.Unstage -> exec_unstage st
   | Command.Commit msg -> if msg = "" then st else exec_commit st msg
   | Command.Diff -> exec_diff st
+  | Command.Clear -> set_mode st Normal
+<<<<<<< HEAD
+  (* | Command.Pull -> exec_pull st *)
+=======
   | Command.Pull -> exec_pull st
+>>>>>>> bff2ee56ee50fe0c11e9e0ae6438c386b890584d
   | Command.Quit -> raise Command.Program_terminate
   | Command.Nop -> st
