@@ -54,7 +54,7 @@ let fork_and_execv (exe : string) (args : string array) : result =
     (* Bind out pipe to stdout *)
     Unix.dup2 out Unix.stderr;
     (* Bind out pipe to stderr *)
-    Unix.execvp exe args )
+    Unix.execvp exe args)
   else (
     Unix.close out_stdout;
     (* Not used by parent*)
@@ -70,10 +70,13 @@ let fork_and_execv (exe : string) (args : string array) : result =
        closes the input channel it creates.
 
        Unix.close inp_stderr; Unix.close inp_stdout; Unix.close inp; *)
-    make_result stdout stdin out_and_err )
+    make_result stdout stdin out_and_err)
 
 let init (args : string array) =
   fork_and_execv "git" (Array.append [| "git"; "init" |] args)
+
+let pull (args : string array) =
+  fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
 
 let hash_object (args : string array) =
   fork_and_execv "git" (Array.append [| "git"; "hash-object" |] args)

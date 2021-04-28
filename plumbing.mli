@@ -26,6 +26,9 @@ val get_out : result -> string list
 (** [init args] calls git init with arguments [args] *)
 val init : string array -> result
 
+(** [pull] calls git pull with arguments [args] *)
+val pull : string array -> result
+
 (** [hash_object args] calls git hash-object with arguments [args] and
     is the output to standard output *)
 val hash_object : string array -> result

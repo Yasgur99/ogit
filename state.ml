@@ -77,7 +77,7 @@ let get_mode st = st.mode
 let get_max_y st =
   List.length st.commit_history
   + List.length st.untracked
-  + List.length st.tracked + List.length st.staged + 4
+  + List.length st.tracked + List.length st.staged + 6
 
 let set_curs st i =
   let new_y =
@@ -191,6 +191,10 @@ let exec_diff st =
   Porcelain.restore_staged st.tracked;
   set_mode st (DiffMode out)
 
+let exec_pull st =
+  Porcelain.pull ();
+  update_git_state st
+
 let exec st = function
   | Command.NavUp -> set_curs st (get_curs st - 1)
   | Command.NavDown -> set_curs st (get_curs st + 1)
@@ -198,5 +202,7 @@ let exec st = function
   | Command.Unstage -> exec_unstage st
   | Command.Commit msg -> if msg = "" then st else exec_commit st msg
   | Command.Diff -> exec_diff st
+  | Command.Clear -> set_mode st Normal
+  | Command.Pull -> exec_pull st
   | Command.Quit -> raise Command.Program_terminate
   | Command.Nop -> st
