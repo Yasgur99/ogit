@@ -1,4 +1,3 @@
-
 (*******************************************)
 (* Plumbing *)
 (*******************************************)
@@ -30,6 +29,12 @@ module type Plumbing = sig
 
   (** [init args] calls git init with arguments [args] *)
   val init : string array -> result
+
+  (** [push] calls git push with arguments [args]*)
+  val push : string array -> result
+
+  (** [pull args] calls git pull with arguments [args] *)
+  val pull : string array -> result
 
   (** [hash_object args] calls git hash-object with arguments [args] and
       is the output to standard output *)
@@ -68,8 +73,14 @@ module type Plumbing = sig
   (** [diff args] calls git diff with arguments [args] *)
   val diff : string array -> result
 
+  (** [revparse args] calls git rev-parse with arguments [args] *)
+  val revparse : string array -> result
+
   (** [status args] calls git status with arguments [args] *)
   val status : string array -> result
+
+  (** [head args] calls git symbolic-ref HEAD with arguments [args]*)
+  val head : string array -> result
 
   (** [git args] calls git with arguments [args] *)
   val git : string array -> result
@@ -157,6 +168,12 @@ module ProdPlumbing : Plumbing = struct
   let init (args : string array) =
     fork_and_execv "git" (Array.append [|"git"; "init"|] args)
 
+  let push (args : string array) =
+      fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
+
+  let pull (args : string array) =
+    fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
+
   let hash_object (args : string array) =
     fork_and_execv "git" (Array.append [|"git"; "hash-object"|] args)
 
@@ -192,10 +209,17 @@ module ProdPlumbing : Plumbing = struct
 
   let diff (args : string array) =
     fork_and_execv "git" (Array.append [|"git"; "--no-pager"; "diff"|] args)
+
+  let revparse (args : string array) =
+    fork_and_execv "git" (Array.append [| "git"; "rev-parse" |] args)
    
   let status (args : string array) =
     fork_and_execv "git" (Array.append [|"git"; "status"|] args)
    
+  let head (args : string array) =
+    fork_and_execv "git" 
+      (Array.append [| "git"; "symbolic-ref"; "HEAD" |] args)
+
   let git (args : string array) =
     fork_and_execv "git" (Array.append [|"git";|] args)
 end
@@ -221,6 +245,12 @@ module MockPlumbing : PlumbingWithSet = struct
   let make_result out err out_and_err = failwith "unimpelented"
 
   let init (args : string array) =
+    failwith "unimplemented"
+
+  let push (args : string array) =
+    failwith "unimplemented"
+
+  let pull (args : string array) =
     failwith "unimplemented"
 
   let hash_object (args : string array) =
@@ -258,10 +288,17 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let diff (args : string array) =
     failwith "unimplemented"
+
+  let revparse (args : string array) =
+    failwith "unimplemented"
    
   let status (args : string array) =
+    failwith "unimplemented"
+
+  let head (args : string array) =
     failwith "unimplemented"
    
   let git (args : string array) =
     failwith "unimplemented"
 end
+

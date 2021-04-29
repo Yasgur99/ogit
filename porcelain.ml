@@ -23,8 +23,15 @@ module type Porcelain = sig
       with name [n] as a subdirectory in the current working directory *)
   val init : string option -> unit
 
+  (** [pull] pulls files from repository *)
+  val pull : unit -> unit
+
+  (** [push] pulls files from repository *)
+  val push : unit -> unit
+
   (** [hash_object f] calls [Plumbing.hash_object] with command line
-      argument -w, which stores data in file with filename [f] in a repository's .git/objects directory and is the object that refers to
+      argument -w, which stores data in file with filename [f] in a
+      repository's .git/objects directory and is the object that refers to
       that data object *)
   val hash_object : string -> object_id
 
@@ -62,12 +69,13 @@ module type Porcelain = sig
       in reverse chronological order *)
   val log : object_id option -> commit_t list
 
-  (** [string_of_commit c] is a commit in the form [hash msg] *)
-  val string_of_commit_t : commit_t -> string
-
   (** [add fnames] adds the files with filenames [fnames] to the staging
       area *)
   val add : string list -> unit
+
+  (** [branch_msg n] is the message of the last commit in the branch 
+      named [n] *)
+  val branch_msg : string -> string
 
   (** [restore_staged fnames] restores staged files [fnames] from the staging
       area *)
@@ -75,16 +83,19 @@ module type Porcelain = sig
 
   (** [commit msg] commits the changes in the staging area with commit
       message [msg] *)
-  val commit : string -> unit
+  val commit : string -> string 
 
   (** [show] shows the staged, unstaged, and untracked files *)
   val show : unit -> unit
 
   (** [diff] shows the diffs of tracked files *)
-  val diff : unit -> unit
+  val diff : unit -> string
 
   (** [status] shows the status of the working tree *)
   val status : unit -> status_t
+
+  (** [string_of_commit c] is a commit in the form [hash msg] *)
+  val string_of_commit_t : commit_t -> string
 
   (** [get_untracked s] is the untracked filenames in the status [s] *)
   val get_untracked : status_t -> string list
@@ -97,7 +108,6 @@ module type Porcelain = sig
 end
 
 module PorcelainImpl (P : Plumbing) = struct
-
   type commit_t = {
     tree : string;
     (*parents : string;*)
@@ -133,7 +143,12 @@ module PorcelainImpl (P : Plumbing) = struct
     staged : string list;
   }
 
+
   let init (dir : string option) : unit = failwith "Unimplemented"
+
+  let pull () = ignore (P.pull [||])
+
+  let push () = ignore (P.push [||])
 
   (* match dir with | None -> Plumbing.init [||] | Some _ -> Plumbing.init
      [| dir |] *)
@@ -191,7 +206,47 @@ module PorcelainImpl (P : Plumbing) = struct
         let res = P.log [| h; "-10" |] in
         commit_t_list_of_res res
 
-  let add files =
+  let branch_msg name =
+    let res = P.log [| "--graph"; name; "-1"; "--format=%s" |] in
+    let msg =
+      P.get_out res |> List.fold_left (fun acc x -> acc ^ x) ""
+    in
+    let start = String.index msg '*' in
+    String.sub msg (start + 2) (String.length msg - start - 2)
+
+  let get_head =
+    let long_ref =
+      match P.get_out (P.head [||]) with
+      | [] -> ""
+      | h :: t -> h
+    in
+    let start =
+      match long_ref with
+      | "" -> 0
+      | _ ->
+          Str.search_backward (Str.regexp "heads") long_ref
+            (String.length long_ref - 1)
+          + 6
+    in
+    String.sub long_ref start (String.length long_ref - start)
+
+  let get_last_msg =
+    P.get_out (P.log [| "-1"; "--format=%s" |])
+    |> List.fold_left (fun acc x -> acc ^ x) ""
+
+  let get_upstream =
+    P.get_out
+      (P.revparse
+         [| "--abbrev-ref"; "--symbolic-full-name"; "@{upstream}" |])
+    |> List.fold_left (fun acc x -> acc ^ x) ""
+
+  let get_push =
+    P.get_out
+      (P.revparse
+         [| "--abbrev-ref"; "--symbolic-full-name"; "@{push}" |])
+    |> List.fold_left (fun acc x -> acc ^ x) ""
+
+ let add files =
     let args_arr = Array.of_list files in
     ignore (P.add args_arr)
 
@@ -200,11 +255,28 @@ module PorcelainImpl (P : Plumbing) = struct
     let args_arr = Array.of_list args_lst in
     ignore (P.restore args_arr)
 
-  let commit msg = ignore (P.commit [| "-m"; msg |])
+  let rec rm_leading_spaces str =
+    match String.split_on_char ' ' str with
+    | [] -> str
+    | [ "" ] -> str
+    | "" :: t ->
+        rm_leading_spaces (String.sub str 0 (String.length str - 1))
+    | h :: t -> str
+
+  let commit msg =
+    P.commit [| "-m"; msg |]
+    |> P.get_out
+    |> List.map rm_leading_spaces
+    |> List.rev |> String.concat "\n"
+
 
   let show () = failwith "unimplemented" (*Plumbing.show [||]*)
 
-  let diff () = failwith "unimplemented" (*Plumbing.diff [||]*)
+  let diff () =
+    P.diff [||]
+    |> P.get_out
+    |> List.map rm_leading_spaces
+    |> List.rev |> String.concat "\n"
 
   let empty_status_t = { untracked = []; tracked = []; staged = [] }
 
@@ -229,58 +301,63 @@ module PorcelainImpl (P : Plumbing) = struct
       staged = filename :: status.staged;
     }
 
-  let add_to_staged_and_tracked status filename =
-    let status' = add_to_staged status filename in
-    add_to_tracked status' filename
+let add_to_staged_and_tracked status filename =
+  let status' = add_to_staged status filename in
+  add_to_tracked status' filename
 
-  let add_to_status_t status line =
-    let filename = String.sub line 2 (String.length line - 2) in
-    let filename = String.trim filename in
-    match String.sub line 0 2 with
-    | "??" -> add_to_untracked status filename
-    | " M" -> add_to_tracked status filename
-    | "M " -> add_to_staged status filename
-    | "MM" -> add_to_staged_and_tracked status filename
-    | "MD" -> add_to_staged_and_tracked status filename
-    | " A" -> add_to_tracked status filename
-    | "A " -> add_to_staged status filename
-    | "AM" -> add_to_staged_and_tracked status filename
-    | "AD" -> add_to_staged_and_tracked status filename
-    | " D" -> add_to_tracked status filename
-    | "D " -> add_to_staged status filename
-    | " R" -> add_to_tracked status filename
-    | "R " -> add_to_staged status filename
-    | "RM" -> add_to_staged_and_tracked status filename
-    | "RD" -> add_to_staged_and_tracked status filename
-    | " C" -> add_to_tracked status filename
-    | "C " -> add_to_staged status filename
-    | "CM" -> add_to_staged_and_tracked status filename
-    | "CD" -> add_to_staged_and_tracked status filename
-    | "DR" -> add_to_staged_and_tracked status filename
-    | "DC" -> add_to_staged_and_tracked status filename
-    | "DD" -> add_to_staged_and_tracked status filename
-    | "AU" -> add_to_staged_and_tracked status filename
-    | "UD" -> add_to_staged_and_tracked status filename
-    | "UA" -> add_to_staged_and_tracked status filename
-    | "DU" -> add_to_staged_and_tracked status filename
-    | "AA" -> add_to_staged_and_tracked status filename
-    | "UU" -> add_to_staged_and_tracked status filename
-    | _ -> failwith "TODO throw some failure exception"
+let add_to_status_t status line =
+  let filename = String.sub line 2 (String.length line - 2) in
+  let filename = String.trim filename in
+  match String.sub line 0 2 with
+  | "??" -> add_to_untracked status filename
+  | " M" -> add_to_tracked status filename
+  | "M " -> add_to_staged status filename
+  | "MM" -> add_to_staged_and_tracked status filename
+  | "MD" -> add_to_staged_and_tracked status filename
+  | " A" -> add_to_tracked status filename
+  | "A " -> add_to_staged status filename
+  | "AM" -> add_to_staged_and_tracked status filename
+  | "AD" -> add_to_staged_and_tracked status filename
+  | " D" -> add_to_tracked status filename
+  | "D " -> add_to_staged status filename
+  | " R" -> add_to_tracked status filename
+  | "R " -> add_to_staged status filename
+  | "RM" -> add_to_staged_and_tracked status filename
+  | "RD" -> add_to_staged_and_tracked status filename
+  | " C" -> add_to_tracked status filename
+  | "C " -> add_to_staged status filename
+  | "CM" -> add_to_staged_and_tracked status filename
+  | "CD" -> add_to_staged_and_tracked status filename
+  | "DR" -> add_to_staged_and_tracked status filename
+  | "DC" -> add_to_staged_and_tracked status filename
+  | "DD" -> add_to_staged_and_tracked status filename
+  | "AU" -> add_to_staged_and_tracked status filename
+  | "UD" -> add_to_staged_and_tracked status filename
+  | "UA" -> add_to_staged_and_tracked status filename
+  | "DU" -> add_to_staged_and_tracked status filename
+  | "AA" -> add_to_staged_and_tracked status filename
+  | "UU" -> add_to_staged_and_tracked status filename
+  | _ -> failwith "TODO throw some failure exception"
 
-  let status_t_of_string_list lines =
-    List.fold_left add_to_status_t empty_status_t lines
+let status_t_of_string_list lines =
+  List.fold_left add_to_status_t empty_status_t lines
 
-  let status () =
-    let status = P.status [| "--porcelain" |] in
-    let lines = P.get_out status in
-    status_t_of_string_list lines
+let status () =
+  let status = P.status [| "--porcelain" |] in
+  let lines = P.get_out status in
+  status_t_of_string_list lines
 
-  let get_untracked status = status.untracked
+let get_untracked status = status.untracked
 
-  let get_tracked status = status.tracked
+let get_tracked status = status.tracked
 
-  let get_staged status = status.staged
+let get_staged status = status.staged
 
-  let string_of_commit_t c = c.tree ^ " " ^ c.msg
-                                              
+let string_of_commit_t c = c.tree ^ " " ^ c.msg
+
 end
+(* 
+
+   Welcome! s = Stage u = Unstage c = Commit q = Quit Use Up and Down
+   arrows to navigate. Hover over a file and hit a key to move it where
+   you want. ADD MORE *)

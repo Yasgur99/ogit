@@ -17,6 +17,12 @@ module type Renderer = sig
 
   val render_commit_mode : MState.t -> Curses.window -> string
 
+  val render_diff_mode : MState.t -> Curses.window -> unit
+
+  val render_push_mode : MState.t -> Curses.window -> unit
+
+  val render_pull_mode : MState.t -> Curses.window -> unit
+
   val get_color : string -> int
 end
 
@@ -155,35 +161,60 @@ module RendererImpl (St : State) : (Renderer with module MState = St) = struct
   let commit_msg_prompt : MState.printable =
     { text = "Enter your commit message: "; color = "green" }
 
-  let commit_failed : MState.printable =
-    { text = "No changes to commit."; color = "red" }
+  let commit_header : MState.printable =
+    { text = "Commit results: "; color = "green" }
 
-  let commit_done : MState.printable =
-    { text = "Commit done."; color = "green" }
+  let diff_header : MState.printable =
+    { text = "Diff results: "; color = "magenta" }
+
+  let push_options : MState.printable =
+    { text = "p  push to remote"; color = "green" }
+
+  let pull_options : MState.printable =
+    { text = "l  pull from remote"; color = "green" }
 
   let blank_line : MState.printable = { text = " "; color = "white" }
 
-  let render state win =
-    Curses.werase win;
-    let lines = MState.printable_of_state state in
-    cursor_reset win;
-    let render_curs = MState.get_mode state <> CommitMode in
-    render_lines win lines (MState.get_curs state) render_curs;
-    render_line win (MState.get_curs state) false blank_line;
-    if MState.get_mode state = CommitDone then
-      render_line win (MState.get_curs state) false commit_done
-    else if MState.get_mode state = CommitFailed then
-      render_line win (MState.get_curs state) false commit_failed
-    else ();
-    check_err (Curses.wrefresh win)
+let render_commit_done state win msg =
+  render_line win (MState.get_curs state) false commit_header;
+  render_line win (MState.get_curs state) false
+    { text = msg; color = "white" }
 
-  let render_commit_mode state win =
-    render state win;
-    render_line win (MState.get_curs state) false blank_line;
-    render_line win (MState.get_curs state) false commit_msg_prompt;
-    let msg = parse_string win "" in
-    check_err (Curses.noecho ());
-    render (MState.update_mode state Command.Nop) win;
-    msg
+let render state win =
+  Curses.werase win;
+  let lines = MState.printable_of_state state in
+  cursor_reset win;
+  let render_curs = MState.get_mode state <> CommitMode in
+  render_lines win lines (MState.get_curs state) render_curs;
+  render_line win (MState.get_curs state) false blank_line;
+  match MState.get_mode state with
+  | CommitDone msg -> render_commit_done state win msg
+  | _ ->
+      ();
+      check_err (Curses.wrefresh win)
 
+let render_commit_mode state win =
+  render state win;
+  render_line win (MState.get_curs state) false commit_msg_prompt;
+  let msg = parse_string win "" in
+  check_err (Curses.noecho ());
+  render (MState.update_mode state Command.Nop) win;
+  msg
+
+let render_diff_mode state win =
+  render state win;
+  render_line win (MState.get_curs state) false diff_header;
+  match MState.get_mode state with
+  | DiffMode str ->
+      render_line win (MState.get_curs state) false
+        { text = str; color = "white" }
+  | _ -> failwith "Wrong render function"
+
+let render_push_mode state win =
+  render state win;
+  render_line win (MState.get_curs state) false push_options
+
+let render_pull_mode state win =
+  render state win;
+  render_line win (MState.get_curs state) false pull_options
 end

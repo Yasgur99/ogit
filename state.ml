@@ -13,8 +13,11 @@ module type State = sig
   type render_mode =
     | Normal
     | CommitMode
-    | CommitDone
-    | CommitFailed
+    | CommitDone of string
+    | DiffMode of string
+    | PushMode
+    | PullMode
+
 
   (** The representation type that specifies what [color] [text] should be
       printed as. *)
@@ -32,14 +35,14 @@ module type State = sig
 
   (** [head st] is the commit pointed to by the head in the current state
       [st] *)
-  val head : t -> MPorcelain.status_t
+  val head : t -> string
 
   (** [merge st] is the commit pointed to by the upstream branch of the
       current branch *)
-  val merge : t -> MPorcelain.commit_t option
+  val merge : t -> string
 
   (** [push st] is the branch that the current branch is being pushed to *)
-  val push : t -> MPorcelain.commit_t option
+  val push : t -> string
 
   (** [exec st c] is the state after executing command [c] from state
       [st]. *)
@@ -75,14 +78,17 @@ module StateImpl (P : Plumbing) : State = struct
   type render_mode =
     | Normal
     | CommitMode
-    | CommitDone
-    | CommitFailed
+    | CommitDone of string
+    | DiffMode of string
+    | PushMode
+    | PullMode
 
   (** The representation type for state. *)
   type t = {
     commit_history : MPorcelain.commit_t list;
-    (*head : Porcelain.commit_t; merge : Porcelain.commit_t option; push :
-      Porcelain.commit_t option;*)
+    head : string;
+    merge : string;
+    push : string;
     untracked : string list;
     tracked : string list;
     staged : string list;
@@ -95,41 +101,45 @@ module StateImpl (P : Plumbing) : State = struct
     color : string;
   }
 
-  (** [init_state dir] is the state of the directory [dir]. The cursor
-      points to the first line of the terminal. Requires [dir] is a
-      directory containing a valid .git directory *)
-  let init_state dir =
-    {
-      commit_history = MPorcelain.log None;
-      (*head = get_head (); merge = None; push = None;*)
-      untracked = MPorcelain.get_untracked (MPorcelain.status ());
-      tracked = MPorcelain.get_tracked (MPorcelain.status ());
-      staged = MPorcelain.get_staged (MPorcelain.status ());
-      curs = 0;
-      mode = Normal;
-    }
+(** [init_state dir] is the state of the directory [dir]. The cursor
+    points to the first line of the terminal. Requires [dir] is a
+    directory containing a valid .git directory *)
+let init_state dir =
+  {
+    commit_history = MPorcelain.log None;
+    head = MPorcelain.get_head;
+    merge = MPorcelain.get_upstream;
+    push = MPorcelain.get_push;
+    untracked = MPorcelain.get_untracked (MPorcelain.status ());
+    tracked = MPorcelain.get_tracked (MPorcelain.status ());
+    staged = MPorcelain.get_staged (MPorcelain.status ());
+    curs = 0;
+    mode = Normal;
+  }
 
-  (** [update_git_state st] updates commit_history, untracked, tracked and
-      staged files according to the git directory *)
-  let update_git_state st =
-    {
-      commit_history = MPorcelain.log None;
-      (*head = get_head (); merge = None; push = None;*)
-      untracked = MPorcelain.get_untracked (MPorcelain.status ());
-      tracked = MPorcelain.get_tracked (MPorcelain.status ());
-      staged = MPorcelain.get_staged (MPorcelain.status ());
-      curs = st.curs;
-      mode = Normal;
-    }
+(** [update_git_state st] updates commit_history, untracked, tracked and
+    staged files according to the git directory *)
+let update_git_state st =
+  {
+    commit_history = MPorcelain.log None;
+    head = MPorcelain.get_head;
+    merge = MPorcelain.get_upstream;
+    push = MPorcelain.get_push;
+    untracked = MPorcelain.get_untracked (MPorcelain.status ());
+    tracked = MPorcelain.get_tracked (MPorcelain.status ());
+    staged = MPorcelain.get_staged (MPorcelain.status ());
+    curs = st.curs;
+    mode = Normal;
+  }
 
-  (*********************************************************)
-  (* Access/Mutate state *)
-  (*********************************************************)
-  let head st = failwith "Unimplemented"
+(*********************************************************)
+(* Access/Mutate state *)
+(*********************************************************)
+  let head st = st.head
 
-  let merge st = failwith "Unimplemented"
+  let merge st = st.merge
 
-  let push st = failwith "Unimplemented"
+  let push st = st.push
 
   let untracked st = st.untracked
 
@@ -154,6 +164,9 @@ module StateImpl (P : Plumbing) : State = struct
     in
     {
       commit_history = st.commit_history;
+      head = st.head;
+      merge = st.merge;
+      push = st.push;
       untracked = st.untracked;
       tracked = st.tracked;
       staged = st.staged;
@@ -164,6 +177,9 @@ module StateImpl (P : Plumbing) : State = struct
   let set_mode st new_mode =
     {
       commit_history = st.commit_history;
+      head = st.head;
+      push = st.push;
+      merge = st.merge;
       untracked = st.untracked;
       tracked = st.tracked;
       staged = st.staged;
@@ -178,11 +194,17 @@ module StateImpl (P : Plumbing) : State = struct
     set_mode st new_mode
 
   (*********************************************************)
-  (* Printable  *)
+  (* Printable *)
   (*********************************************************)
-  let printable_of_file f = { text = f; color = "white" }
+  let printable_of_file c f = { text = f; color = c }
 
   let commit_header = { text = "Recent Commits"; color = "yellow" }
+
+  let head_header = { text = "Head"; color = "yellow" }
+
+  let merge_header = { text = "Merge"; color = "yellow" }
+
+  let push_header = { text = "Push"; color = "yellow" }
 
   let untracked_header = { text = "Untracked"; color = "yellow" }
 
@@ -197,14 +219,33 @@ module StateImpl (P : Plumbing) : State = struct
 
   let printable_of_state st =
     let commits_printable =
-      List.map printable_of_commit_t (commit_history st)
+      List.map printable_of_commit_t (commit_history st) |> List.rev
     in
-    let untracked_printable = List.map printable_of_file (untracked st) in
-    let tracked_printable = List.map printable_of_file (tracked st) in
-    let staged_printable = List.map printable_of_file (staged st) in
+    let head_printable =
+      { text = head st ^ "   " ^ MPorcelain.get_last_msg; color = "white" }
+    in
+    let merge_printable =
+      {
+        text = merge st ^ "   " ^ MPorcelain.branch_msg (merge st);
+        color = "white";
+      }
+    in
+    let push_printable =
+      {
+        text = push st ^ "   " ^ MPorcelain.branch_msg (push st);
+        color = "white";
+      }
+    in
+    let untracked_printable = List.map (printable_of_file "red") (untracked st) in
+    let tracked_printable = List.map (printable_of_file "red") (tracked st) in
+    let staged_printable = List.map (printable_of_file "green") (staged st) in
     untracked_header :: untracked_printable
     @ tracked_header :: tracked_printable
     @ staged_header :: staged_printable
+    @ [ blank_line ]
+    @ [ head_header; head_printable ]
+    @ [ merge_header; merge_printable ]
+    @ [ push_header; push_printable ]
     @ [ blank_line ]
     @ commit_header :: commits_printable
 
@@ -228,10 +269,24 @@ module StateImpl (P : Plumbing) : State = struct
     update_git_state st
 
   let exec_commit st msg =
-    if List.length st.staged = 0 then set_mode st CommitFailed
-    else (
-      MPorcelain.commit msg;
-      set_mode (update_git_state st) CommitDone)
+    let output = MPorcelain.commit msg in
+    set_mode (update_git_state st) (CommitDone output)
+
+  let exec_diff st =
+    MPorcelain.add st.untracked;
+    MPorcelain.add st.tracked;
+    let out = MPorcelain.diff () in
+    MPorcelain.restore_staged st.untracked;
+    MPorcelain.restore_staged st.tracked;
+    set_mode st (DiffMode out)
+
+  let exec_pull st =
+    MPorcelain.pull ();
+    set_mode (update_git_state st) Normal
+
+  let exec_push st =
+    MPorcelain.push ();
+    set_mode (update_git_state st) Normal
 
   let exec st = function
     | Command.NavUp -> set_curs st (get_curs st - 1)
@@ -239,6 +294,12 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.Stage -> exec_add st
     | Command.Unstage -> exec_unstage st
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
+    | Command.Diff -> exec_diff st
+    | Command.Clear -> set_mode st Normal
+    | Command.PullMenu -> set_mode st PullMode
+    | Command.PullRemote -> exec_pull st
+    | Command.PushMenu -> set_mode st PushMode
+    | Command.PushRemote -> exec_push st
     | Command.Quit -> raise Command.Program_terminate
     | Command.Nop -> st
-end
+  end

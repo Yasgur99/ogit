@@ -13,6 +13,12 @@ type t =
   | NavUp
   | NavDown
   | Commit of string
+  | Diff
+  | PullMenu
+  | PullRemote
+  | PushMenu
+  | PushRemote
+  | Clear
   | Nop
 
 exception Program_terminate
@@ -24,7 +30,17 @@ let parse_key key =
   else if key = int_of_char 'j' || key = Curses.Key.down then NavDown
   else if key = int_of_char 'q' then Quit
   else if key = int_of_char 'c' then Commit ""
+  else if key = int_of_char 'd' then Diff
+  else if key = int_of_char 'L' then PullMenu
+  else if key = int_of_char 'P' then PushMenu
+  else if key = int_of_char ' ' then Clear
   else Nop
+
+let parse_key_pull_mode key =
+  if key = int_of_char 'l' then PullRemote else Nop
+
+let parse_key_push_mode key =
+  if key = int_of_char 'p' then PullRemote else Nop
 
 let string_of_cmd cmd =
   match cmd with
@@ -33,5 +49,11 @@ let string_of_cmd cmd =
   | NavUp -> "navup"
   | NavDown -> "navdown"
   | Commit _ -> "commit"
+  | Diff -> "diff"
+  | PullMenu -> "pull"
+  | PullRemote -> "pull"
+  | PushMenu -> "push"
+  | PushRemote -> "push"
+  | Clear -> "clear"
   | Quit -> "quit"
   | Nop -> "nop"
