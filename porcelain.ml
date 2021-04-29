@@ -101,7 +101,7 @@ let branch_msg name =
     Plumbing.get_out res |> List.fold_left (fun acc x -> acc ^ x) ""
   in
   let start = String.index msg '*' in
-  String.sub msg (start + 4) (String.length msg - start - 4)
+  String.sub msg (start + 2) (String.length msg - start - 2)
 
 let get_head =
   let long_ref =
