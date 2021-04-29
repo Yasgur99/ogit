@@ -15,6 +15,7 @@ type t =
   | Commit of string
   | Diff
   | Pull
+  | Push
   | Clear
   | Nop
 
@@ -28,7 +29,8 @@ let parse_key key =
   else if key = int_of_char 'q' then Quit
   else if key = int_of_char 'c' then Commit ""
   else if key = int_of_char 'd' then Diff
-  else if key = int_of_char 'p' then Pull
+  else if key = int_of_char 'L' then Pull
+  else if key = int_of_char 'P' then Push
   else if key = int_of_char ' ' then Clear
   else Nop
 
@@ -41,6 +43,7 @@ let string_of_cmd cmd =
   | Commit _ -> "commit"
   | Diff -> "diff"
   | Pull -> "pull"
+  | Push -> "push"
   | Clear -> "clear"
   | Quit -> "quit"
   | Nop -> "nop"

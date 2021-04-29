@@ -78,6 +78,9 @@ let init (args : string array) =
 let pull (args : string array) =
   fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
 
+let push (args : string array) =
+  fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
+
 let hash_object (args : string array) =
   fork_and_execv "git" (Array.append [| "git"; "hash-object" |] args)
 

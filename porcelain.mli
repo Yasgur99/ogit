@@ -23,6 +23,9 @@ val init : string option -> unit
 (** [pull] pulls files from repository *)
 val pull : unit -> unit
 
+(** [push] pulls files from repository *)
+val push : unit -> unit
+
 (** [hash_object f] calls [Plumbing.hash_object] with command line
     argument -w, which stores data in file with filename [f] in a
     repository's .git/objects directory and is the object that refers to

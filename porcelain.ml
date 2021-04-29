@@ -42,6 +42,8 @@ let init (dir : string option) : unit = failwith "Unimplemented"
 
 let pull () = ignore (Plumbing.pull [||])
 
+let push () = ignore (Plumbing.push [||])
+
 let hash_object file : object_id = failwith "unimplemented"
 
 (* Plumbing.hash_object [| "-w"; file |] *)

@@ -160,15 +160,15 @@ let printable_of_state st =
   let untracked_printable = List.map printable_of_file (untracked st) in
   let tracked_printable = List.map printable_of_file (tracked st) in
   let staged_printable = List.map printable_of_file (staged st) in
-  (untracked_header :: untracked_printable)
-  @ (tracked_header :: tracked_printable)
-  @ (staged_header :: staged_printable)
+  untracked_header :: untracked_printable
+  @ tracked_header :: tracked_printable
+  @ staged_header :: staged_printable
   @ [ blank_line ]
   @ [ head_header; head_printable ]
   @ [ merge_header; merge_printable ]
   @ [ push_header; push_printable ]
   @ [ blank_line ]
-  @ (commit_header :: commits_printable)
+  @ commit_header :: commits_printable
 
 (*********************************************************)
 (* Exec *)
@@ -205,6 +205,10 @@ let exec_pull st =
   Porcelain.pull ();
   update_git_state st
 
+let exec_push st =
+  Porcelain.push ();
+  update_git_state st
+
 let exec st = function
   | Command.NavUp -> set_curs st (get_curs st - 1)
   | Command.NavDown -> set_curs st (get_curs st + 1)
@@ -214,5 +218,6 @@ let exec st = function
   | Command.Diff -> exec_diff st
   | Command.Clear -> set_mode st Normal
   | Command.Pull -> exec_pull st
+  | Command.Push -> exec_push st
   | Command.Quit -> raise Command.Program_terminate
   | Command.Nop -> st
