@@ -145,8 +145,18 @@ let printable_of_state st =
   let head_printable =
     { text = head st ^ "   " ^ Porcelain.get_last_msg; color = "white" }
   in
-  let merge_printable = { text = merge st; color = "white" } in
-  let push_printable = { text = push st; color = "white" } in
+  let merge_printable =
+    {
+      text = merge st ^ "   " ^ Porcelain.branch_msg (merge st);
+      color = "white";
+    }
+  in
+  let push_printable =
+    {
+      text = push st ^ "   " ^ Porcelain.branch_msg (push st);
+      color = "white";
+    }
+  in
   let untracked_printable = List.map printable_of_file (untracked st) in
   let tracked_printable = List.map printable_of_file (tracked st) in
   let staged_printable = List.map printable_of_file (staged st) in

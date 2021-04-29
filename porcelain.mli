@@ -63,6 +63,10 @@ val commit_tree : object_id -> string -> object_id
     in reverse chronological order *)
 val log : object_id option -> commit_t list
 
+(** [branch_msg n] is the message of the last commit in the branch named
+    [n]*)
+val branch_msg : string -> string
+
 (** [get_head] is the abbreviated refname of HEAD *)
 val get_head : string
 

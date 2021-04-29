@@ -95,6 +95,14 @@ let log hash =
       let res = Plumbing.log [| h; "-10" |] in
       commit_t_list_of_res res
 
+let branch_msg name =
+  let res = Plumbing.log [| "--graph"; name; "-1"; "--format=%s" |] in
+  let msg =
+    Plumbing.get_out res |> List.fold_left (fun acc x -> acc ^ x) ""
+  in
+  let start = String.index msg '*' in
+  String.sub msg (start + 4) (String.length msg - start - 4)
+
 let get_head =
   let long_ref =
     match Plumbing.get_out (Plumbing.head [||]) with
