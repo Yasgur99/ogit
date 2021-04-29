@@ -117,7 +117,7 @@ let update_mode st cmd =
 (*********************************************************)
 (* Printable *)
 (*********************************************************)
-let printable_of_file f = { text = f; color = "white" }
+let printable_of_file c f = { text = f; color = c }
 
 let commit_header = { text = "Recent Commits"; color = "yellow" }
 
@@ -157,9 +157,9 @@ let printable_of_state st =
       color = "white";
     }
   in
-  let untracked_printable = List.map printable_of_file (untracked st) in
-  let tracked_printable = List.map printable_of_file (tracked st) in
-  let staged_printable = List.map printable_of_file (staged st) in
+  let untracked_printable = List.map (printable_of_file "red") (untracked st) in
+  let tracked_printable = List.map (printable_of_file "red") (tracked st) in
+  let staged_printable = List.map (printable_of_file "green") (staged st) in
   untracked_header :: untracked_printable
   @ tracked_header :: tracked_printable
   @ staged_header :: staged_printable
