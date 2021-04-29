@@ -7,10 +7,10 @@ let run_diff_mode win st =
   Renderer.render_diff_mode st win;
   State.exec st Command.Diff
 
-let run_normal win st render_fun =
+let run_normal win st render_fun parse_fun =
   render_fun st win;
   let key = Curses.wgetch win in
-  let cmd = Command.parse_key key in
+  let cmd = parse_fun key in
   let new_st = State.update_mode st cmd in
   State.exec new_st cmd
 
@@ -18,13 +18,20 @@ let rec run win st =
   match State.get_mode st with
   | State.CommitMode -> run win (run_commit_mode win st)
   | State.DiffMode _ ->
-      run win (run_normal win st Renderer.render_diff_mode)
-  | State.CommitDone _ -> run win (run_normal win st Renderer.render)
+      run win
+        (run_normal win st Renderer.render_diff_mode Command.parse_key)
+  | State.CommitDone _ ->
+      run win (run_normal win st Renderer.render Command.parse_key)
   | State.PushMode ->
-      run win (run_normal win st Renderer.render_push_mode)
+      run win
+        (run_normal win st Renderer.render_push_mode
+           Command.parse_key_push_mode)
   | State.PullMode ->
-      run win (run_normal win st Renderer.render_pull_mode)
-  | State.Normal -> run win (run_normal win st Renderer.render)
+      run win
+        (run_normal win st Renderer.render_pull_mode
+           Command.parse_key_pull_mode)
+  | State.Normal ->
+      run win (run_normal win st Renderer.render Command.parse_key)
 
 let run_git args =
   List.iter print_endline (Plumbing.get_out (Plumbing.git args))

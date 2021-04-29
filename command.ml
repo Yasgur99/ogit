@@ -32,11 +32,15 @@ let parse_key key =
   else if key = int_of_char 'c' then Commit ""
   else if key = int_of_char 'd' then Diff
   else if key = int_of_char 'L' then PullMenu
-  else if key = int_of_char 'l' then PullRemote
   else if key = int_of_char 'P' then PushMenu
-  else if key = int_of_char 'p' then PushRemote
   else if key = int_of_char ' ' then Clear
   else Nop
+
+let parse_key_pull_mode key =
+  if key = int_of_char 'l' then PullRemote else Nop
+
+let parse_key_push_mode key =
+  if key = int_of_char 'p' then PullRemote else Nop
 
 let string_of_cmd cmd =
   match cmd with

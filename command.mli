@@ -44,5 +44,13 @@ exception Program_terminate
     NavDown Key: Down -> NavDown Key: q -> Quit test*)
 val parse_key : key -> t
 
+(** [parse_key_pull_mode key] has the same function as [parse_key key]
+    but works when pull menu has been activated *)
+val parse_key_pull_mode : key -> t
+
+(** [parse_key_push_mode key] has the same function as [parse_key key]
+    but works when push menu has been activated *)
+val parse_key_push_mode : key -> t
+
 (** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)
 val string_of_cmd : t -> string
