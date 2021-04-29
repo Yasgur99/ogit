@@ -379,12 +379,27 @@ let porcelain_tests = status_tests
 (* State Tests *)
 (*****************************************************)
 
+let init_state_test 
+  (name : string) : test =
+name >:: fun _ ->
+assert_equal true false
+
 let exec_test
   (name : string) : test =
 name >:: fun _ ->
 assert_equal true false
 
-let init_state_tests = []
+let init_state_tests = [
+  init_state_test "not a git dir";
+  init_state_test "no commit history";
+  init_state_test "some commit history";
+  init_state_test "no tracked";
+  init_state_test "some tracked";
+  init_state_test "no staged";
+  init_state_test "some staged";
+  init_state_test "is in normal mode";
+]
+
 let commit_history_tests = []
 let exec_tests = [
   exec_test "stage staged file";
@@ -440,6 +455,11 @@ let parse_key_tests = [
 let command_tests =
    parse_key_tests
 
+(*****************************************************)
+(* Mock Plumbing *)
+(*****************************************************)
+module TestPorcelain = Porcelain (MockPlumbing)
+module TestState = State (MockPlumbing)
 (*****************************************************)
 (* Test Suite *)
 (*****************************************************)
