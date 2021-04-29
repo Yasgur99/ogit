@@ -3,6 +3,7 @@ type render_mode =
   | CommitMode
   | CommitDone of string
   | DiffMode of string
+  | PushMode
 
 (** The representation type for state. *)
 type t = {
@@ -207,7 +208,7 @@ let exec_pull st =
 
 let exec_push st =
   Porcelain.push ();
-  update_git_state st
+  set_mode (update_git_state st) Normal
 
 let exec st = function
   | Command.NavUp -> set_curs st (get_curs st - 1)
@@ -217,7 +218,8 @@ let exec st = function
   | Command.Commit msg -> if msg = "" then st else exec_commit st msg
   | Command.Diff -> exec_diff st
   | Command.Clear -> set_mode st Normal
-  | Command.Pull -> exec_pull st
-  | Command.Push -> exec_push st
+  | Command.PullMenu -> exec_pull st
+  | Command.PushMenu -> set_mode st PushMode
+  | Command.PushRemote -> exec_push st
   | Command.Quit -> raise Command.Program_terminate
   | Command.Nop -> st

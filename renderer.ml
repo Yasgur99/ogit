@@ -137,6 +137,9 @@ let commit_header : State.printable =
 let diff_header : State.printable =
   { text = "Diff results: "; color = "magenta" }
 
+let push_options : State.printable =
+  { text = "p  push to remote"; color = "green" }
+
 let blank_line : State.printable = { text = " "; color = "white" }
 
 let render_commit_done state win msg =
@@ -173,3 +176,7 @@ let render_diff_mode state win =
       render_line win (State.get_curs state) false
         { text = str; color = "white" }
   | _ -> failwith "Wrong render function"
+
+let render_push_mode state win =
+  render state win;
+  render_line win (State.get_curs state) false push_options

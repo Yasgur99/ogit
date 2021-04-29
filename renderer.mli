@@ -13,4 +13,6 @@ val render_commit_mode : State.t -> Curses.window -> string
 
 val render_diff_mode : State.t -> Curses.window -> unit
 
+val render_push_mode : State.t -> Curses.window -> unit
+
 val get_color : string -> int

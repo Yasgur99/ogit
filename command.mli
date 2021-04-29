@@ -28,8 +28,9 @@ type t =
   | NavDown
   | Commit of string
   | Diff
-  | Pull
-  | Push
+  | PullMenu
+  | PushMenu
+  | PushRemote
   | Clear
   | Nop
 
