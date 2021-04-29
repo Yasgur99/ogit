@@ -2,7 +2,7 @@ open Curses
 open State
 
 module type Renderer = sig
-  module State : State
+  module MState : State
 
   (** [init ()] is a curses window. It's side effects include
       initialization of colors, enabling cbreak, enabling noecho, disables
@@ -13,16 +13,16 @@ module type Renderer = sig
       by [init ()]*)
   val cleanup : unit -> unit
 
-  val render : State.t -> Curses.window -> unit
+  val render : MState.t -> Curses.window -> unit
 
-  val render_commit_mode : State.t -> Curses.window -> string
+  val render_commit_mode : MState.t -> Curses.window -> string
 
   val get_color : string -> int
 end
 
-module RendererImpl (St : State) : Renderer = struct 
+module RendererImpl (St : State) : (Renderer with module MState = St) = struct 
 
-  module State = St
+  module MState = St
 
   let check_err err =
     if err = true then () else raise Command.Program_terminate
@@ -103,7 +103,7 @@ module RendererImpl (St : State) : Renderer = struct
 
   let cursor_reset win = check_err (Curses.wmove win 0 0)
 
-  let rec render_user_line win (line : State.printable) =
+  let rec render_user_line win (line : MState.printable) =
     enable_color "cyan_back";
     let fst_char =
       if String.length line.text = 0 then " "
@@ -120,7 +120,7 @@ module RendererImpl (St : State) : Renderer = struct
     disable_color line.color;
     cursor_nextline win
 
-  let render_line win curs render_curs (line : State.printable) =
+  let render_line win curs render_curs (line : MState.printable) =
     let yx = Curses.getyx win in
     if fst yx = curs && render_curs then render_user_line win line
     else (
@@ -152,38 +152,38 @@ module RendererImpl (St : State) : Renderer = struct
       else parse_string win (str ^ String.make 1 (char_of_int key))
     with _ -> parse_string win str
 
-  let commit_msg_prompt : State.printable =
+  let commit_msg_prompt : MState.printable =
     { text = "Enter your commit message: "; color = "green" }
 
-  let commit_failed : State.printable =
+  let commit_failed : MState.printable =
     { text = "No changes to commit."; color = "red" }
 
-  let commit_done : State.printable =
+  let commit_done : MState.printable =
     { text = "Commit done."; color = "green" }
 
-  let blank_line : State.printable = { text = " "; color = "white" }
+  let blank_line : MState.printable = { text = " "; color = "white" }
 
   let render state win =
     Curses.werase win;
-    let lines = State.printable_of_state state in
+    let lines = MState.printable_of_state state in
     cursor_reset win;
-    let render_curs = State.get_mode state <> CommitMode in
-    render_lines win lines (State.get_curs state) render_curs;
-    render_line win (State.get_curs state) false blank_line;
-    if State.get_mode state = CommitDone then
-      render_line win (State.get_curs state) false commit_done
-    else if State.get_mode state = CommitFailed then
-      render_line win (State.get_curs state) false commit_failed
+    let render_curs = MState.get_mode state <> CommitMode in
+    render_lines win lines (MState.get_curs state) render_curs;
+    render_line win (MState.get_curs state) false blank_line;
+    if MState.get_mode state = CommitDone then
+      render_line win (MState.get_curs state) false commit_done
+    else if MState.get_mode state = CommitFailed then
+      render_line win (MState.get_curs state) false commit_failed
     else ();
     check_err (Curses.wrefresh win)
 
   let render_commit_mode state win =
     render state win;
-    render_line win (State.get_curs state) false blank_line;
-    render_line win (State.get_curs state) false commit_msg_prompt;
+    render_line win (MState.get_curs state) false blank_line;
+    render_line win (MState.get_curs state) false commit_msg_prompt;
     let msg = parse_string win "" in
     check_err (Curses.noecho ());
-    render (State.update_mode state Command.Nop) win;
+    render (MState.update_mode state Command.Nop) win;
     msg
 
 end

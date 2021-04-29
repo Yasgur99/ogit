@@ -3,7 +3,7 @@ open Porcelain
 
 module type State = sig
 
-  module Porcelain : Porcelain
+  module MPorcelain : Porcelain
 
   (** The abstract type of values representing the git state *)
   type t
@@ -28,18 +28,18 @@ module type State = sig
   val init_state : string -> t
 
   (** [commit_history st] is the commit history of the current state [st] *)
-  val commit_history : t -> Porcelain.commit_t list
+  val commit_history : t -> MPorcelain.commit_t list
 
   (** [head st] is the commit pointed to by the head in the current state
       [st] *)
-  val head : t -> Porcelain.status_t
+  val head : t -> MPorcelain.status_t
 
   (** [merge st] is the commit pointed to by the upstream branch of the
       current branch *)
-  val merge : t -> Porcelain.commit_t option
+  val merge : t -> MPorcelain.commit_t option
 
   (** [push st] is the branch that the current branch is being pushed to *)
-  val push : t -> Porcelain.commit_t option
+  val push : t -> MPorcelain.commit_t option
 
   (** [exec st c] is the state after executing command [c] from state
       [st]. *)
@@ -70,7 +70,7 @@ end
 
 module StateImpl (P : Plumbing) : State = struct 
 
-  module Porcelain = PorcelainImpl (P)
+  module MPorcelain = PorcelainImpl (P)
 
   type render_mode =
     | Normal
@@ -80,7 +80,7 @@ module StateImpl (P : Plumbing) : State = struct
 
   (** The representation type for state. *)
   type t = {
-    commit_history : Porcelain.commit_t list;
+    commit_history : MPorcelain.commit_t list;
     (*head : Porcelain.commit_t; merge : Porcelain.commit_t option; push :
       Porcelain.commit_t option;*)
     untracked : string list;
@@ -100,11 +100,11 @@ module StateImpl (P : Plumbing) : State = struct
       directory containing a valid .git directory *)
   let init_state dir =
     {
-      commit_history = Porcelain.log None;
+      commit_history = MPorcelain.log None;
       (*head = get_head (); merge = None; push = None;*)
-      untracked = Porcelain.get_untracked (Porcelain.status ());
-      tracked = Porcelain.get_tracked (Porcelain.status ());
-      staged = Porcelain.get_staged (Porcelain.status ());
+      untracked = MPorcelain.get_untracked (MPorcelain.status ());
+      tracked = MPorcelain.get_tracked (MPorcelain.status ());
+      staged = MPorcelain.get_staged (MPorcelain.status ());
       curs = 0;
       mode = Normal;
     }
@@ -113,11 +113,11 @@ module StateImpl (P : Plumbing) : State = struct
       staged files according to the git directory *)
   let update_git_state st =
     {
-      commit_history = Porcelain.log None;
+      commit_history = MPorcelain.log None;
       (*head = get_head (); merge = None; push = None;*)
-      untracked = Porcelain.get_untracked (Porcelain.status ());
-      tracked = Porcelain.get_tracked (Porcelain.status ());
-      staged = Porcelain.get_staged (Porcelain.status ());
+      untracked = MPorcelain.get_untracked (MPorcelain.status ());
+      tracked = MPorcelain.get_tracked (MPorcelain.status ());
+      staged = MPorcelain.get_staged (MPorcelain.status ());
       curs = st.curs;
       mode = Normal;
     }
@@ -193,7 +193,7 @@ module StateImpl (P : Plumbing) : State = struct
   let blank_line = { text = " "; color = "white" }
 
   let printable_of_commit_t c =
-    { text = Porcelain.string_of_commit_t c; color = "white" }
+    { text = MPorcelain.string_of_commit_t c; color = "white" }
 
   let printable_of_state st =
     let commits_printable =
@@ -219,18 +219,18 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec_add st =
     let curs_content = get_curs_content st in
-    Porcelain.add [ curs_content ];
+    MPorcelain.add [ curs_content ];
     update_git_state st
 
   let exec_unstage st =
     let curs_content = get_curs_content st in
-    Porcelain.restore_staged [ curs_content ];
+    MPorcelain.restore_staged [ curs_content ];
     update_git_state st
 
   let exec_commit st msg =
     if List.length st.staged = 0 then set_mode st CommitFailed
     else (
-      Porcelain.commit msg;
+      MPorcelain.commit msg;
       set_mode (update_git_state st) CommitDone)
 
   let exec st = function
