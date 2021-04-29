@@ -4,6 +4,7 @@ type render_mode =
   | CommitDone of string
   | DiffMode of string
   | PushMode
+  | PullMode
 
 (** The representation type for state. *)
 type t = {
@@ -204,7 +205,7 @@ let exec_diff st =
 
 let exec_pull st =
   Porcelain.pull ();
-  update_git_state st
+  set_mode (update_git_state st) Normal
 
 let exec_push st =
   Porcelain.push ();
@@ -218,7 +219,8 @@ let exec st = function
   | Command.Commit msg -> if msg = "" then st else exec_commit st msg
   | Command.Diff -> exec_diff st
   | Command.Clear -> set_mode st Normal
-  | Command.PullMenu -> exec_pull st
+  | Command.PullMenu -> set_mode st PullMode
+  | Command.PullRemote -> exec_pull st
   | Command.PushMenu -> set_mode st PushMode
   | Command.PushRemote -> exec_push st
   | Command.Quit -> raise Command.Program_terminate

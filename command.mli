@@ -29,6 +29,7 @@ type t =
   | Commit of string
   | Diff
   | PullMenu
+  | PullRemote
   | PushMenu
   | PushRemote
   | Clear

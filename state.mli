@@ -9,6 +9,7 @@ type render_mode =
   | CommitDone of string
   | DiffMode of string
   | PushMode
+  | PullMode
 
 (** The representation type that specifies what [color] [text] should be
     printed as. *)

@@ -22,6 +22,8 @@ let rec run win st =
   | State.CommitDone _ -> run win (run_normal win st Renderer.render)
   | State.PushMode ->
       run win (run_normal win st Renderer.render_push_mode)
+  | State.PullMode ->
+      run win (run_normal win st Renderer.render_pull_mode)
   | State.Normal -> run win (run_normal win st Renderer.render)
 
 let run_git args =

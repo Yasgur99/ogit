@@ -15,6 +15,7 @@ type t =
   | Commit of string
   | Diff
   | PullMenu
+  | PullRemote
   | PushMenu
   | PushRemote
   | Clear
@@ -31,6 +32,7 @@ let parse_key key =
   else if key = int_of_char 'c' then Commit ""
   else if key = int_of_char 'd' then Diff
   else if key = int_of_char 'L' then PullMenu
+  else if key = int_of_char 'l' then PullRemote
   else if key = int_of_char 'P' then PushMenu
   else if key = int_of_char 'p' then PushRemote
   else if key = int_of_char ' ' then Clear
@@ -45,6 +47,7 @@ let string_of_cmd cmd =
   | Commit _ -> "commit"
   | Diff -> "diff"
   | PullMenu -> "pull"
+  | PullRemote -> "pull"
   | PushMenu -> "push"
   | PushRemote -> "push"
   | Clear -> "clear"

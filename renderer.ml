@@ -140,6 +140,9 @@ let diff_header : State.printable =
 let push_options : State.printable =
   { text = "p  push to remote"; color = "green" }
 
+let pull_options : State.printable =
+  { text = "l  pull from remote"; color = "green" }
+
 let blank_line : State.printable = { text = " "; color = "white" }
 
 let render_commit_done state win msg =
@@ -180,3 +183,7 @@ let render_diff_mode state win =
 let render_push_mode state win =
   render state win;
   render_line win (State.get_curs state) false push_options
+
+let render_pull_mode state win =
+  render state win;
+  render_line win (State.get_curs state) false pull_options
