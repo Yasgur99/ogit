@@ -156,7 +156,7 @@ let update_git_state st =
   let get_max_y st =
     List.length st.commit_history
     + List.length st.untracked
-    + List.length st.tracked + List.length st.staged + 4
+    + List.length st.tracked + List.length st.staged + 11
 
   let set_curs st i =
     let new_y =

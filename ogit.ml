@@ -52,8 +52,8 @@ let () =
     run_git (Array.sub Sys.argv 1 (Array.length Sys.argv - 1))
   else
     try
-      let initial_st = MyState.init_state "." in
       let win = MyRenderer.init () in
+      let initial_st = MyState.init_state "." in
       run win initial_st
     with Command.Program_terminate ->
       MyRenderer.cleanup ();
