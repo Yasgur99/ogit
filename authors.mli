@@ -9,7 +9,8 @@
 
     @author Michael Maitland, mtm68
             Dina Brustein, db676
-            Patrick Lyons, pml84 *)
+            Patrick Lyons, pml84 
+            Meryl Ye, may43 *)
 
 (************************************************************ 
 
