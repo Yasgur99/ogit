@@ -8,7 +8,8 @@
 (** CS 3110 Spring 2021 Assignment A3 Search
 
     @author Michael Maitland, mtm68
-            Dina Brustein, db676 *)
+            Dina Brustein, db676
+            Patrick Lyons, pml84 *)
 
 (************************************************************ 
 
