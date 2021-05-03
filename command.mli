@@ -32,6 +32,8 @@ type t =
   | PullRemote
   | PushMenu
   | PushRemote
+  | PushOriginMaster
+  | PushElsewhere
   | Clear
   | Nop
 

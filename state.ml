@@ -2,7 +2,6 @@ open Plumbing
 open Porcelain
 
 module type State = sig
-
   module MPorcelain : Porcelain
 
   (** The abstract type of values representing the git state *)
@@ -18,23 +17,23 @@ module type State = sig
     | PushMode
     | PullMode
 
-
-  (** The representation type that specifies what [color] [text] should be
-      printed as. *)
+  (** The representation type that specifies what [color] [text] should
+      be printed as. *)
   type printable = {
     text : string;
     color : string;
   }
 
-  (** [init_state dir] is the state of the current working tree belonging
-      to the repo rooted at [dir]. *)
+  (** [init_state dir] is the state of the current working tree
+      belonging to the repo rooted at [dir]. *)
   val init_state : string -> t
 
-  (** [commit_history st] is the commit history of the current state [st] *)
+  (** [commit_history st] is the commit history of the current state
+      [st] *)
   val commit_history : t -> MPorcelain.commit_t list
 
-  (** [head st] is the commit pointed to by the head in the current state
-      [st] *)
+  (** [head st] is the commit pointed to by the head in the current
+      state [st] *)
   val head : t -> string
 
   (** [merge st] is the commit pointed to by the upstream branch of the
@@ -71,8 +70,7 @@ module type State = sig
   val update_mode : t -> Command.t -> t
 end
 
-module StateImpl (P : Plumbing) : State = struct 
-
+module StateImpl (P : Plumbing) : State = struct
   module MPorcelain = PorcelainImpl (P)
 
   type render_mode =
@@ -101,40 +99,40 @@ module StateImpl (P : Plumbing) : State = struct
     color : string;
   }
 
-(** [init_state dir] is the state of the directory [dir]. The cursor
-    points to the first line of the terminal. Requires [dir] is a
-    directory containing a valid .git directory *)
-let init_state dir =
-  {
-    commit_history = MPorcelain.log None;
-    head = MPorcelain.get_head;
-    merge = MPorcelain.get_upstream;
-    push = MPorcelain.get_push;
-    untracked = MPorcelain.get_untracked (MPorcelain.status ());
-    tracked = MPorcelain.get_tracked (MPorcelain.status ());
-    staged = MPorcelain.get_staged (MPorcelain.status ());
-    curs = 0;
-    mode = Normal;
-  }
+  (** [init_state dir] is the state of the directory [dir]. The cursor
+      points to the first line of the terminal. Requires [dir] is a
+      directory containing a valid .git directory *)
+  let init_state dir =
+    {
+      commit_history = MPorcelain.log None;
+      head = MPorcelain.get_head;
+      merge = MPorcelain.get_upstream;
+      push = MPorcelain.get_push;
+      untracked = MPorcelain.get_untracked (MPorcelain.status ());
+      tracked = MPorcelain.get_tracked (MPorcelain.status ());
+      staged = MPorcelain.get_staged (MPorcelain.status ());
+      curs = 0;
+      mode = Normal;
+    }
 
-(** [update_git_state st] updates commit_history, untracked, tracked and
-    staged files according to the git directory *)
-let update_git_state st =
-  {
-    commit_history = MPorcelain.log None;
-    head = MPorcelain.get_head;
-    merge = MPorcelain.get_upstream;
-    push = MPorcelain.get_push;
-    untracked = MPorcelain.get_untracked (MPorcelain.status ());
-    tracked = MPorcelain.get_tracked (MPorcelain.status ());
-    staged = MPorcelain.get_staged (MPorcelain.status ());
-    curs = st.curs;
-    mode = Normal;
-  }
+  (** [update_git_state st] updates commit_history, untracked, tracked
+      and staged files according to the git directory *)
+  let update_git_state st =
+    {
+      commit_history = MPorcelain.log None;
+      head = MPorcelain.get_head;
+      merge = MPorcelain.get_upstream;
+      push = MPorcelain.get_push;
+      untracked = MPorcelain.get_untracked (MPorcelain.status ());
+      tracked = MPorcelain.get_tracked (MPorcelain.status ());
+      staged = MPorcelain.get_staged (MPorcelain.status ());
+      curs = st.curs;
+      mode = Normal;
+    }
 
-(*********************************************************)
-(* Access/Mutate state *)
-(*********************************************************)
+  (*********************************************************)
+  (* Access/Mutate state *)
+  (*********************************************************)
   let head st = st.head
 
   let merge st = st.merge
@@ -222,7 +220,10 @@ let update_git_state st =
       List.map printable_of_commit_t (commit_history st) |> List.rev
     in
     let head_printable =
-      { text = head st ^ "   " ^ MPorcelain.get_last_msg; color = "white" }
+      {
+        text = head st ^ "   " ^ MPorcelain.get_last_msg;
+        color = "white";
+      }
     in
     let merge_printable =
       {
@@ -236,9 +237,15 @@ let update_git_state st =
         color = "white";
       }
     in
-    let untracked_printable = List.map (printable_of_file "red") (untracked st) in
-    let tracked_printable = List.map (printable_of_file "red") (tracked st) in
-    let staged_printable = List.map (printable_of_file "green") (staged st) in
+    let untracked_printable =
+      List.map (printable_of_file "red") (untracked st)
+    in
+    let tracked_printable =
+      List.map (printable_of_file "red") (tracked st)
+    in
+    let staged_printable =
+      List.map (printable_of_file "green") (staged st)
+    in
     untracked_header :: untracked_printable
     @ tracked_header :: tracked_printable
     @ staged_header :: staged_printable
@@ -281,11 +288,21 @@ let update_git_state st =
     set_mode st (DiffMode out)
 
   let exec_pull st =
-    MPorcelain.pull ();
+    MPorcelain.pull None;
     set_mode (update_git_state st) Normal
 
-  let exec_push st =
-    MPorcelain.push ();
+  let exec_push_remote st =
+    MPorcelain.push None;
+    set_mode (update_git_state st) Normal
+
+  let exec_push_origin_master st =
+    MPorcelain.push None;
+    (* TODO *)
+    set_mode (update_git_state st) Normal
+
+  let exec_push_elsewhere st =
+    MPorcelain.push None;
+    (* TODO *)
     set_mode (update_git_state st) Normal
 
   let exec st = function
@@ -299,7 +316,9 @@ let update_git_state st =
     | Command.PullMenu -> set_mode st PullMode
     | Command.PullRemote -> exec_pull st
     | Command.PushMenu -> set_mode st PushMode
-    | Command.PushRemote -> exec_push st
+    | Command.PushRemote -> exec_push_remote st
+    | Command.PushOriginMaster -> exec_push_origin_master st
+    | Command.PushElsewhere -> exec_push_elsewhere st
     | Command.Quit -> raise Command.Program_terminate
     | Command.Nop -> st
-  end
+end
