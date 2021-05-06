@@ -30,6 +30,8 @@ type t =
   | Diff
   | PullMenu
   | PullRemote
+  | PullOriginMaster
+  | PullElsewhere
   | PushMenu
   | PushRemote
   | PushOriginMaster

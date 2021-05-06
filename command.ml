@@ -16,6 +16,8 @@ type t =
   | Diff
   | PullMenu
   | PullRemote
+  | PullOriginMaster
+  | PullElsewhere
   | PushMenu
   | PushRemote
   | PushOriginMaster
@@ -39,7 +41,10 @@ let parse_key key =
   else Nop
 
 let parse_key_pull_mode key =
-  if key = int_of_char 'l' then PullRemote else Nop
+  if key = int_of_char 'p' then PullRemote
+  else if key = int_of_char 'u' then PullOriginMaster
+  else if key = int_of_char 'e' then PullElsewhere
+  else Nop
 
 let parse_key_push_mode key =
   if key = int_of_char 'p' then PushRemote
@@ -57,6 +62,8 @@ let string_of_cmd cmd =
   | Diff -> "diff"
   | PullMenu -> "pull"
   | PullRemote -> "pull"
+  | PullOriginMaster -> "pull"
+  | PullElsewhere -> "pull"
   | PushMenu -> "push"
   | PushRemote -> "push"
   | PushOriginMaster -> "push"

@@ -287,8 +287,18 @@ module StateImpl (P : Plumbing) : State = struct
     MPorcelain.restore_staged st.tracked;
     set_mode st (DiffMode out)
 
-  let exec_pull st =
+  let exec_pull_remote st =
     MPorcelain.pull None;
+    set_mode (update_git_state st) Normal
+
+  let exec_pull_origin_master st =
+    MPorcelain.pull None;
+    (* TODO *)
+    set_mode (update_git_state st) Normal
+
+  let exec_pull_elsewhere st =
+    MPorcelain.pull None;
+    (* TODO *)
     set_mode (update_git_state st) Normal
 
   let exec_push_remote st =
@@ -314,7 +324,9 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.Diff -> exec_diff st
     | Command.Clear -> set_mode st Normal
     | Command.PullMenu -> set_mode st PullMode
-    | Command.PullRemote -> exec_pull st
+    | Command.PullRemote -> exec_pull_remote st
+    | Command.PullOriginMaster -> exec_pull_origin_master st
+    | Command.PullElsewhere -> exec_pull_elsewhere st
     | Command.PushMenu -> set_mode st PushMode
     | Command.PushRemote -> exec_push_remote st
     | Command.PushOriginMaster -> exec_push_origin_master st
