@@ -178,10 +178,7 @@ struct
     { text = "l  pull from remote"; color = "green" }
 
   let diff_options : MState.printable =
-    {
-      text = "u  untracked\nt  tracked\ns  staged\nf  file\na  all";
-      color = "green";
-    }
+    { text = "t  tracked\ns  staged\nf  file\na  all"; color = "green" }
 
   let blank_line : MState.printable = { text = " "; color = "white" }
 
