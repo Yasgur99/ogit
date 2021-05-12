@@ -215,7 +215,7 @@ struct
       else
         let first_two = String.sub str 0 2 in
         if first_two = "++" || first_two = "--" then "white"
-        else if first_two = "@@" then "blue"
+        else if first_two = "@@" then "cyan"
         else if String.sub first_two 0 1 = "+" then "green"
         else if String.sub first_two 0 1 = "-" then "red"
         else "white"
