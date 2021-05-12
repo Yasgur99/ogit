@@ -246,15 +246,15 @@ module StateImpl (P : Plumbing) : State = struct
     let staged_printable =
       List.map (printable_of_file "green") (staged st)
     in
-    untracked_header :: untracked_printable
-    @ tracked_header :: tracked_printable
-    @ staged_header :: staged_printable
+    (untracked_header :: untracked_printable)
+    @ (tracked_header :: tracked_printable)
+    @ (staged_header :: staged_printable)
     @ [ blank_line ]
     @ [ head_header; head_printable ]
     @ [ merge_header; merge_printable ]
     @ [ push_header; push_printable ]
     @ [ blank_line ]
-    @ commit_header :: commits_printable
+    @ (commit_header :: commits_printable)
 
   (*********************************************************)
   (* Exec *)
@@ -279,12 +279,37 @@ module StateImpl (P : Plumbing) : State = struct
     let output = MPorcelain.commit msg in
     set_mode (update_git_state st) (CommitDone output)
 
-  let exec_diff st =
-    MPorcelain.add st.untracked;
-    MPorcelain.add st.tracked;
+  let exec_diff_tracked st =
     let out = MPorcelain.diff () in
     MPorcelain.restore_staged st.untracked;
     MPorcelain.restore_staged st.tracked;
+    set_mode st (DiffMode out)
+
+  let exec_diff_untracked st = failwith "Unimplemented"
+
+  let exec_diff_staged st =
+    MPorcelain.add st.tracked;
+    MPorcelain.restore_staged st.staged;
+    let out = MPorcelain.diff () in
+    MPorcelain.restore_staged st.tracked;
+    MPorcelain.add st.staged;
+    set_mode st (DiffMode out)
+
+  let exec_diff_all st =
+    MPorcelain.restore_staged st.staged;
+    let out = MPorcelain.diff () in
+    MPorcelain.add st.staged;
+    set_mode st (DiffMode out)
+
+  let exec_diff_file st =
+    MPorcelain.add st.tracked;
+    let curs_content = get_curs_content st in
+    MPorcelain.restore_staged [ curs_content ];
+    let out = MPorcelain.diff () in
+    MPorcelain.restore_staged st.tracked;
+    if List.mem curs_content st.staged then
+      MPorcelain.add [ curs_content ]
+    else ();
     set_mode st (DiffMode out)
 
   let exec_pull_remote st =
@@ -321,7 +346,12 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.Stage -> exec_add st
     | Command.Unstage -> exec_unstage st
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
-    | Command.Diff -> exec_diff st
+    | Command.DiffMenu -> set_mode st (DiffMode "MENU")
+    | Command.DiffTracked -> exec_diff_tracked st
+    | Command.DiffUntracked -> exec_diff_untracked st
+    | Command.DiffStaged -> exec_diff_staged st
+    | Command.DiffAll -> exec_diff_all st
+    | Command.DiffFile -> exec_diff_file st
     | Command.Clear -> set_mode st Normal
     | Command.PullMenu -> set_mode st PullMode
     | Command.PullRemote -> exec_pull_remote st

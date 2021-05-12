@@ -13,7 +13,12 @@ type t =
   | NavUp
   | NavDown
   | Commit of string
-  | Diff
+  | DiffMenu
+  | DiffFile
+  | DiffUntracked
+  | DiffTracked
+  | DiffStaged
+  | DiffAll
   | PullMenu
   | PullRemote
   | PullOriginMaster
@@ -34,10 +39,21 @@ let parse_key key =
   else if key = int_of_char 'j' || key = Curses.Key.down then NavDown
   else if key = int_of_char 'q' then Quit
   else if key = int_of_char 'c' then Commit ""
-  else if key = int_of_char 'd' then Diff
+  else if key = int_of_char 'D' then DiffMenu
   else if key = int_of_char 'L' then PullMenu
   else if key = int_of_char 'P' then PushMenu
   else if key = int_of_char ' ' then Clear
+  else Nop
+
+let parse_key_diff_mode key =
+  if key = int_of_char 'u' then DiffUntracked
+  else if key = int_of_char 's' then DiffStaged
+  else if key = int_of_char 't' then DiffTracked
+  else if key = int_of_char 'a' then DiffAll
+  else if key = int_of_char 'f' then DiffFile
+  else if key = int_of_char 'k' || key = Curses.Key.up then NavUp
+  else if key = int_of_char 'j' || key = Curses.Key.down then NavDown
+  else if key = int_of_char 'q' then Quit
   else Nop
 
 let parse_key_pull_mode key =
@@ -59,7 +75,12 @@ let string_of_cmd cmd =
   | NavUp -> "navup"
   | NavDown -> "navdown"
   | Commit _ -> "commit"
-  | Diff -> "diff"
+  | DiffMenu -> "diff"
+  | DiffUntracked -> "diff"
+  | DiffStaged -> "diff"
+  | DiffTracked -> "diff"
+  | DiffFile -> "diff"
+  | DiffAll -> "diff"
   | PullMenu -> "pull"
   | PullRemote -> "pull"
   | PullOriginMaster -> "pull"

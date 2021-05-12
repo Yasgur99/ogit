@@ -1,7 +1,6 @@
 open Plumbing
 open State
 open Renderer
-
 module MPlumbing = ProdPlumbing
 module MyState = StateImpl (MPlumbing)
 module MyRenderer = RendererImpl (MyState)
@@ -13,10 +12,6 @@ let run_commit_mode win (st : MyState.t) =
   let msg = MyRenderer.render_commit_mode st win in
   let cmd = Command.Commit msg in
   MyState.exec st cmd
-
-let run_diff_mode win (st : MyState.t) =
-  MyRenderer.render_diff_mode st win;
-  MyState.exec st Command.Diff
 
 let run_normal win st render_fun parse_fun =
   render_fun st win;
@@ -30,7 +25,8 @@ let rec run win (st : MyState.t) =
   | MyState.CommitMode -> run win (run_commit_mode win st)
   | MyState.DiffMode _ ->
       run win
-        (run_normal win st MyRenderer.render_diff_mode Command.parse_key)
+        (run_normal win st MyRenderer.render_diff_mode
+           Command.parse_key_diff_mode)
   | MyState.CommitDone _ ->
       run win (run_normal win st MyRenderer.render Command.parse_key)
   | MyState.PushMode ->

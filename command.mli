@@ -27,7 +27,12 @@ type t =
   | NavUp
   | NavDown
   | Commit of string
-  | Diff
+  | DiffMenu
+  | DiffFile
+  | DiffUntracked
+  | DiffTracked
+  | DiffStaged
+  | DiffAll
   | PullMenu
   | PullRemote
   | PullOriginMaster
@@ -47,6 +52,10 @@ exception Program_terminate
     Stage Key: u -> Unstage Key: k -> NavUp Key: Up -> NavUp Key: j ->
     NavDown Key: Down -> NavDown Key: q -> Quit test*)
 val parse_key : key -> t
+
+(** [parse_key_diff_mode key] has the same function as [parse_key key]
+    but works when diff menu has been activated *)
+val parse_key_diff_mode : key -> t
 
 (** [parse_key_pull_mode key] has the same function as [parse_key key]
     but works when pull menu has been activated *)
