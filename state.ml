@@ -246,15 +246,15 @@ module StateImpl (P : Plumbing) : State = struct
     let staged_printable =
       List.map (printable_of_file "green") (staged st)
     in
-    (untracked_header :: untracked_printable)
-    @ (tracked_header :: tracked_printable)
-    @ (staged_header :: staged_printable)
+    untracked_header :: untracked_printable
+    @ tracked_header :: tracked_printable
+    @ staged_header :: staged_printable
     @ [ blank_line ]
     @ [ head_header; head_printable ]
     @ [ merge_header; merge_printable ]
     @ [ push_header; push_printable ]
     @ [ blank_line ]
-    @ (commit_header :: commits_printable)
+    @ commit_header :: commits_printable
 
   (*********************************************************)
   (* Exec *)
@@ -284,8 +284,6 @@ module StateImpl (P : Plumbing) : State = struct
     MPorcelain.restore_staged st.untracked;
     MPorcelain.restore_staged st.tracked;
     set_mode st (DiffMode out)
-
-  let exec_diff_untracked st = failwith "Unimplemented"
 
   let exec_diff_staged st =
     MPorcelain.add st.tracked;
@@ -348,7 +346,6 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
     | Command.DiffMenu -> set_mode st (DiffMode "MENU")
     | Command.DiffTracked -> exec_diff_tracked st
-    | Command.DiffUntracked -> exec_diff_untracked st
     | Command.DiffStaged -> exec_diff_staged st
     | Command.DiffAll -> exec_diff_all st
     | Command.DiffFile -> exec_diff_file st

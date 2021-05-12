@@ -137,7 +137,7 @@ struct
       enable_color line.color;
       check_err (Curses.waddstr win line.text);
       disable_color line.color;
-      cursor_nextline win )
+      cursor_nextline win)
 
   let render_lines win lines curs render_curs =
     List.iter (render_line win curs render_curs) lines
@@ -158,7 +158,7 @@ struct
           else String.sub str 0 (String.length str - 1)
         in
         Curses.clrtoeol ();
-        parse_string win new_str )
+        parse_string win new_str)
       else parse_string win (str ^ String.make 1 (char_of_int key))
     with _ -> parse_string win str
 
@@ -215,6 +215,7 @@ struct
       else
         let first_two = String.sub str 0 2 in
         if first_two = "++" || first_two = "--" then "white"
+        else if first_two = "@@" then "blue"
         else if String.sub first_two 0 1 = "+" then "green"
         else if String.sub first_two 0 1 = "-" then "red"
         else "white"
@@ -234,7 +235,7 @@ struct
         else (
           render_line win (MState.get_curs state) false diff_header;
           render_lines win (diff_to_lines str) (MState.get_curs state)
-            false )
+            false)
     | _ -> failwith "Wrong render function"
 
   let render_push_mode state win =

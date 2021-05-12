@@ -15,7 +15,6 @@ type t =
   | Commit of string
   | DiffMenu
   | DiffFile
-  | DiffUntracked
   | DiffTracked
   | DiffStaged
   | DiffAll
@@ -46,27 +45,24 @@ let parse_key key =
   else Nop
 
 let parse_key_diff_mode key =
-  if key = int_of_char 'u' then DiffUntracked
-  else if key = int_of_char 's' then DiffStaged
+  if key = int_of_char 's' then DiffStaged
   else if key = int_of_char 't' then DiffTracked
   else if key = int_of_char 'a' then DiffAll
   else if key = int_of_char 'f' then DiffFile
   else if key = int_of_char 'k' || key = Curses.Key.up then NavUp
-  else if key = int_of_char 'j' || key = Curses.Key.down then NavDown
-  else if key = int_of_char 'q' then Quit
-  else Nop
+  else parse_key key
 
 let parse_key_pull_mode key =
   if key = int_of_char 'p' then PullRemote
   else if key = int_of_char 'u' then PullOriginMaster
   else if key = int_of_char 'e' then PullElsewhere
-  else Nop
+  else parse_key key
 
 let parse_key_push_mode key =
   if key = int_of_char 'p' then PushRemote
   else if key = int_of_char 'u' then PushOriginMaster
   else if key = int_of_char 'e' then PushElsewhere
-  else Nop
+  else parse_key key
 
 let string_of_cmd cmd =
   match cmd with
@@ -76,7 +72,6 @@ let string_of_cmd cmd =
   | NavDown -> "navdown"
   | Commit _ -> "commit"
   | DiffMenu -> "diff"
-  | DiffUntracked -> "diff"
   | DiffStaged -> "diff"
   | DiffTracked -> "diff"
   | DiffFile -> "diff"

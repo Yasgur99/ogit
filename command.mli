@@ -29,7 +29,6 @@ type t =
   | Commit of string
   | DiffMenu
   | DiffFile
-  | DiffUntracked
   | DiffTracked
   | DiffStaged
   | DiffAll

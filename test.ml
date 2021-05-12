@@ -425,7 +425,7 @@ let state_tests =
   @ exec_tests
   @ printable_of_state_tests
   @ get_curs_tests
-  @ set_curs_tests
+  @ [set_curs_tests]
 
 (*****************************************************)
 (* Command Tests *)
