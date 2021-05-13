@@ -172,10 +172,22 @@ struct
     { text = "Diff results: "; color = "magenta" }
 
   let push_options : MState.printable =
-    { text = "p  push to remote"; color = "green" }
+    {
+      text =
+        "p  push to remote \n\
+         u  push origin/master (unimplemented) \n\
+         e  pull elsewhere (unimplemented)";
+      color = "green";
+    }
 
   let pull_options : MState.printable =
-    { text = "l  pull from remote"; color = "green" }
+    {
+      text =
+        "p  pull from remote \n\
+         u  pull origin/master (unimplemented) \n\
+         e  pull elsewhere (unimplemented) ";
+      color = "green";
+    }
 
   let diff_options : MState.printable =
     { text = "t  tracked\ns  staged\nf  file\na  all"; color = "green" }
