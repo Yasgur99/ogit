@@ -35,7 +35,7 @@ type t =
   | PullMenu
   | PullRemote
   | PullOriginMaster
-  | PullElsewhere
+  | PullElsewhere of string
   | PushMenu
   | PushRemote
   | PushOriginMaster
