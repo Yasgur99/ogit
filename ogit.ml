@@ -13,6 +13,11 @@ let run_commit_mode win (st : MyState.t) =
   let cmd = Command.Commit msg in
   MyState.exec st cmd
 
+let run_pull_elsewhere_mode win (st : MyState.t) =
+  let msg = MyRenderer.render_pull_elsewhere_mode st win in
+  let cmd = Command.PullElsewhere msg in
+  MyState.exec st cmd
+
 let run_normal win st render_fun parse_fun =
   render_fun st win;
   let key = Curses.wgetch win in
@@ -37,6 +42,10 @@ let rec run win (st : MyState.t) =
       run win
         (run_normal win st MyRenderer.render_pull_mode
            Command.parse_key_pull_mode)
+  | MyState.PullElsewhereMode ->
+      run win (run_pull_elsewhere_mode win st)
+  | MyState.PullElsewhereDone _ ->
+      run win (run_normal win st MyRenderer.render Command.parse_key)
   | MyState.Normal ->
       run win (run_normal win st MyRenderer.render Command.parse_key)
 

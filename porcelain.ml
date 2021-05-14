@@ -144,6 +144,8 @@ module PorcelainImpl (P : Plumbing) = struct
   }
 
   let init (dir : string option) : unit = failwith "Unimplemented"
+  (* match dir with | None -> Plumbing.init [||] | Some _ ->
+     Plumbing.init [| dir |] *)
 
   let pull = function
     | None -> ignore (P.pull [||])
@@ -152,9 +154,6 @@ module PorcelainImpl (P : Plumbing) = struct
   let push = function
     | None -> ignore (P.push [||])
     | Some x -> ignore (P.push [| x |])
-
-  (* match dir with | None -> Plumbing.init [||] | Some _ ->
-     Plumbing.init [| dir |] *)
 
   let hash_object file : object_id = failwith "unimplemented"
 

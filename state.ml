@@ -16,6 +16,8 @@ module type State = sig
     | DiffMode of string
     | PushMode
     | PullMode
+    | PullElsewhereMode
+    | PullElsewhereDone of string
 
   (** The representation type that specifies what [color] [text] should
       be printed as. *)
@@ -80,6 +82,8 @@ module StateImpl (P : Plumbing) : State = struct
     | DiffMode of string
     | PushMode
     | PullMode
+    | PullElsewhereMode
+    | PullElsewhereDone of string
 
   (** The representation type for state. *)
   type t = {
@@ -319,10 +323,9 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
-  let exec_pull_elsewhere st =
-    MPorcelain.pull None;
-    (* TODO *)
-    set_mode (update_git_state st) Normal
+  let exec_pull_elsewhere st msg =
+    MPorcelain.pull msg;
+    update_git_state st
 
   let exec_push_remote st =
     MPorcelain.push None;
@@ -353,7 +356,8 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.PullMenu -> set_mode st PullMode
     | Command.PullRemote -> exec_pull_remote st
     | Command.PullOriginMaster -> exec_pull_origin_master st
-    | Command.PullElsewhere -> exec_pull_elsewhere st
+    | Command.PullElsewhere msg ->
+        if msg = "" then st else exec_pull_elsewhere st (Some msg)
     | Command.PushMenu -> set_mode st PushMode
     | Command.PushRemote -> exec_push_remote st
     | Command.PushOriginMaster -> exec_push_origin_master st
