@@ -234,7 +234,8 @@ struct
     render_line win (MState.get_curs state) false blank_line;
     match MState.get_mode state with
     | CommitDone msg -> render_commit_done state win msg
-    | PullElsewhereDone msg -> render_pull_elsewhere_done state win msg
+    (* | PullElsewhereDone msg -> render_pull_elsewhere_done state win
+       msg *)
     | _ -> check_err (Curses.wrefresh win)
 
   let render_commit_mode state win =
