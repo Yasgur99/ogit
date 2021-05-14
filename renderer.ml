@@ -25,6 +25,8 @@ module type Renderer = sig
 
   val render_pull_elsewhere_mode : MState.t -> Curses.window -> string
 
+  val render_push_elsewhere_mode : MState.t -> Curses.window -> string
+
   val get_color : string -> int
 end
 
@@ -179,12 +181,18 @@ struct
   let pull_elsewhere_header : MState.printable =
     { text = "Pull Complete!"; color = "green" }
 
+  let push_elsewhere_msg_prompt : MState.printable =
+    { text = "Enter branch to push to: "; color = "green" }
+
+  let push_elsewhere_header : MState.printable =
+    { text = "Push Complete!"; color = "green" }
+
   let push_options : MState.printable =
     {
       text =
         "p  push to remote \n\
          u  push origin/master (unimplemented) \n\
-         e  pull elsewhere (unimplemented)";
+         e  pull elsewhere";
       color = "green";
     }
 
@@ -193,7 +201,7 @@ struct
       text =
         "p  pull from remote \n\
          u  pull origin/master (unimplemented) \n\
-         e  pull elsewhere (unimplemented) ";
+         e  pull elsewhere ";
       color = "green";
     }
 
@@ -209,6 +217,11 @@ struct
 
   let render_pull_elsewhere_done state win msg =
     render_line win (MState.get_curs state) false pull_elsewhere_header;
+    render_line win (MState.get_curs state) false
+      { text = msg; color = "white" }
+
+  let render_push_elsewhere_done state win msg =
+    render_line win (MState.get_curs state) false push_elsewhere_header;
     render_line win (MState.get_curs state) false
       { text = msg; color = "white" }
 
@@ -236,6 +249,15 @@ struct
     render state win;
     render_line win (MState.get_curs state) false
       pull_elsewhere_msg_prompt;
+    let msg = parse_string win "" in
+    check_err (Curses.noecho ());
+    render (MState.update_mode state Command.Nop) win;
+    msg
+
+  let render_push_elsewhere_mode state win =
+    render state win;
+    render_line win (MState.get_curs state) false
+      push_elsewhere_msg_prompt;
     let msg = parse_string win "" in
     check_err (Curses.noecho ());
     render (MState.update_mode state Command.Nop) win;

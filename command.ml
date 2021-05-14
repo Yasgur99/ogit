@@ -25,7 +25,7 @@ type t =
   | PushMenu
   | PushRemote
   | PushOriginMaster
-  | PushElsewhere
+  | PushElsewhere of string
   | Clear
   | Nop
 
@@ -61,7 +61,7 @@ let parse_key_pull_mode key =
 let parse_key_push_mode key =
   if key = int_of_char 'p' then PushRemote
   else if key = int_of_char 'u' then PushOriginMaster
-  else if key = int_of_char 'e' then PushElsewhere
+  else if key = int_of_char 'e' then PushElsewhere ""
   else parse_key key
 
 let string_of_cmd cmd =
@@ -83,7 +83,7 @@ let string_of_cmd cmd =
   | PushMenu -> "push"
   | PushRemote -> "push"
   | PushOriginMaster -> "push"
-  | PushElsewhere -> "push"
+  | PushElsewhere _ -> "push"
   | Clear -> "clear"
   | Quit -> "quit"
   | Nop -> "nop"

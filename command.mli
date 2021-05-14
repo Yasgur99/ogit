@@ -39,7 +39,7 @@ type t =
   | PushMenu
   | PushRemote
   | PushOriginMaster
-  | PushElsewhere
+  | PushElsewhere of string
   | Clear
   | Nop
 

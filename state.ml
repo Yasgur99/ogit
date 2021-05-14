@@ -15,6 +15,8 @@ module type State = sig
     | CommitDone of string
     | DiffMode of string
     | PushMode
+    | PushElsewhereMode
+    | PushElsewhereDone of string
     | PullMode
     | PullElsewhereMode
     | PullElsewhereDone of string
@@ -81,6 +83,8 @@ module StateImpl (P : Plumbing) : State = struct
     | CommitDone of string
     | DiffMode of string
     | PushMode
+    | PushElsewhereMode
+    | PushElsewhereDone of string
     | PullMode
     | PullElsewhereMode
     | PullElsewhereDone of string
@@ -336,10 +340,9 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
-  let exec_push_elsewhere st =
-    MPorcelain.push None;
-    (* TODO *)
-    set_mode (update_git_state st) Normal
+  let exec_push_elsewhere st msg =
+    MPorcelain.push msg;
+    update_git_state st
 
   let exec st = function
     | Command.NavUp -> set_curs st (get_curs st - 1)
@@ -361,7 +364,8 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.PushMenu -> set_mode st PushMode
     | Command.PushRemote -> exec_push_remote st
     | Command.PushOriginMaster -> exec_push_origin_master st
-    | Command.PushElsewhere -> exec_push_elsewhere st
+    | Command.PushElsewhere msg ->
+        if msg = "" then st else exec_push_elsewhere st (Some msg)
     | Command.Quit -> raise Command.Program_terminate
     | Command.Nop -> st
 end
