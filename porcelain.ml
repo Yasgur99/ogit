@@ -355,8 +355,3 @@ module PorcelainImpl (P : Plumbing) = struct
 
   let string_of_commit_t c = c.tree ^ " " ^ c.msg
 end
-(* 
-
-   Welcome! s = Stage u = Unstage c = Commit q = Quit Use Up and Down
-   arrows to navigate. Hover over a file and hit a key to move it where
-   you want. ADD MORE *)
