@@ -23,9 +23,11 @@ module type Renderer = sig
 
   val render_pull_mode : MState.t -> Curses.window -> unit
 
-  val render_pull_elsewhere_mode : MState.t -> Curses.window -> string
+  (* val render_pull_elsewhere_mode : MState.t -> Curses.window ->
+     string
 
-  val render_push_elsewhere_mode : MState.t -> Curses.window -> string
+     val render_push_elsewhere_mode : MState.t -> Curses.window ->
+     string *)
 
   val get_color : string -> int
 end
@@ -215,15 +217,13 @@ struct
     render_line win (MState.get_curs state) false
       { text = msg; color = "white" }
 
-  let render_pull_elsewhere_done state win msg =
-    render_line win (MState.get_curs state) false pull_elsewhere_header;
-    render_line win (MState.get_curs state) false
-      { text = msg; color = "white" }
+  (* let render_pull_elsewhere_done state win msg = render_line win
+     (MState.get_curs state) false pull_elsewhere_header; render_line
+     win (MState.get_curs state) false { text = msg; color = "white" }
 
-  let render_push_elsewhere_done state win msg =
-    render_line win (MState.get_curs state) false push_elsewhere_header;
-    render_line win (MState.get_curs state) false
-      { text = msg; color = "white" }
+     let render_push_elsewhere_done state win msg = render_line win
+     (MState.get_curs state) false push_elsewhere_header; render_line
+     win (MState.get_curs state) false { text = msg; color = "white" } *)
 
   let render state win =
     Curses.werase win;
@@ -246,23 +246,17 @@ struct
     render (MState.update_mode state Command.Nop) win;
     msg
 
-  let render_pull_elsewhere_mode state win =
-    render state win;
-    render_line win (MState.get_curs state) false
-      pull_elsewhere_msg_prompt;
-    let msg = parse_string win "" in
-    check_err (Curses.noecho ());
-    render (MState.update_mode state Command.Nop) win;
-    msg
+  (* let render_pull_elsewhere_mode state win = render state win;
+     render_line win (MState.get_curs state) false
+     pull_elsewhere_msg_prompt; let msg = parse_string win "" in
+     check_err (Curses.noecho ()); render (MState.update_mode state
+     Command.Nop) win; msg
 
-  let render_push_elsewhere_mode state win =
-    render state win;
-    render_line win (MState.get_curs state) false
-      push_elsewhere_msg_prompt;
-    let msg = parse_string win "" in
-    check_err (Curses.noecho ());
-    render (MState.update_mode state Command.Nop) win;
-    msg
+     let render_push_elsewhere_mode state win = render state win;
+     render_line win (MState.get_curs state) false
+     push_elsewhere_msg_prompt; let msg = parse_string win "" in
+     check_err (Curses.noecho ()); render (MState.update_mode state
+     Command.Nop) win; msg *)
 
   let diff_color str =
     let clr =
