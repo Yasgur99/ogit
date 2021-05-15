@@ -4,7 +4,7 @@ open State
 module type Renderer = sig
   module MState : State
 
-  (** [init ()] is a curses window. It's side effects include
+  (** [init ()] is a curses window. Its side effects include
       initialization of colors, enabling cbreak, enabling noecho,
       disables the curser, and clearning the window *)
   val init : unit -> Curses.window
@@ -24,8 +24,6 @@ module type Renderer = sig
   val render_pull_mode : MState.t -> Curses.window -> unit
 
   val get_color : string -> int
-
-  val at_top : bool
 end
 
 module RendererImpl (St : State) : Renderer with module MState = St =
@@ -85,7 +83,7 @@ struct
 
   let top_line = ref 0
 
-  let at_top = !top_line = 0
+  let has_scrolled = ref false
 
   let enable_color color =
     Curses.attron (Curses.A.color_pair (get_color color))
@@ -126,6 +124,7 @@ struct
 
   let rec render_user_line win (line : MState.printable) =
     enable_color "cyan_back";
+    screen := Array.append !screen [| line |];
     let fst_char =
       if String.length line.text = 0 then " "
       else String.sub line.text 0 1
@@ -216,7 +215,6 @@ struct
   let render_normal state win =
     let curs = MState.get_curs state in
     Curses.werase win;
-    check_err (Curses.waddstr win (string_of_int curs));
     screen := [||];
     let lines = MState.printable_of_state state in
     cursor_reset win;
@@ -233,19 +231,19 @@ struct
     let scr = !screen in
     let max_y = fst (Curses.getmaxyx win) in
     let len = Array.length scr in
-    if !top_line = 0 || len < max_y then render_normal st win
+    if !top_line <= 1 || len < max_y then render_normal st win
     else
-      let top = !top_line - 1 in
-      let btm = top + max_y in
-      let curs = MState.get_curs st - 1 in
+      let new_top = !top_line - 1 in
+      let new_btm = new_top + max_y - 1 in
       screen := [||];
       Curses.werase win;
       cursor_reset win;
-      for i = top to btm do
-        render_line win curs true (Array.get scr i)
+      for i = new_top to new_btm do
+        render_line win (MState.get_curs st - 1) true (Array.get scr i)
       done;
       screen := scr;
       top_line := !top_line - 1;
+      has_scrolled := true;
       check_err (Curses.wrefresh win)
 
   let render_scroll_down st win =
@@ -256,11 +254,11 @@ struct
       screen := [||];
       Curses.werase win;
       cursor_reset win;
-      let curs = MState.get_curs st - 1 in
       for i = !top_line + 1 to btm_line do
-        render_line win curs true (Array.get scr i)
+        render_line win
+          (fst (Curses.getmaxyx win) - 2)
+          true (Array.get scr i)
       done;
-      cursor_reset win;
       screen := scr;
       top_line := !top_line + 1;
       check_err (Curses.wrefresh win)

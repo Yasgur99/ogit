@@ -14,18 +14,17 @@ let run_commit_mode win (st : MyState.t) =
   MyState.exec st cmd
 
 let run_normal win st parse_fun =
-  render st win;
+  MyRenderer.render st win;
   let max_y = fst (Curses.getmaxyx win) in
   let key = Curses.wgetch win in
   let cmd = parse_fun key in
   let full_cmd =
     match cmd with
     | Command.NavUp _ ->
-        if MyState.get_curs st = max_y - 1 && not MyRenderer.at_top then
-          Command.NavUp false
+        if MyState.get_curs st >= max_y - 1 then Command.NavUp false
         else Command.NavUp true
     | Command.NavDown _ ->
-        if MyState.get_curs st = max_y - 1 then Command.NavDown false
+        if MyState.get_curs st >= max_y - 1 then Command.NavDown false
         else Command.NavDown true
     | _ -> cmd
   in
