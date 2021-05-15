@@ -24,8 +24,8 @@ type t =
   | Stage
   | Unstage
   | Quit
-  | NavUp
-  | NavDown
+  | NavUp of bool
+  | NavDown of bool
   | Commit of string
   | DiffMenu
   | DiffFile

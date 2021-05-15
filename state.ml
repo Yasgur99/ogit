@@ -17,6 +17,11 @@ module type State = sig
     | PushMode
     | PullMode
 
+  type curs_state =
+    | OffScrUp
+    | OffScrDown
+    | OnScr
+
   (** The representation type that specifies what [color] [text] should
       be printed as. *)
   type printable = {
@@ -53,9 +58,10 @@ module type State = sig
   (** [get_curs st] is the y index of the position into state. *)
   val get_curs : t -> int
 
-  (** [set_curs st y] is the state whose cursor is [y]. The rest of the
-      state says the same. *)
-  val set_curs : t -> int -> t
+  (** [set_curs st y b] is the state whose cursor is [y], with [b]
+      documenting whether or not the cursor is attempting to go
+      offscreen. The rest of the state says the same. *)
+  val set_curs : t -> int -> curs_state -> t
 
   (** [get_mode st] is the rendering mode for [st]. *)
   val get_mode : t -> render_mode
@@ -63,6 +69,8 @@ module type State = sig
   (** [set_mode st new_mode] manually changes the mode of [st] to
       [new_mode]. *)
   val set_mode : t -> render_mode -> t
+
+  val get_curs_state : t -> curs_state
 
   (** [update_mode st cmd] automatically changes the mode of [st] to the
       appropriate mode based on the command [cmd]. The rest of the state
@@ -81,6 +89,11 @@ module StateImpl (P : Plumbing) : State = struct
     | PushMode
     | PullMode
 
+  type curs_state =
+    | OffScrUp
+    | OffScrDown
+    | OnScr
+
   (** The representation type for state. *)
   type t = {
     commit_history : MPorcelain.commit_t list;
@@ -92,12 +105,17 @@ module StateImpl (P : Plumbing) : State = struct
     staged : string list;
     curs : int;
     mode : render_mode;
+    curs_st : curs_state;
   }
 
   type printable = {
     text : string;
     color : string;
   }
+
+  exception CursOffUp
+
+  exception CursOffDown
 
   (** [init_state dir] is the state of the directory [dir]. The cursor
       points to the first line of the terminal. Requires [dir] is a
@@ -113,6 +131,7 @@ module StateImpl (P : Plumbing) : State = struct
       staged = MPorcelain.get_staged (MPorcelain.status ());
       curs = 0;
       mode = Normal;
+      curs_st = OnScr;
     }
 
   (** [update_git_state st] updates commit_history, untracked, tracked
@@ -128,6 +147,7 @@ module StateImpl (P : Plumbing) : State = struct
       staged = MPorcelain.get_staged (MPorcelain.status ());
       curs = st.curs;
       mode = Normal;
+      curs_st = st.curs_st;
     }
 
   (*********************************************************)
@@ -151,14 +171,12 @@ module StateImpl (P : Plumbing) : State = struct
 
   let get_mode st = st.mode
 
-  let get_max_y st =
-    List.length st.commit_history
-    + List.length st.untracked
-    + List.length st.tracked + List.length st.staged + 11
-
-  let set_curs st i =
-    let new_y =
-      if i < 0 then 0 else if i > get_max_y st then get_max_y st else i
+  let set_curs st i curs_st =
+    let y =
+      match curs_st with
+      | OffScrUp -> st.curs
+      | OffScrDown -> st.curs
+      | OnScr -> if i >= 0 then i else 0
     in
     {
       commit_history = st.commit_history;
@@ -168,8 +186,9 @@ module StateImpl (P : Plumbing) : State = struct
       untracked = st.untracked;
       tracked = st.tracked;
       staged = st.staged;
-      curs = new_y;
+      curs = y;
       mode = st.mode;
+      curs_st;
     }
 
   let set_mode st new_mode =
@@ -183,6 +202,7 @@ module StateImpl (P : Plumbing) : State = struct
       staged = st.staged;
       curs = st.curs;
       mode = new_mode;
+      curs_st = st.curs_st;
     }
 
   let update_mode st cmd =
@@ -190,6 +210,8 @@ module StateImpl (P : Plumbing) : State = struct
       match cmd with Command.Commit _ -> CommitMode | _ -> st.mode
     in
     set_mode st new_mode
+
+  let get_curs_state st = st.curs_st
 
   (*********************************************************)
   (* Printable *)
@@ -338,9 +360,18 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
-  let exec st = function
-    | Command.NavUp -> set_curs st (get_curs st - 1)
-    | Command.NavDown -> set_curs st (get_curs st + 1)
+  let pos_of_cmd = function
+    | Command.NavDown true -> OnScr
+    | Command.NavDown false -> OffScrDown
+    | Command.NavUp true -> OnScr
+    | Command.NavUp false -> OffScrUp
+    | _ -> failwith "Type error"
+
+  let exec st cmd =
+    match cmd with
+    | Command.NavUp b -> set_curs st (get_curs st - 1) (pos_of_cmd cmd)
+    | Command.NavDown b ->
+        set_curs st (get_curs st + 1) (pos_of_cmd cmd)
     | Command.Stage -> exec_add st
     | Command.Unstage -> exec_unstage st
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
