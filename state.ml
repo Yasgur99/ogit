@@ -323,9 +323,12 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
-  let exec_pull_elsewhere st (* msg *) =
-    MPorcelain.pull None (* msg *);
+  let exec_pull_elsewhere st =
+    MPorcelain.pull None;
     set_mode (update_git_state st) Normal
+
+  (* let exec_pull_elsewhere st msg = MPorcelain.pull (Some msg);
+     set_mode (update_git_state st) Normal *)
 
   let exec_push_remote st =
     MPorcelain.push None;
@@ -336,9 +339,12 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
-  let exec_push_elsewhere st (* msg *) =
-    MPorcelain.push None (* msg *);
+  let exec_push_elsewhere st =
+    MPorcelain.push None;
     set_mode (update_git_state st) Normal
+
+  (* let exec_push_elsewhere st msg = MPorcelain.push (Some msg);
+     set_mode (update_git_state st) Normal *)
 
   let exec st = function
     | Command.NavUp -> set_curs st (get_curs st - 1)

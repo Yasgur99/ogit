@@ -177,17 +177,17 @@ struct
   let diff_header : MState.printable =
     { text = "Diff results: "; color = "magenta" }
 
-  let pull_elsewhere_msg_prompt : MState.printable =
-    { text = "Enter branch to pull from: "; color = "green" }
+  (* let pull_elsewhere_msg_prompt : MState.printable = { text = "Enter
+     branch to pull from: "; color = "green" }
 
-  let pull_elsewhere_header : MState.printable =
-    { text = "Pull Complete!"; color = "green" }
+     let pull_elsewhere_header : MState.printable = { text = "Pull
+     Complete!"; color = "green" }
 
-  let push_elsewhere_msg_prompt : MState.printable =
-    { text = "Enter branch to push to: "; color = "green" }
+     let push_elsewhere_msg_prompt : MState.printable = { text = "Enter
+     branch to push to: "; color = "green" }
 
-  let push_elsewhere_header : MState.printable =
-    { text = "Push Complete!"; color = "green" }
+     let push_elsewhere_header : MState.printable = { text = "Push
+     Complete!"; color = "green" } *)
 
   let push_options : MState.printable =
     {
