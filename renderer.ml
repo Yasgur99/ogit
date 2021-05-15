@@ -264,6 +264,7 @@ struct
           (fst (Curses.getmaxyx win) - 2)
           true (Array.get scr i)
       done;
+      top_line := !top_line + 1;
       cursor_reset win;
       screen := scr;
       check_err (Curses.wrefresh win)
