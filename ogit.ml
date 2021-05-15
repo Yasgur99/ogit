@@ -21,7 +21,10 @@ let run_normal win st parse_fun =
   let full_cmd =
     match cmd with
     | Command.NavUp _ ->
-        if MyState.get_curs st >= max_y - 1 then Command.NavUp false
+        if
+          MyState.get_curs st >= max_y - 1
+          && not (!MyRenderer.top_line <= 1)
+        then Command.NavUp false
         else Command.NavUp true
     | Command.NavDown _ ->
         if MyState.get_curs st >= max_y - 1 then Command.NavDown false

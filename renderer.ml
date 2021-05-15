@@ -9,6 +9,8 @@ module type Renderer = sig
       disables the curser, and clearning the window *)
   val init : unit -> Curses.window
 
+  val top_line : int ref
+
   (** [cleanup ()] ends the window and cleans up the side effects
       created by [init ()]*)
   val cleanup : unit -> unit
@@ -259,8 +261,8 @@ struct
           (fst (Curses.getmaxyx win) - 2)
           true (Array.get scr i)
       done;
+      cursor_reset win;
       screen := scr;
-      top_line := !top_line + 1;
       check_err (Curses.wrefresh win)
 
   let render_commit_mode state win =
