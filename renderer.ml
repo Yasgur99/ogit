@@ -9,6 +9,9 @@ module type Renderer = sig
       disables the curser, and clearning the window *)
   val init : unit -> Curses.window
 
+  (* [top_line] is the number of the line currently at the top of the
+     screen. Initially, [top_line] is 0, but it can increase or decrease
+     as a user scrolls up and down. *)
   val top_line : int ref
 
   (** [cleanup ()] ends the window and cleans up the side effects
