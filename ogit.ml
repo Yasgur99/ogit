@@ -14,7 +14,6 @@ let run_commit_mode win (st : MyState.t) =
   MyState.exec st cmd
 
 let run_pull_elsewhere_mode win (st : MyState.t) =
-  raise Command.Program_terminate;
   let msg = MyRenderer.render_pull_elsewhere_mode st win in
   let cmd = Command.PullElsewhere msg in
   MyState.exec st cmd
