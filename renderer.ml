@@ -214,7 +214,7 @@ struct
   let pull_options : MState.printable list =
     [
       { text = "p  pull from remote"; color = "green" };
-      { text = "u  pull origin/master"; color = "green" };
+      { text = "u  pull origin/master"; color = "red" };
       { text = "e  pull elsewhere"; color = "green" };
     ]
 
