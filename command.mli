@@ -35,11 +35,11 @@ type t =
   | PullMenu
   | PullRemote
   | PullOriginMaster
-  | PullElsewhere (* of string *)
+  | PullElsewhere of string
   | PushMenu
   | PushRemote
   | PushOriginMaster
-  | PushElsewhere (* of string *)
+  | PushElsewhere of string
   | Clear
   | Nop
 

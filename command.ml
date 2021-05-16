@@ -21,11 +21,11 @@ type t =
   | PullMenu
   | PullRemote
   | PullOriginMaster
-  | PullElsewhere (* of string *)
+  | PullElsewhere of string
   | PushMenu
   | PushRemote
   | PushOriginMaster
-  | PushElsewhere (* of string *)
+  | PushElsewhere of string
   | Clear
   | Nop
 
@@ -55,13 +55,13 @@ let parse_key_diff_mode key =
 let parse_key_pull_mode key =
   if key = int_of_char 'p' then PullRemote
   else if key = int_of_char 'u' then PullOriginMaster
-  else if key = int_of_char 'e' then PullElsewhere (* "" *)
+  else if key = int_of_char 'e' then PullElsewhere ""
   else parse_key key
 
 let parse_key_push_mode key =
   if key = int_of_char 'p' then PushRemote
   else if key = int_of_char 'u' then PushOriginMaster
-  else if key = int_of_char 'e' then PushElsewhere (* "" *)
+  else if key = int_of_char 'e' then PushElsewhere ""
   else parse_key key
 
 let string_of_cmd cmd =

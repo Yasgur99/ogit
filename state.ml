@@ -15,9 +15,11 @@ module type State = sig
     | CommitDone of string
     | DiffMode of string
     | PushMode
-    (* | PushElsewhereMode | PushElsewhereDone of string *)
+    | PushElsewhereMode
+    | PushElsewhereDone of string
     | PullMode
-  (* | PullElsewhereMode | PullElsewhereDone of string *)
+    | PullElsewhereMode
+    | PullElsewhereDone of string
 
   (** The representation type that specifies what [color] [text] should
       be printed as. *)
@@ -81,9 +83,11 @@ module StateImpl (P : Plumbing) : State = struct
     | CommitDone of string
     | DiffMode of string
     | PushMode
-    (* | PushElsewhereMode | PushElsewhereDone of string *)
+    | PushElsewhereMode
+    | PushElsewhereDone of string
     | PullMode
-  (* | PullElsewhereMode | PullElsewhereDone of string *)
+    | PullElsewhereMode
+    | PullElsewhereDone of string
 
   (** The representation type for state. *)
   type t = {
@@ -323,12 +327,9 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
-  let exec_pull_elsewhere st =
-    MPorcelain.pull None;
+  let exec_pull_elsewhere st msg =
+    MPorcelain.pull (Some msg);
     set_mode (update_git_state st) Normal
-
-  (* let exec_pull_elsewhere st msg = MPorcelain.pull (Some msg);
-     set_mode (update_git_state st) Normal *)
 
   let exec_push_remote st =
     MPorcelain.push None;
@@ -339,12 +340,9 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
-  let exec_push_elsewhere st =
-    MPorcelain.push None;
+  let exec_push_elsewhere st msg =
+    MPorcelain.push (Some msg);
     set_mode (update_git_state st) Normal
-
-  (* let exec_push_elsewhere st msg = MPorcelain.push (Some msg);
-     set_mode (update_git_state st) Normal *)
 
   let exec st = function
     | Command.NavUp -> set_curs st (get_curs st - 1)
@@ -361,17 +359,13 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.PullMenu -> set_mode st PullMode
     | Command.PullRemote -> exec_pull_remote st
     | Command.PullOriginMaster -> exec_pull_origin_master st
-    | Command.PullElsewhere ->
-        exec_pull_elsewhere st
-        (* msg -> if msg = "" then st else exec_pull_elsewhere st (Some
-           msg) *)
+    | Command.PullElsewhere msg ->
+        if msg = "" then st else exec_pull_elsewhere st msg
     | Command.PushMenu -> set_mode st PushMode
     | Command.PushRemote -> exec_push_remote st
     | Command.PushOriginMaster -> exec_push_origin_master st
-    | Command.PushElsewhere ->
-        exec_pull_elsewhere st
-        (* msg -> if msg = "" then st else exec_push_elsewhere st (Some
-           msg) *)
+    | Command.PushElsewhere msg ->
+        if msg = "" then st else exec_push_elsewhere st msg
     | Command.Quit -> raise Command.Program_terminate
     | Command.Nop -> st
 end
