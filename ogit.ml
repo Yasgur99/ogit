@@ -52,23 +52,17 @@ let rec run win (st : MyState.t) =
   | MyState.CommitDone _ ->
       run win (run_normal win st Command.parse_key)
   | MyState.PushMode ->
-      run win
-        (run_normal win st (* MyRenderer.render_push_mode *)
-           Command.parse_key_push_mode)
+      run win (run_normal win st Command.parse_key_push_mode)
   | MyState.PushElsewhereMode ->
       run win (run_push_elsewhere_mode win st)
   | MyState.PushElsewhereDone _ ->
-      run win
-        (run_normal win st (* MyRenderer.render*) Command.parse_key)
+      run win (run_normal win st Command.parse_key)
   | MyState.PullMode ->
-      run win
-        (run_normal win st (* MyRenderer.render_pull_mode *)
-           Command.parse_key_pull_mode)
+      run win (run_normal win st Command.parse_key_pull_mode)
   | MyState.PullElsewhereMode ->
       run win (run_pull_elsewhere_mode win st)
   | MyState.PullElsewhereDone _ ->
-      run win
-        (run_normal win st (* MyRenderer.render *) Command.parse_key)
+      run win (run_normal win st Command.parse_key)
   | MyState.Normal -> run win (run_normal win st Command.parse_key)
 
 let run_git args =
