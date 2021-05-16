@@ -215,7 +215,11 @@ module StateImpl (P : Plumbing) : State = struct
 
   let update_mode st cmd =
     let new_mode =
-      match cmd with Command.Commit _ -> CommitMode | _ -> st.mode
+      match cmd with
+      | Command.Commit _ -> CommitMode
+      | Command.PushElsewhere _ -> PushElsewhereMode
+      | Command.PullElsewhere _ -> PullElsewhereMode
+      | _ -> st.mode
     in
     set_mode st new_mode
 
