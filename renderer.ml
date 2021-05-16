@@ -4,10 +4,15 @@ open State
 module type Renderer = sig
   module MState : State
 
-  (** [init ()] is a curses window. It's side effects include
+  (** [init ()] is a curses window. Its side effects include
       initialization of colors, enabling cbreak, enabling noecho,
       disables the curser, and clearning the window *)
   val init : unit -> Curses.window
+
+  (* [top_line] is the number of the line currently at the top of the
+     screen. Initially, [top_line] is 0, but it can increase or decrease
+     as a user scrolls up and down. *)
+  val top_line : int ref
 
   (** [cleanup ()] ends the window and cleans up the side effects
       created by [init ()]*)
@@ -83,6 +88,12 @@ struct
     in
     r_color color 0
 
+  let screen = ref [||]
+
+  let top_line = ref 0
+
+  let has_scrolled = ref false
+
   let enable_color color =
     Curses.attron (Curses.A.color_pair (get_color color))
 
@@ -107,7 +118,10 @@ struct
 
   let cursor_nextline win =
     let yx = Curses.getyx win in
-    let new_yx = (fst yx + 1, 0) in
+    let new_y =
+      if fst yx < fst (Curses.getmaxyx win) then fst yx + 1 else fst yx
+    in
+    let new_yx = (new_y, 0) in
     check_err (Curses.wmove win (fst new_yx) (snd new_yx))
 
   let cursor_prevline win =
@@ -119,6 +133,7 @@ struct
 
   let rec render_user_line win (line : MState.printable) =
     enable_color "cyan_back";
+    screen := Array.append !screen [| line |];
     let fst_char =
       if String.length line.text = 0 then " "
       else String.sub line.text 0 1
@@ -136,7 +151,9 @@ struct
 
   let render_line win curs render_curs (line : MState.printable) =
     let yx = Curses.getyx win in
-    if fst yx = curs && render_curs then render_user_line win line
+    screen := Array.append !screen [| line |];
+    if fst yx >= fst (Curses.getmaxyx win) - 1 then ()
+    else if fst yx = curs && render_curs then render_user_line win line
     else (
       enable_color line.color;
       check_err (Curses.waddstr win line.text);
@@ -187,32 +204,33 @@ struct
   let push_elsewhere_header : MState.printable =
     { text = "Push\nComplete!"; color = "green" }
 
-  let push_options : MState.printable =
-    {
-      text =
-        "p  push to remote \n\
-         u  push origin/master (unimplemented) \n\
-         e  push elsewhere";
-      color = "green";
-    }
+  let push_options : MState.printable list =
+    [
+      { text = "p  push to remote"; color = "green" };
+      { text = "u  push origin/master"; color = "green" };
+      { text = "e  push elsewhere"; color = "green" };
+    ]
 
-  let pull_options : MState.printable =
-    {
-      text =
-        "p  pull from remote \n\
-         u  pull origin/master (unimplemented) \n\
-         e  pull elsewhere ";
-      color = "green";
-    }
+  let pull_options : MState.printable list =
+    [
+      { text = "p  pull to remote"; color = "green" };
+      { text = "u  pull origin/master"; color = "green" };
+      { text = "e  pull elsewhere"; color = "green" };
+    ]
 
-  let diff_options : MState.printable =
-    { text = "t  tracked\ns  staged\nf  file\na  all"; color = "green" }
+  let diff_options : MState.printable list =
+    [
+      { text = "t  tracked"; color = "green" };
+      { text = "s  staged"; color = "green" };
+      { text = "f  file"; color = "green" };
+      { text = "a  all"; color = "green" };
+    ]
 
   let blank_line : MState.printable = { text = " "; color = "white" }
 
   let render_commit_done state win msg =
-    render_line win (MState.get_curs state) false commit_header;
-    render_line win (MState.get_curs state) false
+    render_line win (MState.get_curs state) true commit_header;
+    render_line win (MState.get_curs state) true
       { text = msg; color = "white" }
 
   let render_pull_elsewhere_done state win msg =
@@ -225,42 +243,83 @@ struct
     render_line win (MState.get_curs state) false
       { text = msg; color = "white" }
 
-  let render state win =
+  let render_normal state win =
+    let curs = MState.get_curs state in
     Curses.werase win;
+    screen := [||];
     let lines = MState.printable_of_state state in
     cursor_reset win;
     let render_curs = MState.get_mode state <> CommitMode in
-    render_lines win lines (MState.get_curs state) render_curs;
-    render_line win (MState.get_curs state) false blank_line;
+    render_lines win lines curs render_curs;
+    render_line win curs true blank_line;
     match MState.get_mode state with
     | CommitDone msg -> render_commit_done state win msg
     | PullElsewhereDone msg -> render_pull_elsewhere_done state win msg
     | _ -> check_err (Curses.wrefresh win)
 
+  let render_scroll_up st win =
+    Curses.werase win;
+    cursor_reset win;
+    let scr = !screen in
+    let max_y = fst (Curses.getmaxyx win) in
+    let len = Array.length scr in
+    if !top_line <= 1 || len < max_y then render_normal st win
+    else
+      let new_top = !top_line - 1 in
+      let new_btm = new_top + max_y - 1 in
+      screen := [||];
+      Curses.werase win;
+      cursor_reset win;
+      for i = new_top to new_btm do
+        render_line win (MState.get_curs st - 1) true (Array.get scr i)
+      done;
+      screen := scr;
+      top_line := !top_line - 1;
+      has_scrolled := true;
+      check_err (Curses.wrefresh win)
+
+  let render_scroll_down st win =
+    let btm_line = !top_line + fst (Curses.getmaxyx win) in
+    if btm_line >= Array.length !screen then ()
+    else
+      let scr = !screen in
+      screen := [||];
+      Curses.werase win;
+      cursor_reset win;
+      for i = !top_line + 1 to btm_line do
+        render_line win
+          (fst (Curses.getmaxyx win) - 2)
+          true (Array.get scr i)
+      done;
+      top_line := !top_line + 1;
+      cursor_reset win;
+      screen := scr;
+      check_err (Curses.wrefresh win)
+
   let render_commit_mode state win =
-    render state win;
+    render_normal state win;
     render_line win (MState.get_curs state) false commit_msg_prompt;
     let msg = parse_string win "" in
     check_err (Curses.noecho ());
-    render (MState.update_mode state Command.Nop) win;
+    render_normal (MState.update_mode state Command.Nop) win;
     msg
 
   let render_pull_elsewhere_mode state win =
-    render state win;
+    render_normal state win;
     render_line win (MState.get_curs state) false
       pull_elsewhere_msg_prompt;
     let msg = parse_string win "" in
     check_err (Curses.noecho ());
-    render (MState.update_mode state Command.Nop) win;
+    render_normal (MState.update_mode state Command.Nop) win;
     msg
 
   let render_push_elsewhere_mode state win =
-    render state win;
+    render_normal state win;
     render_line win (MState.get_curs state) false
       push_elsewhere_msg_prompt;
     let msg = parse_string win "" in
     check_err (Curses.noecho ());
-    render (MState.update_mode state Command.Nop) win;
+    render_normal (MState.update_mode state Command.Nop) win;
     msg
 
   let diff_color str =
@@ -281,22 +340,35 @@ struct
     String.split_on_char '\n' str |> List.map diff_color
 
   let render_diff_mode state win =
-    render state win;
+    render_normal state win;
     match MState.get_mode state with
     | DiffMode str ->
         if str = "MENU" then
-          render_line win (MState.get_curs state) false diff_options
+          render_lines win diff_options (MState.get_curs state) true
         else (
-          render_line win (MState.get_curs state) false diff_header;
+          render_line win (MState.get_curs state) true diff_header;
           render_lines win (diff_to_lines str) (MState.get_curs state)
-            false)
+            true)
     | _ -> failwith "Wrong render function"
 
   let render_push_mode state win =
-    render state win;
-    render_line win (MState.get_curs state) false push_options
+    render_normal state win;
+    render_lines win push_options (MState.get_curs state) true
 
   let render_pull_mode state win =
-    render state win;
-    render_line win (MState.get_curs state) false pull_options
+    render_normal state win;
+    render_lines win pull_options (MState.get_curs state) true
+
+  let render state win =
+    match MState.get_curs_state state with
+    | MState.OffScrUp -> render_scroll_up state win
+    | MState.OffScrDown -> render_scroll_down state win
+    | MState.OnScr -> (
+        match MState.get_mode state with
+        | DiffMode _ -> render_diff_mode state win
+        | CommitDone _ -> render_normal state win
+        | PushMode -> render_push_mode state win
+        | PullMode -> render_pull_mode state win
+        | Normal -> render_normal state win
+        | CommitMode -> render_normal state win)
 end

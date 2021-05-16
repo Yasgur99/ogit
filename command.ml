@@ -10,8 +10,8 @@ type t =
   | Stage
   | Unstage
   | Quit
-  | NavUp
-  | NavDown
+  | NavUp of bool
+  | NavDown of bool
   | Commit of string
   | DiffMenu
   | DiffFile
@@ -34,8 +34,9 @@ exception Program_terminate
 let parse_key key =
   if key = int_of_char 's' then Stage
   else if key = int_of_char 'u' then Unstage
-  else if key = int_of_char 'k' || key = Curses.Key.up then NavUp
-  else if key = int_of_char 'j' || key = Curses.Key.down then NavDown
+  else if key = int_of_char 'k' || key = Curses.Key.up then NavUp true
+  else if key = int_of_char 'j' || key = Curses.Key.down then
+    NavDown true
   else if key = int_of_char 'q' then Quit
   else if key = int_of_char 'c' then Commit ""
   else if key = int_of_char 'D' then DiffMenu
@@ -49,7 +50,6 @@ let parse_key_diff_mode key =
   else if key = int_of_char 't' then DiffTracked
   else if key = int_of_char 'a' then DiffAll
   else if key = int_of_char 'f' then DiffFile
-  else if key = int_of_char 'k' || key = Curses.Key.up then NavUp
   else parse_key key
 
 let parse_key_pull_mode key =
@@ -68,8 +68,8 @@ let string_of_cmd cmd =
   match cmd with
   | Stage -> "stage"
   | Unstage -> "unstage"
-  | NavUp -> "navup"
-  | NavDown -> "navdown"
+  | NavUp _ -> "navup"
+  | NavDown _ -> "navdown"
   | Commit _ -> "commit"
   | DiffMenu -> "diff"
   | DiffStaged -> "diff"

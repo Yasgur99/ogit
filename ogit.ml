@@ -23,40 +23,53 @@ let run_push_elsewhere_mode win (st : MyState.t) =
   let cmd = Command.PushElsewhere msg in
   MyState.exec st cmd
 
-let run_normal win st render_fun parse_fun =
-  render_fun st win;
+let run_normal win st parse_fun =
+  MyRenderer.render st win;
+  let max_y = fst (Curses.getmaxyx win) in
   let key = Curses.wgetch win in
   let cmd = parse_fun key in
-  let new_st = MyState.update_mode st cmd in
-  MyState.exec new_st cmd
+  let full_cmd =
+    match cmd with
+    | Command.NavUp _ ->
+        if
+          MyState.get_curs st >= max_y - 1
+          && not (!MyRenderer.top_line <= 1)
+        then Command.NavUp false
+        else Command.NavUp true
+    | Command.NavDown _ ->
+        if MyState.get_curs st >= max_y - 1 then Command.NavDown false
+        else Command.NavDown true
+    | _ -> cmd
+  in
+  let new_st = MyState.update_mode st full_cmd in
+  MyState.exec new_st full_cmd
 
 let rec run win (st : MyState.t) =
   match MyState.get_mode st with
   | MyState.CommitMode -> run win (run_commit_mode win st)
   | MyState.DiffMode _ ->
-      run win
-        (run_normal win st MyRenderer.render_diff_mode
-           Command.parse_key_diff_mode)
+      run win (run_normal win st Command.parse_key_diff_mode)
   | MyState.CommitDone _ ->
-      run win (run_normal win st MyRenderer.render Command.parse_key)
+      run win (run_normal win st Command.parse_key)
   | MyState.PushMode ->
       run win
-        (run_normal win st MyRenderer.render_push_mode
+        (run_normal win st (* MyRenderer.render_push_mode *)
            Command.parse_key_push_mode)
   | MyState.PushElsewhereMode ->
       run win (run_push_elsewhere_mode win st)
   | MyState.PushElsewhereDone _ ->
-      run win (run_normal win st MyRenderer.render Command.parse_key)
+      run win
+        (run_normal win st (* MyRenderer.render*) Command.parse_key)
   | MyState.PullMode ->
       run win
-        (run_normal win st MyRenderer.render_pull_mode
+        (run_normal win st (* MyRenderer.render_pull_mode *)
            Command.parse_key_pull_mode)
   | MyState.PullElsewhereMode ->
       run win (run_pull_elsewhere_mode win st)
   | MyState.PullElsewhereDone _ ->
-      run win (run_normal win st MyRenderer.render Command.parse_key)
-  | MyState.Normal ->
-      run win (run_normal win st MyRenderer.render Command.parse_key)
+      run win
+        (run_normal win st (* MyRenderer.render *) Command.parse_key)
+  | MyState.Normal -> run win (run_normal win st Command.parse_key)
 
 let run_git args =
   List.iter print_endline (MPlumbing.get_out (MPlumbing.git args))
