@@ -207,6 +207,10 @@ module StateImpl (P : Plumbing) : State = struct
       curs_st;
     }
 
+  let max_curs_pos_normal st =
+    List.length st.untracked + List.length st.tracked 
+    + List.length st.staged + 21
+
   let set_mode st new_mode =
     {
       commit_history = st.commit_history;
@@ -307,6 +311,11 @@ module StateImpl (P : Plumbing) : State = struct
     let printable = List.nth printables st.curs in
     printable.text
 
+  let exec_clear st =
+    let new_mode_st = set_mode st Normal in
+    let new_curs = if st.curs >= max_curs_pos_normal st then max_curs_pos_normal st else st.curs in
+    set_curs new_mode_st new_curs OnScr
+
   let exec_add st =
     let curs_content = get_curs_content st in
     MPorcelain.add [ curs_content ];
@@ -403,7 +412,7 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.NavDown b ->
         set_curs st (get_curs st + 1) (pos_of_cmd cmd)
     | Command.DiffMenu -> set_mode st (DiffMode "MENU")
-    | Command.Clear -> set_mode st Normal
+    | Command.Clear -> exec_clear st
     | Command.PullMenu -> set_mode st PullMode
     | Command.PushMenu -> set_mode st PushMode
     | Command.BranchMenu -> set_mode st BranchMode

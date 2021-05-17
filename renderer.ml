@@ -38,7 +38,7 @@ module type Renderer = sig
 
   val render_delete_get_branch_mode :
     MState.t -> Curses.window -> string
-    
+
   val render_pull_elsewhere_mode : MState.t -> Curses.window -> string
 
   val render_push_elsewhere_mode : MState.t -> Curses.window -> string
@@ -209,6 +209,7 @@ struct
       { text = "c  create branch"; color = "green" };
       { text = "x  delete branch"; color = "green" };
     ]
+
   let pull_elsewhere_msg_prompt : MState.printable =
     { text = "Enter\n    branch to pull from: "; color = "green" }
 
@@ -309,7 +310,6 @@ struct
           true (Array.get scr i)
       done;
       top_line := !top_line + 1;
-      cursor_reset win;
       screen := scr;
       check_err (Curses.wrefresh win)
 
@@ -400,7 +400,7 @@ struct
   let render_delete_get_branch_mode state win =
     prompt_branch_name state win
 
-  let render state win =
+  let rec render state win =
     match MState.get_curs_state state with
     | MState.OffScrUp -> render_scroll_up state win
     | MState.OffScrDown -> render_scroll_down state win
