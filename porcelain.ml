@@ -360,7 +360,8 @@ module PorcelainImpl (P : Plumbing) = struct
     status_t_of_string_list lines
 
   let checkout branch =
-    let _ = P.checkout [| branch |] in
+    let r = P.checkout [| branch |] in
+    print_endline (List.hd (P.get_out r));
     ()
 
   let get_untracked status = status.untracked
