@@ -97,6 +97,10 @@ module type Porcelain = sig
   (** [checkout b] switches to branch named [b] *)
   val checkout : string -> string
 
+  val create_branch : string -> string
+
+  val delete_branch : string -> string
+
   (** [string_of_commit c] is a commit in the form [hash msg] *)
   val string_of_commit_t : commit_t -> string
 
@@ -361,6 +365,14 @@ module PorcelainImpl (P : Plumbing) = struct
 
   let checkout branch =
     let res = P.checkout [| branch |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
+
+  let create_branch branch =
+    let res = P.checkout [| "-b"; branch |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
+
+  let delete_branch branch =
+    let res = P.checkout [| "-d"; branch |] in
     P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
 
   let get_untracked status = status.untracked

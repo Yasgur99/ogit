@@ -373,10 +373,11 @@ module StateImpl (P : Plumbing) : State = struct
     set_mode (update_git_state st ) Normal
 
   let exec_create_branch st branch =
-    failwith "unimplemented2"
+    let msg = MPorcelain.create_branch branch in
+    set_mode (update_git_state st) Normal
   let exec_delete_branch st branch =
-    failwith "unimplemented3"
-
+    let msg = MPorcelain.delete_branch branch in
+    set_mode (update_git_state st) Normal
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
     | Command.NavDown false -> OffScrDown
