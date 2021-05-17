@@ -378,6 +378,7 @@ module StateImpl (P : Plumbing) : State = struct
   let exec_delete_branch st branch =
     let msg = MPorcelain.delete_branch branch in
     set_mode (update_git_state st) Normal
+    
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
     | Command.NavDown false -> OffScrDown

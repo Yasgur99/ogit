@@ -339,29 +339,22 @@ struct
   let get_branch_msg_prompt : MState.printable =
     { text = "Enter branch name: "; color = "green" }
 
-  let render_checkout_get_branch_mode state win =
+  let prompt_branch_name state win =
     render_normal state win;
     render_line win (MState.get_curs state) false get_branch_msg_prompt;
     let msg = parse_string win "" in
     check_err (Curses.noecho ());
     render_normal (MState.update_mode state Command.Nop) win;
     msg
+
+  let render_checkout_get_branch_mode state win =
+    prompt_branch_name state win
 
   let render_create_get_branch_mode state win =
-    render_normal state win;
-    render_line win (MState.get_curs state) false get_branch_msg_prompt;
-    let msg = parse_string win "" in
-    check_err (Curses.noecho ());
-    render_normal (MState.update_mode state Command.Nop) win;
-    msg
+    prompt_branch_name state win
 
   let render_delete_get_branch_mode state win =
-    render_normal state win;
-    render_line win (MState.get_curs state) false get_branch_msg_prompt;
-    let msg = parse_string win "" in
-    check_err (Curses.noecho ());
-    render_normal (MState.update_mode state Command.Nop) win;
-    msg
+    prompt_branch_name state win
 
   let render state win =
     match MState.get_curs_state state with
