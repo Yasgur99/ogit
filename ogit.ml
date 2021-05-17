@@ -39,6 +39,16 @@ let run_checkout_get_branch_mode win st =
   let cmd = Command.CheckoutBranch branch in
   MyState.exec st cmd
 
+let run_create_get_branch_mode win st =
+  let branch = MyRenderer.render_create_get_branch_mode st win in
+  let cmd = Command.CreateBranch branch in
+  MyState.exec st cmd
+
+let run_delete_get_branch_mode win st =
+  let branch = MyRenderer.render_delete_get_branch_mode st win in
+  let cmd = Command.DeleteBranch branch in
+  MyState.exec st cmd
+
 let rec run win (st : MyState.t) =
   match MyState.get_mode st with
   | MyState.CommitMode -> run win (run_commit_mode win st)
@@ -55,8 +65,10 @@ let rec run win (st : MyState.t) =
       run win (run_normal win st Command.parse_key_branch_mode)
   | MyState.CheckoutGetBranchNameMode ->
       run win (run_checkout_get_branch_mode win st)
-  | MyState.CreateGetBranchNameMode -> failwith "crate"
-  | MyState.DeleteGetBranchNameMode -> failwith "del"
+  | MyState.CreateGetBranchNameMode ->
+      run win (run_checkout_get_branch_mode win st)
+  | MyState.DeleteGetBranchNameMode ->
+      run win (run_checkout_get_branch_mode win st)
 
 let run_git args =
   List.iter print_endline (MPlumbing.get_out (MPlumbing.git args))

@@ -33,6 +33,12 @@ module type Renderer = sig
   val render_checkout_get_branch_mode :
     MState.t -> Curses.window -> string
 
+  val render_create_get_branch_mode :
+    MState.t -> Curses.window -> string
+
+  val render_delete_get_branch_mode :
+    MState.t -> Curses.window -> string
+
   val get_color : string -> int
 end
 
