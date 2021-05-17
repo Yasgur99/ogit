@@ -28,6 +28,17 @@ module type Renderer = sig
 
   val render_pull_mode : MState.t -> Curses.window -> unit
 
+  val render_branch_mode : MState.t -> Curses.window -> unit
+
+  val render_checkout_get_branch_mode :
+    MState.t -> Curses.window -> string
+
+  val render_create_get_branch_mode :
+    MState.t -> Curses.window -> string
+
+  val render_delete_get_branch_mode :
+    MState.t -> Curses.window -> string
+    
   val render_pull_elsewhere_mode : MState.t -> Curses.window -> string
 
   val render_push_elsewhere_mode : MState.t -> Curses.window -> string
@@ -187,11 +198,17 @@ struct
     { text = "Enter your commit message: "; color = "green" }
 
   let commit_header : MState.printable =
-    { text = "Commit results: "; color = "green" }
+    { text = "Results: "; color = "green" }
 
   let diff_header : MState.printable =
     { text = "Diff results: "; color = "magenta" }
 
+  let branch_options : MState.printable list =
+    [
+      { text = "b  checkout branch"; color = "green" };
+      { text = "c  create branch"; color = "green" };
+      { text = "x  delete branch"; color = "green" };
+    ]
   let pull_elsewhere_msg_prompt : MState.printable =
     { text = "Enter\n    branch to pull from: "; color = "green" }
 
@@ -228,7 +245,7 @@ struct
 
   let blank_line : MState.printable = { text = " "; color = "white" }
 
-  let render_commit_done state win msg =
+  let render_command_done state win msg =
     render_line win (MState.get_curs state) true commit_header;
     render_line win (MState.get_curs state) true
       { text = msg; color = "white" }
@@ -253,7 +270,7 @@ struct
     render_lines win lines curs render_curs;
     render_line win curs true blank_line;
     match MState.get_mode state with
-    | CommitDone msg -> render_commit_done state win msg
+    | CommandDone msg -> render_command_done state win msg
     | PullElsewhereDone msg -> render_pull_elsewhere_done state win msg
     | _ -> check_err (Curses.wrefresh win)
 
@@ -359,6 +376,30 @@ struct
     render_normal state win;
     render_lines win pull_options (MState.get_curs state) true
 
+  let render_branch_mode state win =
+    render_normal state win;
+    render_lines win branch_options (MState.get_curs state) true
+
+  let get_branch_msg_prompt : MState.printable =
+    { text = "Enter branch name: "; color = "green" }
+
+  let prompt_branch_name state win =
+    render_normal state win;
+    render_line win (MState.get_curs state) false get_branch_msg_prompt;
+    let msg = parse_string win "" in
+    check_err (Curses.noecho ());
+    render_normal (MState.update_mode state Command.Nop) win;
+    msg
+
+  let render_checkout_get_branch_mode state win =
+    prompt_branch_name state win
+
+  let render_create_get_branch_mode state win =
+    prompt_branch_name state win
+
+  let render_delete_get_branch_mode state win =
+    prompt_branch_name state win
+
   let render state win =
     match MState.get_curs_state state with
     | MState.OffScrUp -> render_scroll_up state win
@@ -366,9 +407,11 @@ struct
     | MState.OnScr -> (
         match MState.get_mode state with
         | DiffMode _ -> render_diff_mode state win
-        | CommitDone _ -> render_normal state win
+        | CommandDone _ -> render_normal state win
         | PushMode -> render_push_mode state win
         | PullMode -> render_pull_mode state win
         | Normal -> render_normal state win
-        | CommitMode -> render_normal state win)
+        | CommitMode -> render_normal state win
+        | BranchMode -> render_branch_mode state win
+        | _ -> failwith "should call mode render method directly")
 end

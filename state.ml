@@ -12,12 +12,16 @@ module type State = sig
   type render_mode =
     | Normal
     | CommitMode
-    | CommitDone of string
+    | CommandDone of string
     | DiffMode of string
     | PushMode
     | PushElsewhereMode
     | PushElsewhereDone of string
     | PullMode
+    | BranchMode
+    | CheckoutGetBranchNameMode
+    | CreateGetBranchNameMode
+    | DeleteGetBranchNameMode
     | PullElsewhereMode
     | PullElsewhereDone of string
 
@@ -88,12 +92,16 @@ module StateImpl (P : Plumbing) : State = struct
   type render_mode =
     | Normal
     | CommitMode
-    | CommitDone of string
+    | CommandDone of string
     | DiffMode of string
     | PushMode
     | PushElsewhereMode
     | PushElsewhereDone of string
     | PullMode
+    | BranchMode
+    | CheckoutGetBranchNameMode
+    | CreateGetBranchNameMode
+    | DeleteGetBranchNameMode
     | PullElsewhereMode
     | PullElsewhereDone of string
 
@@ -131,9 +139,9 @@ module StateImpl (P : Plumbing) : State = struct
   let init_state dir =
     {
       commit_history = MPorcelain.log None;
-      head = MPorcelain.get_head;
-      merge = MPorcelain.get_upstream;
-      push = MPorcelain.get_push;
+      head = MPorcelain.get_head ();
+      merge = MPorcelain.get_upstream ();
+      push = MPorcelain.get_push ();
       untracked = MPorcelain.get_untracked (MPorcelain.status ());
       tracked = MPorcelain.get_tracked (MPorcelain.status ());
       staged = MPorcelain.get_staged (MPorcelain.status ());
@@ -147,14 +155,14 @@ module StateImpl (P : Plumbing) : State = struct
   let update_git_state st =
     {
       commit_history = MPorcelain.log None;
-      head = MPorcelain.get_head;
-      merge = MPorcelain.get_upstream;
-      push = MPorcelain.get_push;
+      head = MPorcelain.get_head () ;
+      merge = MPorcelain.get_upstream ();
+      push = MPorcelain.get_push ();
       untracked = MPorcelain.get_untracked (MPorcelain.status ());
       tracked = MPorcelain.get_tracked (MPorcelain.status ());
       staged = MPorcelain.get_staged (MPorcelain.status ());
       curs = st.curs;
-      mode = Normal;
+      mode = st.mode;
       curs_st = st.curs_st;
     }
 
@@ -311,7 +319,7 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec_commit st msg =
     let output = MPorcelain.commit msg in
-    set_mode (update_git_state st) (CommitDone output)
+    set_mode (update_git_state st) (CommandDone output)
 
   let exec_diff_tracked st =
     let out = MPorcelain.diff () in
@@ -370,6 +378,17 @@ module StateImpl (P : Plumbing) : State = struct
     MPorcelain.push (Some msg);
     set_mode (update_git_state st) Normal
 
+  let exec_checkout_branch st branch =
+    let msg = MPorcelain.checkout branch in 
+    set_mode (update_git_state st ) (CommandDone msg)
+
+  let exec_create_branch st branch =
+    let msg = MPorcelain.create_branch branch in
+    set_mode (update_git_state st) (CommandDone msg)
+  let exec_delete_branch st branch =
+    let msg = MPorcelain.delete_branch branch in
+    set_mode (update_git_state st) (CommandDone msg)
+
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
     | Command.NavDown false -> OffScrDown
@@ -379,28 +398,47 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec st cmd =
     match cmd with
+    (** META COMMANDS *)
     | Command.NavUp b -> set_curs st (get_curs st - 1) (pos_of_cmd cmd)
     | Command.NavDown b ->
         set_curs st (get_curs st + 1) (pos_of_cmd cmd)
+    | Command.DiffMenu -> set_mode st (DiffMode "MENU")
+    | Command.Clear -> set_mode st Normal
+    | Command.PullMenu -> set_mode st PullMode
+    | Command.PushMenu -> set_mode st PushMode
+    | Command.BranchMenu -> set_mode st BranchMode
+    | Command.Nop -> st
+    | Command.Quit -> raise Command.Program_terminate
+
+    (** NORMAL MODE *)
     | Command.Stage -> exec_add st
     | Command.Unstage -> exec_unstage st
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
-    | Command.DiffMenu -> set_mode st (DiffMode "MENU")
+
+    (** DIFF MODE *)
     | Command.DiffTracked -> exec_diff_tracked st
     | Command.DiffStaged -> exec_diff_staged st
     | Command.DiffAll -> exec_diff_all st
     | Command.DiffFile -> exec_diff_file st
-    | Command.Clear -> set_mode st Normal
-    | Command.PullMenu -> set_mode st PullMode
+
+    (** PULL MODE *)
     | Command.PullRemote -> exec_pull_remote st
     | Command.PullOriginMaster -> exec_pull_origin_master st
     | Command.PullElsewhere msg ->
         if msg = "" then st else exec_pull_elsewhere st msg
-    | Command.PushMenu -> set_mode st PushMode
+
+    (** PUSH MODE *)
     | Command.PushRemote -> exec_push_remote st
     | Command.PushOriginMaster -> exec_push_origin_master st
     | Command.PushElsewhere msg ->
         if msg = "" then st else exec_push_elsewhere st msg
-    | Command.Quit -> raise Command.Program_terminate
-    | Command.Nop -> st
-end
+        
+    (** BRANCH MODE *)
+    | Command.CheckoutBranch b -> exec_checkout_branch st b
+    | Command.CreateBranch b -> exec_create_branch st b
+    | Command.DeleteBranch b -> exec_delete_branch st b
+    | Command.CheckoutBranchPrompt -> set_mode st CheckoutGetBranchNameMode
+    | Command.CreateBranchPrompt -> set_mode st CreateGetBranchNameMode
+    | Command.DeleteBranchPrompt -> set_mode st DeleteGetBranchNameMode
+ 
+    end

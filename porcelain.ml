@@ -94,6 +94,13 @@ module type Porcelain = sig
   (** [status] shows the status of the working tree *)
   val status : unit -> status_t
 
+  (** [checkout b] switches to branch named [b] *)
+  val checkout : string -> string
+
+  val create_branch : string -> string
+
+  val delete_branch : string -> string
+
   (** [string_of_commit c] is a commit in the form [hash msg] *)
   val string_of_commit_t : commit_t -> string
 
@@ -208,15 +215,24 @@ module PorcelainImpl (P : Plumbing) = struct
         let res = P.log [| h; "-10" |] in
         commit_t_list_of_res res
 
-  let branch_msg name =
-    let res = P.log [| "--graph"; name; "-1"; "--format=%s" |] in
-    let msg =
-      P.get_out res |> List.fold_left (fun acc x -> acc ^ x) ""
-    in
-    let start = String.index msg '*' in
-    String.sub msg (start + 2) (String.length msg - start - 2)
+  let contains s1 s2 =
+    let re = Str.regexp_string s2 in
+    try
+      ignore (Str.search_forward re s1 0);
+      true
+    with Not_found -> false
 
-  let get_head =
+  let branch_msg name =
+    if contains name "fatal:" then ""
+    else
+      let res = P.log [| "--graph"; name; "-1"; "--format=%s" |] in
+      let msg =
+        P.get_out res |> List.fold_left (fun acc x -> acc ^ x) ""
+      in
+      let start = String.index msg '*' in
+      String.sub msg (start + 2) (String.length msg - start - 2)
+
+  let get_head () =
     let long_ref =
       match P.get_out (P.head [||]) with [] -> "" | h :: t -> h
     in
@@ -234,13 +250,13 @@ module PorcelainImpl (P : Plumbing) = struct
     P.get_out (P.log [| "-1"; "--format=%s" |])
     |> List.fold_left (fun acc x -> acc ^ x) ""
 
-  let get_upstream =
+  let get_upstream () =
     P.get_out
       (P.revparse
          [| "--abbrev-ref"; "--symbolic-full-name"; "@{upstream}" |])
     |> List.fold_left (fun acc x -> acc ^ x) ""
 
-  let get_push =
+  let get_push () =
     P.get_out
       (P.revparse
          [| "--abbrev-ref"; "--symbolic-full-name"; "@{push}" |])
@@ -345,6 +361,18 @@ module PorcelainImpl (P : Plumbing) = struct
     let status = P.status [| "--porcelain" |] in
     let lines = P.get_out status in
     status_t_of_string_list lines
+
+  let checkout branch =
+    let res = P.checkout [| branch |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
+
+  let create_branch branch =
+    let res = P.checkout [| "-b"; branch |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
+
+  let delete_branch branch =
+    let res = P.checkout [| "-d"; branch |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
 
   let get_untracked status = status.untracked
 
