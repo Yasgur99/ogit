@@ -265,6 +265,7 @@ struct
     let curs = MState.get_curs state in
     Curses.werase win;
     screen := [||];
+    top_line := 0;
     let lines = MState.printable_of_state state in
     cursor_reset win;
     let render_curs = MState.get_mode state <> CommitMode in
