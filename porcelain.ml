@@ -212,13 +212,22 @@ module PorcelainImpl (P : Plumbing) = struct
         let res = P.log [| h; "-10" |] in
         commit_t_list_of_res res
 
+  let contains s1 s2 =
+    let re = Str.regexp_string s2 in
+    try
+      ignore (Str.search_forward re s1 0);
+      true
+    with Not_found -> false
+
   let branch_msg name =
-    let res = P.log [| "--graph"; name; "-1"; "--format=%s" |] in
-    let msg =
-      P.get_out res |> List.fold_left (fun acc x -> acc ^ x) ""
-    in
-    let start = String.index msg '*' in
-    String.sub msg (start + 2) (String.length msg - start - 2)
+    if contains name "fatal:" then ""
+    else
+      let res = P.log [| "--graph"; name; "-1"; "--format=%s" |] in
+      let msg =
+        P.get_out res |> List.fold_left (fun acc x -> acc ^ x) ""
+      in
+      let start = String.index msg '*' in
+      String.sub msg (start + 2) (String.length msg - start - 2)
 
   let get_head =
     let long_ref =

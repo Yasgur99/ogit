@@ -30,7 +30,8 @@ module type Renderer = sig
 
   val render_branch_mode : MState.t -> Curses.window -> unit
 
-  val render_checkout_get_branch_mode : MState.t -> Curses.window -> string 
+  val render_checkout_get_branch_mode :
+    MState.t -> Curses.window -> string
 
   val get_color : string -> int
 end
@@ -196,7 +197,7 @@ struct
     [
       { text = "b  checkout branch"; color = "green" };
       { text = "c  create branch"; color = "green" };
-      { text = "x  delete branch"; color = "green" }
+      { text = "x  delete branch"; color = "green" };
     ]
 
   let push_options : MState.printable list =
@@ -331,7 +332,7 @@ struct
 
   let get_branch_msg_prompt : MState.printable =
     { text = "Enter branch name: "; color = "green" }
- 
+
   let render_checkout_get_branch_mode state win =
     render_normal state win;
     render_line win (MState.get_curs state) false get_branch_msg_prompt;
@@ -340,17 +341,15 @@ struct
     render_normal (MState.update_mode state Command.Nop) win;
     msg
 
-  let render_create_get_branch_mode state win =
-    failwith "unimp"
+  let render_create_get_branch_mode state win = failwith "unimp"
 
-  let render_delete_get_branch_mode state win =
-    failwith "unimp"
+  let render_delete_get_branch_mode state win = failwith "unimp"
 
   let render state win =
     match MState.get_curs_state state with
     | MState.OffScrUp -> render_scroll_up state win
     | MState.OffScrDown -> render_scroll_down state win
-    | MState.OnScr -> begin
+    | MState.OnScr -> (
         match MState.get_mode state with
         | DiffMode _ -> render_diff_mode state win
         | CommitDone _ -> render_normal state win
@@ -359,7 +358,8 @@ struct
         | Normal -> render_normal state win
         | CommitMode -> render_normal state win
         | BranchMode -> render_branch_mode state win
-        | CreateGetBranchNameMode -> render_create_get_branch_mode state win
-        | DeleteGetBranchNameMode -> render_delete_get_branch_mode state win
-    end
+        | CreateGetBranchNameMode ->
+            render_create_get_branch_mode state win
+        | DeleteGetBranchNameMode ->
+            render_delete_get_branch_mode state win)
 end
