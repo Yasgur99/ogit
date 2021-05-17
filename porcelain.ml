@@ -95,7 +95,7 @@ module type Porcelain = sig
   val status : unit -> status_t
 
   (** [checkout b] switches to branch named [b] *)
-  val checkout : string -> unit
+  val checkout : string -> string
 
   (** [string_of_commit c] is a commit in the form [hash msg] *)
   val string_of_commit_t : commit_t -> string
@@ -360,8 +360,8 @@ module PorcelainImpl (P : Plumbing) = struct
     status_t_of_string_list lines
 
   let checkout branch =
-    let _ = P.checkout [| branch |] in
-    ()
+    let res = P.checkout [| branch |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
 
   let get_untracked status = status.untracked
 
