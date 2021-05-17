@@ -12,7 +12,7 @@ module type State = sig
   type render_mode =
     | Normal
     | CommitMode
-    | CommitDone of string
+    | CommandDone of string
     | DiffMode of string
     | PushMode
     | PullMode
@@ -88,7 +88,7 @@ module StateImpl (P : Plumbing) : State = struct
   type render_mode =
     | Normal
     | CommitMode
-    | CommitDone of string
+    | CommandDone of string
     | DiffMode of string
     | PushMode
     | PullMode
@@ -307,7 +307,7 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec_commit st msg =
     let output = MPorcelain.commit msg in
-    set_mode (update_git_state st) (CommitDone output)
+    set_mode (update_git_state st) (CommandDone output)
 
   let exec_diff_tracked st =
     let out = MPorcelain.diff () in
@@ -370,15 +370,15 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec_checkout_branch st branch =
     let msg = MPorcelain.checkout branch in 
-    set_mode (update_git_state st ) Normal
+    set_mode (update_git_state st ) (CommandDone msg)
 
   let exec_create_branch st branch =
     let msg = MPorcelain.create_branch branch in
-    set_mode (update_git_state st) Normal
+    set_mode (update_git_state st) (CommandDone msg)
   let exec_delete_branch st branch =
     let msg = MPorcelain.delete_branch branch in
-    set_mode (update_git_state st) Normal
-    
+    set_mode (update_git_state st) (CommandDone msg)
+
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
     | Command.NavDown false -> OffScrDown

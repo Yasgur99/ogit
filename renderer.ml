@@ -194,7 +194,7 @@ struct
     { text = "Enter your commit message: "; color = "green" }
 
   let commit_header : MState.printable =
-    { text = "Commit results: "; color = "green" }
+    { text = "Results: "; color = "green" }
 
   let diff_header : MState.printable =
     { text = "Diff results: "; color = "magenta" }
@@ -230,7 +230,7 @@ struct
 
   let blank_line : MState.printable = { text = " "; color = "white" }
 
-  let render_commit_done state win msg =
+  let render_command_done state win msg =
     render_line win (MState.get_curs state) true commit_header;
     render_line win (MState.get_curs state) true
       { text = msg; color = "white" }
@@ -245,7 +245,7 @@ struct
     render_lines win lines curs render_curs;
     render_line win curs true blank_line;
     match MState.get_mode state with
-    | CommitDone msg -> render_commit_done state win msg
+    | CommandDone msg -> render_command_done state win msg
     | _ -> check_err (Curses.wrefresh win)
 
   let render_scroll_up st win =
@@ -363,7 +363,7 @@ struct
     | MState.OnScr -> (
         match MState.get_mode state with
         | DiffMode _ -> render_diff_mode state win
-        | CommitDone _ -> render_normal state win
+        | CommandDone _ -> render_normal state win
         | PushMode -> render_push_mode state win
         | PullMode -> render_pull_mode state win
         | Normal -> render_normal state win

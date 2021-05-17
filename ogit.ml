@@ -54,7 +54,7 @@ let rec run win (st : MyState.t) =
   | MyState.CommitMode -> run win (run_commit_mode win st)
   | MyState.DiffMode _ ->
       run win (run_normal win st Command.parse_key_diff_mode)
-  | MyState.CommitDone _ ->
+  | MyState.CommandDone _ ->
       run win (run_normal win st Command.parse_key)
   | MyState.PushMode ->
       run win (run_normal win st Command.parse_key_push_mode)
