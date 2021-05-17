@@ -35,11 +35,10 @@ type t =
   | PullMenu
   | PullRemote
   | PullOriginMaster
-  | PullElsewhere
+  | PullElsewhere of string
   | PushMenu
   | PushRemote
   | PushOriginMaster
-  | PushElsewhere
   | BranchMenu
   | CheckoutBranchPrompt
   | CreateBranchPrompt
@@ -47,6 +46,7 @@ type t =
   | CheckoutBranch of string 
   | CreateBranch of string 
   | DeleteBranch of string
+  | PushElsewhere of string
   | Clear
   | Nop
 

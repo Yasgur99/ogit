@@ -15,11 +15,15 @@ module type State = sig
     | CommandDone of string
     | DiffMode of string
     | PushMode
+    | PushElsewhereMode
+    | PushElsewhereDone of string
     | PullMode
     | BranchMode
     | CheckoutGetBranchNameMode
     | CreateGetBranchNameMode
     | DeleteGetBranchNameMode
+    | PullElsewhereMode
+    | PullElsewhereDone of string
 
   type curs_state =
     | OffScrUp
@@ -91,11 +95,15 @@ module StateImpl (P : Plumbing) : State = struct
     | CommandDone of string
     | DiffMode of string
     | PushMode
+    | PushElsewhereMode
+    | PushElsewhereDone of string
     | PullMode
     | BranchMode
     | CheckoutGetBranchNameMode
     | CreateGetBranchNameMode
     | DeleteGetBranchNameMode
+    | PullElsewhereMode
+    | PullElsewhereDone of string
 
   type curs_state =
     | OffScrUp
@@ -215,7 +223,11 @@ module StateImpl (P : Plumbing) : State = struct
 
   let update_mode st cmd =
     let new_mode =
-      match cmd with Command.Commit _ -> CommitMode | _ -> st.mode
+      match cmd with
+      | Command.Commit _ -> CommitMode
+      | Command.PushElsewhere _ -> PushElsewhereMode
+      | Command.PullElsewhere _ -> PullElsewhereMode
+      | _ -> st.mode
     in
     set_mode st new_mode
 
@@ -349,9 +361,8 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
-  let exec_pull_elsewhere st =
-    MPorcelain.pull None;
-    (* TODO *)
+  let exec_pull_elsewhere st msg =
+    MPorcelain.pull (Some msg);
     set_mode (update_git_state st) Normal
 
   let exec_push_remote st =
@@ -363,9 +374,8 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
-  let exec_push_elsewhere st =
-    MPorcelain.push None;
-    (* TODO *)
+  let exec_push_elsewhere st msg =
+    MPorcelain.push (Some msg);
     set_mode (update_git_state st) Normal
 
   let exec_checkout_branch st branch =
@@ -414,13 +424,15 @@ module StateImpl (P : Plumbing) : State = struct
     (** PULL MODE *)
     | Command.PullRemote -> exec_pull_remote st
     | Command.PullOriginMaster -> exec_pull_origin_master st
-    | Command.PullElsewhere -> exec_pull_elsewhere st
+    | Command.PullElsewhere msg ->
+        if msg = "" then st else exec_pull_elsewhere st msg
 
     (** PUSH MODE *)
     | Command.PushRemote -> exec_push_remote st
     | Command.PushOriginMaster -> exec_push_origin_master st
-    | Command.PushElsewhere -> exec_push_elsewhere st
-
+    | Command.PushElsewhere msg ->
+        if msg = "" then st else exec_push_elsewhere st msg
+        
     (** BRANCH MODE *)
     | Command.CheckoutBranch b -> exec_checkout_branch st b
     | Command.CreateBranch b -> exec_create_branch st b

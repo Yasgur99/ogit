@@ -38,6 +38,10 @@ module type Renderer = sig
 
   val render_delete_get_branch_mode :
     MState.t -> Curses.window -> string
+    
+  val render_pull_elsewhere_mode : MState.t -> Curses.window -> string
+
+  val render_push_elsewhere_mode : MState.t -> Curses.window -> string
 
   val get_color : string -> int
 end
@@ -205,6 +209,17 @@ struct
       { text = "c  create branch"; color = "green" };
       { text = "x  delete branch"; color = "green" };
     ]
+  let pull_elsewhere_msg_prompt : MState.printable =
+    { text = "Enter\n    branch to pull from: "; color = "green" }
+
+  let pull_elsewhere_header : MState.printable =
+    { text = "Pull\nComplete!"; color = "green" }
+
+  let push_elsewhere_msg_prompt : MState.printable =
+    { text = "Enter\nbranch to push to: "; color = "green" }
+
+  let push_elsewhere_header : MState.printable =
+    { text = "Push\nComplete!"; color = "green" }
 
   let push_options : MState.printable list =
     [
@@ -215,8 +230,8 @@ struct
 
   let pull_options : MState.printable list =
     [
-      { text = "p  pull to remote"; color = "green" };
-      { text = "u  pull origin/master"; color = "green" };
+      { text = "p  pull from remote"; color = "green" };
+      { text = "u  pull origin/master"; color = "red" };
       { text = "e  pull elsewhere"; color = "green" };
     ]
 
@@ -235,6 +250,16 @@ struct
     render_line win (MState.get_curs state) true
       { text = msg; color = "white" }
 
+  let render_pull_elsewhere_done state win msg =
+    render_line win (MState.get_curs state) false pull_elsewhere_header;
+    render_line win (MState.get_curs state) false
+      { text = msg; color = "white" }
+
+  let render_push_elsewhere_done state win msg =
+    render_line win (MState.get_curs state) false push_elsewhere_header;
+    render_line win (MState.get_curs state) false
+      { text = msg; color = "white" }
+
   let render_normal state win =
     let curs = MState.get_curs state in
     Curses.werase win;
@@ -246,6 +271,7 @@ struct
     render_line win curs true blank_line;
     match MState.get_mode state with
     | CommandDone msg -> render_command_done state win msg
+    | PullElsewhereDone msg -> render_pull_elsewhere_done state win msg
     | _ -> check_err (Curses.wrefresh win)
 
   let render_scroll_up st win =
@@ -290,6 +316,24 @@ struct
   let render_commit_mode state win =
     render_normal state win;
     render_line win (MState.get_curs state) false commit_msg_prompt;
+    let msg = parse_string win "" in
+    check_err (Curses.noecho ());
+    render_normal (MState.update_mode state Command.Nop) win;
+    msg
+
+  let render_pull_elsewhere_mode state win =
+    render_normal state win;
+    render_line win (MState.get_curs state) false
+      pull_elsewhere_msg_prompt;
+    let msg = parse_string win "" in
+    check_err (Curses.noecho ());
+    render_normal (MState.update_mode state Command.Nop) win;
+    msg
+
+  let render_push_elsewhere_mode state win =
+    render_normal state win;
+    render_line win (MState.get_curs state) false
+      push_elsewhere_msg_prompt;
     let msg = parse_string win "" in
     check_err (Curses.noecho ());
     render_normal (MState.update_mode state Command.Nop) win;

@@ -13,6 +13,16 @@ let run_commit_mode win (st : MyState.t) =
   let cmd = Command.Commit msg in
   MyState.exec st cmd
 
+let run_pull_elsewhere_mode win (st : MyState.t) =
+  let msg = MyRenderer.render_pull_elsewhere_mode st win in
+  let cmd = Command.PullElsewhere msg in
+  MyState.exec st cmd
+
+let run_push_elsewhere_mode win (st : MyState.t) =
+  let msg = MyRenderer.render_push_elsewhere_mode st win in
+  let cmd = Command.PushElsewhere msg in
+  MyState.exec st cmd
+
 let run_normal win st parse_fun =
   MyRenderer.render st win;
   let max_y = fst (Curses.getmaxyx win) in
@@ -58,8 +68,16 @@ let rec run win (st : MyState.t) =
       run win (run_normal win st Command.parse_key)
   | MyState.PushMode ->
       run win (run_normal win st Command.parse_key_push_mode)
+  | MyState.PushElsewhereMode ->
+      run win (run_push_elsewhere_mode win st)
+  | MyState.PushElsewhereDone _ ->
+      run win (run_normal win st Command.parse_key)
   | MyState.PullMode ->
       run win (run_normal win st Command.parse_key_pull_mode)
+  | MyState.PullElsewhereMode ->
+      run win (run_pull_elsewhere_mode win st)
+  | MyState.PullElsewhereDone _ ->
+      run win (run_normal win st Command.parse_key)
   | MyState.Normal -> run win (run_normal win st Command.parse_key)
   | MyState.BranchMode ->
       run win (run_normal win st Command.parse_key_branch_mode)
