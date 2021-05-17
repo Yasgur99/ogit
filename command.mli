@@ -40,6 +40,13 @@ type t =
   | PushRemote
   | PushOriginMaster
   | PushElsewhere
+  | BranchMenu
+  | CheckoutBranchPrompt
+  | CreateBranchPrompt
+  | DeleteBranchPrompt
+  | CheckoutBranch of string 
+  | CreateBranch of string 
+  | DeleteBranch of string
   | Clear
   | Nop
 
@@ -63,6 +70,10 @@ val parse_key_pull_mode : key -> t
 (** [parse_key_push_mode key] has the same function as [parse_key key]
     but works when push menu has been activated *)
 val parse_key_push_mode : key -> t
+
+(** [parse_key_branch_mode key] has the same function as [parse_key key]
+    but works when branch menu has been activated *)
+val parse_key_branch_mode : key -> t
 
 (** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)
 val string_of_cmd : t -> string

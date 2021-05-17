@@ -16,6 +16,10 @@ module type State = sig
     | DiffMode of string
     | PushMode
     | PullMode
+    | BranchMode
+    | CheckoutGetBranchNameMode
+    | CreateGetBranchNameMode
+    | DeleteGetBranchNameMode
 
   type curs_state =
     | OffScrUp
@@ -88,6 +92,10 @@ module StateImpl (P : Plumbing) : State = struct
     | DiffMode of string
     | PushMode
     | PullMode
+    | BranchMode
+    | CheckoutGetBranchNameMode
+    | CreateGetBranchNameMode
+    | DeleteGetBranchNameMode
 
   type curs_state =
     | OffScrUp
@@ -360,6 +368,20 @@ module StateImpl (P : Plumbing) : State = struct
     (* TODO *)
     set_mode (update_git_state st) Normal
 
+  let exec_checkout_branch st branch =
+    failwith "unimplemented"
+  let exec_create_branch st branch =
+    failwith "unimplemented"
+  let exec_delete_branch st branch =
+    failwith "unimplemented"
+
+  let exec_checkout_branch_prompt st =
+    failwith "unimplemented"
+  let exec_create_branch_prompt st =
+    failwith "unimplemented"
+  let exec_delete_branch_prompt st =
+    failwith "unimplemented"
+
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
     | Command.NavDown false -> OffScrDown
@@ -369,26 +391,45 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec st cmd =
     match cmd with
+    (** META COMMANDS *)
     | Command.NavUp b -> set_curs st (get_curs st - 1) (pos_of_cmd cmd)
     | Command.NavDown b ->
         set_curs st (get_curs st + 1) (pos_of_cmd cmd)
+    | Command.DiffMenu -> set_mode st (DiffMode "MENU")
+    | Command.Clear -> set_mode st Normal
+    | Command.PullMenu -> set_mode st PullMode
+    | Command.PushMenu -> set_mode st PushMode
+    | Command.BranchMenu -> set_mode st BranchMode
+    | Command.Nop -> st
+    | Command.Quit -> raise Command.Program_terminate
+
+    (** NORMAL MODE *)
     | Command.Stage -> exec_add st
     | Command.Unstage -> exec_unstage st
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
-    | Command.DiffMenu -> set_mode st (DiffMode "MENU")
+
+    (** DIFF MODE *)
     | Command.DiffTracked -> exec_diff_tracked st
     | Command.DiffStaged -> exec_diff_staged st
     | Command.DiffAll -> exec_diff_all st
     | Command.DiffFile -> exec_diff_file st
-    | Command.Clear -> set_mode st Normal
-    | Command.PullMenu -> set_mode st PullMode
+
+    (** PULL MODE *)
     | Command.PullRemote -> exec_pull_remote st
     | Command.PullOriginMaster -> exec_pull_origin_master st
     | Command.PullElsewhere -> exec_pull_elsewhere st
-    | Command.PushMenu -> set_mode st PushMode
+
+    (** PUSH MODE *)
     | Command.PushRemote -> exec_push_remote st
     | Command.PushOriginMaster -> exec_push_origin_master st
     | Command.PushElsewhere -> exec_push_elsewhere st
-    | Command.Quit -> raise Command.Program_terminate
-    | Command.Nop -> st
-end
+
+    (** BRANCH MODE *)
+    | Command.CheckoutBranch b -> exec_checkout_branch st b
+    | Command.CreateBranch b -> exec_create_branch st b
+    | Command.DeleteBranch b -> exec_delete_branch st b
+    | Command.CheckoutBranchPrompt -> set_mode st CheckoutGetBranchNameMode
+    | Command.CreateBranchPrompt -> set_mode st CreateGetBranchNameMode
+    | Command.DeleteBranchPrompt -> set_mode st DeleteGetBranchNameMode
+ 
+    end

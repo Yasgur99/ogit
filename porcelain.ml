@@ -94,6 +94,9 @@ module type Porcelain = sig
   (** [status] shows the status of the working tree *)
   val status : unit -> status_t
 
+  (** [checkout b] switches to branch named [b] *)
+  val checkout: string -> unit
+
   (** [string_of_commit c] is a commit in the form [hash msg] *)
   val string_of_commit_t : commit_t -> string
 
@@ -346,6 +349,10 @@ module PorcelainImpl (P : Plumbing) = struct
     let status = P.status [| "--porcelain" |] in
     let lines = P.get_out status in
     status_t_of_string_list lines
+
+  let checkout branch = 
+    let _ = P.checkout [| "-b"; branch|] in
+    ()
 
   let get_untracked status = status.untracked
 

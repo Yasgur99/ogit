@@ -82,6 +82,9 @@ module type Plumbing = sig
   (** [head args] calls git symbolic-ref HEAD with arguments [args]*)
   val head : string array -> result
 
+  (** [checkout args] calls git checkout with arguments [args]*)
+  val checkout : string array -> result
+
   (** [git args] calls git with arguments [args] *)
   val git : string array -> result
 end
@@ -220,6 +223,10 @@ module ProdPlumbing : Plumbing = struct
     fork_and_execv "git" 
       (Array.append [| "git"; "symbolic-ref"; "HEAD" |] args)
 
+  let checkout (args : string array) =
+    fork_and_execv "git" 
+      (Array.append [| "git"; "checkout"; |] args)
+
   let git (args : string array) =
     fork_and_execv "git" (Array.append [|"git";|] args)
 end
@@ -297,7 +304,10 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let head (args : string array) =
     failwith "unimplemented"
-   
+
+  let checkout (args : string array) =
+    failwith "unimplemented"
+
   let git (args : string array) =
     failwith "unimplemented"
 end

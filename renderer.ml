@@ -28,6 +28,10 @@ module type Renderer = sig
 
   val render_pull_mode : MState.t -> Curses.window -> unit
 
+  val render_branch_mode : MState.t -> Curses.window -> unit
+
+  val render_checkout_get_branch_mode : MState.t -> Curses.window -> string 
+
   val get_color : string -> int
 end
 
@@ -188,6 +192,13 @@ struct
   let diff_header : MState.printable =
     { text = "Diff results: "; color = "magenta" }
 
+  let branch_options : MState.printable list =
+    [
+      { text = "b  checkout branch"; color = "green" };
+      { text = "c  create branch"; color = "green" };
+      { text = "x  delete branch"; color = "green" }
+    ]
+
   let push_options : MState.printable list =
     [
       { text = "p  push to remote"; color = "green" };
@@ -314,16 +325,41 @@ struct
     render_normal state win;
     render_lines win pull_options (MState.get_curs state) true
 
+  let render_branch_mode state win =
+    render_normal state win;
+    render_lines win branch_options (MState.get_curs state) true
+
+  let get_branch_msg_prompt : MState.printable =
+    { text = "Enter branch name: "; color = "green" }
+ 
+  let render_checkout_get_branch_mode state win =
+    render_normal state win;
+    render_line win (MState.get_curs state) false get_branch_msg_prompt;
+    let msg = parse_string win "" in
+    check_err (Curses.noecho ());
+    render_normal (MState.update_mode state Command.Nop) win;
+    msg
+
+  let render_create_get_branch_mode state win =
+    failwith "unimp"
+
+  let render_delete_get_branch_mode state win =
+    failwith "unimp"
+
   let render state win =
     match MState.get_curs_state state with
     | MState.OffScrUp -> render_scroll_up state win
     | MState.OffScrDown -> render_scroll_down state win
-    | MState.OnScr -> (
+    | MState.OnScr -> begin
         match MState.get_mode state with
         | DiffMode _ -> render_diff_mode state win
         | CommitDone _ -> render_normal state win
         | PushMode -> render_push_mode state win
         | PullMode -> render_pull_mode state win
         | Normal -> render_normal state win
-        | CommitMode -> render_normal state win)
+        | CommitMode -> render_normal state win
+        | BranchMode -> render_branch_mode state win
+        | CreateGetBranchNameMode -> render_create_get_branch_mode state win
+        | DeleteGetBranchNameMode -> render_delete_get_branch_mode state win
+    end
 end

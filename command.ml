@@ -26,6 +26,13 @@ type t =
   | PushRemote
   | PushOriginMaster
   | PushElsewhere
+  | BranchMenu
+  | CheckoutBranchPrompt
+  | CreateBranchPrompt
+  | DeleteBranchPrompt
+  | CheckoutBranch of string 
+  | CreateBranch of string 
+  | DeleteBranch of string 
   | Clear
   | Nop
 
@@ -43,6 +50,7 @@ let parse_key key =
   else if key = int_of_char 'L' then PullMenu
   else if key = int_of_char 'P' then PushMenu
   else if key = int_of_char ' ' then Clear
+  else if key = int_of_char 'b' then BranchMenu
   else Nop
 
 let parse_key_diff_mode key =
@@ -62,6 +70,12 @@ let parse_key_push_mode key =
   if key = int_of_char 'p' then PushRemote
   else if key = int_of_char 'u' then PushOriginMaster
   else if key = int_of_char 'e' then PushElsewhere
+  else parse_key key
+
+let parse_key_branch_mode key =
+  if key = int_of_char 'b' then CheckoutBranch ""
+  else if key = int_of_char 'c' then CreateBranch ""
+  else if key = int_of_char 'x' then DeleteBranch ""
   else parse_key key
 
 let string_of_cmd cmd =
@@ -84,6 +98,13 @@ let string_of_cmd cmd =
   | PushRemote -> "push"
   | PushOriginMaster -> "push"
   | PushElsewhere -> "push"
+  | BranchMenu -> "branch"
+  | CheckoutBranchPrompt -> "checkout branch prompt"
+  | CreateBranchPrompt -> "create branch prompt"
+  | DeleteBranchPrompt -> "delete branch prompt"
+  | CheckoutBranch _ -> "checkout branch"
+  | CreateBranch _ -> "create branch"
+  | DeleteBranch _ -> "delete branch"
   | Clear -> "clear"
   | Quit -> "quit"
   | Nop -> "nop"
