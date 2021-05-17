@@ -30,9 +30,9 @@ type t =
   | CheckoutBranchPrompt
   | CreateBranchPrompt
   | DeleteBranchPrompt
-  | CheckoutBranch of string 
-  | CreateBranch of string 
-  | DeleteBranch of string 
+  | CheckoutBranch of string
+  | CreateBranch of string
+  | DeleteBranch of string
   | Clear
   | Nop
 
@@ -73,9 +73,9 @@ let parse_key_push_mode key =
   else parse_key key
 
 let parse_key_branch_mode key =
-  if key = int_of_char 'b' then CheckoutBranch ""
-  else if key = int_of_char 'c' then CreateBranch ""
-  else if key = int_of_char 'x' then DeleteBranch ""
+  if key = int_of_char 'b' then CheckoutBranchPrompt
+  else if key = int_of_char 'c' then CreateBranchPrompt
+  else if key = int_of_char 'x' then DeleteBranchPrompt
   else parse_key key
 
 let string_of_cmd cmd =

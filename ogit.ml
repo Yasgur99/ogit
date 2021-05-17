@@ -34,7 +34,7 @@ let run_normal win st parse_fun =
   let new_st = MyState.update_mode st full_cmd in
   MyState.exec new_st full_cmd
 
-let run_branch_mode win st parse_fun =
+let run_checkout_get_branch_name_mode win st parse_fun =
   let branch = MyRenderer.render_checkout_get_branch_mode st win in
   let cmd = Command.CheckoutBranch branch in
   MyState.exec st cmd
@@ -51,9 +51,14 @@ let rec run win (st : MyState.t) =
   | MyState.PullMode ->
       run win (run_normal win st Command.parse_key_pull_mode)
   | MyState.Normal -> run win (run_normal win st Command.parse_key)
-  | MyState.BranchMode -> run win (run_normal win st
-                                     Command.parse_key_branch_mode)
-  | MyState.CheckoutGetBranchNameMode -> failwith "ayy"
+  | MyState.BranchMode ->
+      run win (run_normal win st Command.parse_key_branch_mode)
+  | MyState.CheckoutGetBranchNameMode ->
+      run win
+        (run_checkout_get_branch_name_mode win st
+           Command.parse_key_branch_mode)
+  | MyState.CreateGetBranchNameMode -> failwith "crate"
+  | MyState.DeleteGetBranchNameMode -> failwith "del"
 
 let run_git args =
   List.iter print_endline (MPlumbing.get_out (MPlumbing.git args))

@@ -369,18 +369,11 @@ module StateImpl (P : Plumbing) : State = struct
     set_mode (update_git_state st) Normal
 
   let exec_checkout_branch st branch =
-    failwith "unimplemented"
+    failwith "unimplemented1"
   let exec_create_branch st branch =
-    failwith "unimplemented"
+    failwith "unimplemented2"
   let exec_delete_branch st branch =
-    failwith "unimplemented"
-
-  let exec_checkout_branch_prompt st =
-    failwith "unimplemented"
-  let exec_create_branch_prompt st =
-    failwith "unimplemented"
-  let exec_delete_branch_prompt st =
-    failwith "unimplemented"
+    failwith "unimplemented3"
 
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
