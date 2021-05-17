@@ -347,9 +347,21 @@ struct
     render_normal (MState.update_mode state Command.Nop) win;
     msg
 
-  let render_create_get_branch_mode state win = failwith "unimp"
+  let render_create_get_branch_mode state win =
+    render_normal state win;
+    render_line win (MState.get_curs state) false get_branch_msg_prompt;
+    let msg = parse_string win "" in
+    check_err (Curses.noecho ());
+    render_normal (MState.update_mode state Command.Nop) win;
+    msg
 
-  let render_delete_get_branch_mode state win = failwith "unimp"
+  let render_delete_get_branch_mode state win =
+    render_normal state win;
+    render_line win (MState.get_curs state) false get_branch_msg_prompt;
+    let msg = parse_string win "" in
+    check_err (Curses.noecho ());
+    render_normal (MState.update_mode state Command.Nop) win;
+    msg
 
   let render state win =
     match MState.get_curs_state state with
@@ -364,8 +376,5 @@ struct
         | Normal -> render_normal state win
         | CommitMode -> render_normal state win
         | BranchMode -> render_branch_mode state win
-        | CreateGetBranchNameMode ->
-            render_create_get_branch_mode state win
-        | DeleteGetBranchNameMode ->
-            render_delete_get_branch_mode state win)
+        | _ -> failwith "should call mode render method directly")
 end
