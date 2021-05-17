@@ -154,7 +154,7 @@ module StateImpl (P : Plumbing) : State = struct
       tracked = MPorcelain.get_tracked (MPorcelain.status ());
       staged = MPorcelain.get_staged (MPorcelain.status ());
       curs = st.curs;
-      mode = Normal;
+      mode = st.mode;
       curs_st = st.curs_st;
     }
 
