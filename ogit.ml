@@ -55,8 +55,7 @@ let rec run win (st : MyState.t) =
       run win (run_normal win st Command.parse_key_branch_mode)
   | MyState.CheckoutGetBranchNameMode ->
       run win
-        (run_checkout_get_branch_name_mode win st
-           Command.parse_key_branch_mode)
+        (run_checkout_get_branch_name_mode win st Command.parse_key)
   | MyState.CreateGetBranchNameMode -> failwith "crate"
   | MyState.DeleteGetBranchNameMode -> failwith "del"
 

@@ -369,7 +369,9 @@ module StateImpl (P : Plumbing) : State = struct
     set_mode (update_git_state st) Normal
 
   let exec_checkout_branch st branch =
-    failwith "unimplemented1"
+    MPorcelain.checkout branch;
+    set_mode (update_git_state st ) Normal
+
   let exec_create_branch st branch =
     failwith "unimplemented2"
   let exec_delete_branch st branch =
