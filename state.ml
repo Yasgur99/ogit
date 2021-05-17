@@ -370,7 +370,6 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec_checkout_branch st branch =
     let msg = MPorcelain.checkout branch in 
-    print_endline msg;
     set_mode (update_git_state st ) Normal
 
   let exec_create_branch st branch =
