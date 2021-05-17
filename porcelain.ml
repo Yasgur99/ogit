@@ -229,7 +229,7 @@ module PorcelainImpl (P : Plumbing) = struct
       let start = String.index msg '*' in
       String.sub msg (start + 2) (String.length msg - start - 2)
 
-  let get_head =
+  let get_head () =
     let long_ref =
       match P.get_out (P.head [||]) with [] -> "" | h :: t -> h
     in
@@ -247,13 +247,13 @@ module PorcelainImpl (P : Plumbing) = struct
     P.get_out (P.log [| "-1"; "--format=%s" |])
     |> List.fold_left (fun acc x -> acc ^ x) ""
 
-  let get_upstream =
+  let get_upstream () =
     P.get_out
       (P.revparse
          [| "--abbrev-ref"; "--symbolic-full-name"; "@{upstream}" |])
     |> List.fold_left (fun acc x -> acc ^ x) ""
 
-  let get_push =
+  let get_push () =
     P.get_out
       (P.revparse
          [| "--abbrev-ref"; "--symbolic-full-name"; "@{push}" |])

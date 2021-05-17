@@ -131,9 +131,9 @@ module StateImpl (P : Plumbing) : State = struct
   let init_state dir =
     {
       commit_history = MPorcelain.log None;
-      head = MPorcelain.get_head;
-      merge = MPorcelain.get_upstream;
-      push = MPorcelain.get_push;
+      head = MPorcelain.get_head ();
+      merge = MPorcelain.get_upstream ();
+      push = MPorcelain.get_push ();
       untracked = MPorcelain.get_untracked (MPorcelain.status ());
       tracked = MPorcelain.get_tracked (MPorcelain.status ());
       staged = MPorcelain.get_staged (MPorcelain.status ());
@@ -147,9 +147,9 @@ module StateImpl (P : Plumbing) : State = struct
   let update_git_state st =
     {
       commit_history = MPorcelain.log None;
-      head = MPorcelain.get_head;
-      merge = MPorcelain.get_upstream;
-      push = MPorcelain.get_push;
+      head = MPorcelain.get_head () ;
+      merge = MPorcelain.get_upstream ();
+      push = MPorcelain.get_push ();
       untracked = MPorcelain.get_untracked (MPorcelain.status ());
       tracked = MPorcelain.get_tracked (MPorcelain.status ());
       staged = MPorcelain.get_staged (MPorcelain.status ());
