@@ -66,9 +66,9 @@ let rec run win (st : MyState.t) =
   | MyState.CheckoutGetBranchNameMode ->
       run win (run_checkout_get_branch_mode win st)
   | MyState.CreateGetBranchNameMode ->
-      run win (run_checkout_get_branch_mode win st)
+      run win (run_create_get_branch_mode win st)
   | MyState.DeleteGetBranchNameMode ->
-      run win (run_checkout_get_branch_mode win st)
+      run win (run_delete_get_branch_mode win st)
 
 let run_git args =
   List.iter print_endline (MPlumbing.get_out (MPlumbing.git args))
