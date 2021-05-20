@@ -226,7 +226,7 @@ struct
     [
       { text = "p  push to remote"; color = "green" };
       { text = "u  push origin/master"; color = "green" };
-      { text = "e  push elsewhere"; color = "green" };
+      { text = "e  push elsewheree"; color = "green" };
     ]
 
   let pull_options : MState.printable list =
