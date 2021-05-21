@@ -45,6 +45,10 @@ module type State = sig
       [st] *)
   val commit_history : t -> MPorcelain.commit_t list
 
+  val tracked : t -> string list
+
+  val staged : t -> string list
+
   (** [head st] is the commit pointed to by the head in the current
       state [st] *)
   val head : t -> string
@@ -313,7 +317,10 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec_clear st =
     let new_mode_st = set_mode st Normal in
-    let new_curs = if st.curs >= max_curs_pos_normal st then max_curs_pos_normal st else st.curs in
+    let new_curs = 
+      if st.curs >= max_curs_pos_normal st 
+      then max_curs_pos_normal st 
+      else st.curs in
     set_curs new_mode_st new_curs OnScr
 
   let exec_add st =

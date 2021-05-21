@@ -95,7 +95,9 @@ struct
       ]
     in
     let rec r_color color n =
-      if List.nth colors n = color then n + 1 else r_color color (n + 1)
+      if List.nth colors n = color 
+      then n + 1 
+      else r_color color (n + 1)
     in
     r_color color 0
 
@@ -130,7 +132,9 @@ struct
   let cursor_nextline win =
     let yx = Curses.getyx win in
     let new_y =
-      if fst yx < fst (Curses.getmaxyx win) then fst yx + 1 else fst yx
+      if fst yx < fst (Curses.getmaxyx win)
+      then fst yx + 1
+      else fst yx
     in
     let new_yx = (new_y, 0) in
     check_err (Curses.wmove win (fst new_yx) (snd new_yx))
@@ -146,11 +150,13 @@ struct
     enable_color "cyan_back";
     screen := Array.append !screen [| line |];
     let fst_char =
-      if String.length line.text = 0 then " "
+      if String.length line.text = 0
+      then " "
       else String.sub line.text 0 1
     in
     let rest =
-      if String.length line.text <= 1 then ""
+      if String.length line.text <= 1
+      then ""
       else String.sub line.text 1 (String.length line.text - 1)
     in
     check_err (Curses.waddstr win fst_char);
@@ -163,8 +169,10 @@ struct
   let render_line win curs render_curs (line : MState.printable) =
     let yx = Curses.getyx win in
     screen := Array.append !screen [| line |];
-    if fst yx >= fst (Curses.getmaxyx win) - 1 then ()
-    else if fst yx = curs && render_curs then render_user_line win line
+    if fst yx >= fst (Curses.getmaxyx win) - 1
+    then ()
+    else if fst yx = curs && render_curs 
+    then render_user_line win line
     else (
       enable_color line.color;
       check_err (Curses.waddstr win line.text);
@@ -183,10 +191,13 @@ struct
     check_err (Curses.wmove win (fst yx) (snd yx - 1));
     try
       let key = Curses.wgetch win in
-      if key = 10 then str
-      else if key = Curses.Key.backspace then (
+      if key = 10
+      then str
+      else if key = Curses.Key.backspace 
+      then (
         let new_str =
-          if str = "" then str
+          if str = "" 
+          then str
           else String.sub str 0 (String.length str - 1)
         in
         Curses.clrtoeol ();
@@ -247,16 +258,19 @@ struct
   let blank_line : MState.printable = { text = " "; color = "white" }
 
   let render_command_done state win msg =
+    render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) true commit_header;
     render_line win (MState.get_curs state) true
       { text = msg; color = "white" }
 
   let render_pull_elsewhere_done state win msg =
+    render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) false pull_elsewhere_header;
     render_line win (MState.get_curs state) false
       { text = msg; color = "white" }
 
   let render_push_elsewhere_done state win msg =
+    render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) false push_elsewhere_header;
     render_line win (MState.get_curs state) false
       { text = msg; color = "white" }
@@ -270,7 +284,6 @@ struct
     cursor_reset win;
     let render_curs = MState.get_mode state <> CommitMode in
     render_lines win lines curs render_curs;
-    render_line win curs true blank_line;
     match MState.get_mode state with
     | CommandDone msg -> render_command_done state win msg
     | PullElsewhereDone msg -> render_pull_elsewhere_done state win msg
@@ -298,7 +311,7 @@ struct
       check_err (Curses.wrefresh win)
 
   let render_scroll_down st win =
-    let btm_line = !top_line + fst (Curses.getmaxyx win) in
+    let btm_line = !top_line + fst (Curses.getmaxyx win) - 1 in
     if btm_line >= Array.length !screen then ()
     else
       let scr = !screen in
@@ -316,6 +329,7 @@ struct
 
   let render_commit_mode state win =
     render_normal state win;
+    render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) false commit_msg_prompt;
     let msg = parse_string win "" in
     check_err (Curses.noecho ());
@@ -361,9 +375,11 @@ struct
     render_normal state win;
     match MState.get_mode state with
     | DiffMode str ->
-        if str = "MENU" then
-          render_lines win diff_options (MState.get_curs state) true
+        if str = "MENU" then (
+          render_line win (MState.get_curs state) true blank_line;
+          render_lines win diff_options (MState.get_curs state) true)
         else (
+          render_line win (MState.get_curs state) true blank_line;
           render_line win (MState.get_curs state) true diff_header;
           render_lines win (diff_to_lines str) (MState.get_curs state)
             true)
@@ -371,20 +387,24 @@ struct
 
   let render_push_mode state win =
     render_normal state win;
+    render_line win (MState.get_curs state) true blank_line;
     render_lines win push_options (MState.get_curs state) true
 
   let render_pull_mode state win =
     render_normal state win;
+    render_line win (MState.get_curs state) true blank_line;
     render_lines win pull_options (MState.get_curs state) true
 
   let render_branch_mode state win =
     render_normal state win;
+    render_line win (MState.get_curs state) true blank_line;
     render_lines win branch_options (MState.get_curs state) true
 
   let get_branch_msg_prompt : MState.printable =
     { text = "Enter branch name: "; color = "green" }
 
   let prompt_branch_name state win =
+    render_line win (MState.get_curs state) true blank_line;
     render_normal state win;
     render_line win (MState.get_curs state) false get_branch_msg_prompt;
     let msg = parse_string win "" in
