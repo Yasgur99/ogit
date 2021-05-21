@@ -25,7 +25,7 @@ let a = TestState.init_state "dummy" in
 assert_bool "commit history empty" (check a)
 
 let empty_commit_history () = 
-  MockPlumbing.set_log_data [] [] []
+  MockPlumbing.set_log_data ["fatal"] [] ["fatal"]
 
 let some_commit_history () = 
   MockPlumbing.set_log_data 

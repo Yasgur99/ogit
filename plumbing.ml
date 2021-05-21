@@ -308,9 +308,11 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let log_data = 
     ref {
-      stdout = [];
+      stdout = ["59689ce (setup project files, 2021-03-22)";
+                "b92c19e (Initial commit, 2021-03-04)"] ;
       stderr = [];
-      out_and_err = [];
+      out_and_err = ["59689ce (setup project files, 2021-03-22)";
+                "b92c19e (Initial commit, 2021-03-04)"] ;
     }
 
   let set_log_data out err out_and_err=
@@ -345,9 +347,9 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let head_data = 
     ref {
-      stdout = [];
+      stdout = ["origin/master"];
       stderr = [];
-      out_and_err = [];
+      out_and_err = ["origin/master"];
     }
 
   let set_head_data out err out_and_err=
@@ -360,9 +362,12 @@ module MockPlumbing : PlumbingWithSet = struct
     let new_args = Array.of_list("push" :: (Array.to_list args)) in
     git new_args
 
-  let revparse (args : string array) = 
-    let new_args = Array.of_list("push" :: (Array.to_list args)) in
-    git new_args
+  let revparse (args : string array) =
+    {
+      stdout = ["origin/master"];
+      stderr = [];
+      out_and_err = ["origin/master"];
+    }
 
   let set_status_data out err out_and_err=
     log_data := make_result out err out_and_err
@@ -376,8 +381,4 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let status (args : string array) = 
     !status_data
-
-  let head (args : string array) =
-    let new_args = Array.of_list("push" :: (Array.to_list args)) in
-    git new_args
 end
