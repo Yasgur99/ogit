@@ -178,7 +178,7 @@ module ProdPlumbing : Plumbing = struct
     fork_and_execv "git" (Array.append [| "git"; "init" |] args)
 
   let push (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "push" |] args)
 
   let pull (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
