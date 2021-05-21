@@ -92,7 +92,11 @@ end
 module type PlumbingWithSet = sig
   include Plumbing
 
-  (** TODO: add setup methods **)
+  val set_log_data : string list -> string list -> string list -> unit
+
+  val set_status_data : string list -> string list -> string list -> unit
+    
+  val set_head_data : string list -> string list -> string list -> unit
 end
 
 module ProdPlumbing : Plumbing = struct
@@ -245,15 +249,27 @@ module MockPlumbing : PlumbingWithSet = struct
     out_and_err : string list; (*exit_code : int;*)
   }
 
-  let get_stdout result = failwith "unimplemented"
+  let get_stdout result = 
+    result.stdout
 
-  let get_stderr result = failwith "unimplemented"
+  let get_stderr result = 
+    result.stderr
 
-  let get_out result = failwith "unimplemented"
+  let get_out result = 
+    result.out_and_err
 
-  let make_result out err out_and_err = failwith "unimpelented"
+  let make_result out err out_and_err = 
+    {
+      stdout = out;
+      stderr = err;
+      out_and_err = out_and_err;
+    }
 
-  let init (args : string array) = failwith "unimplemented"
+  let init (args : string array) = 
+    make_result 
+      ["Initialized empty Git repository in /home/fake/.git/"]
+      []
+      ["Initialized empty Git repository in /home/fake/.git/"]
 
   let push (args : string array) = failwith "unimplemented"
 
@@ -271,7 +287,18 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let commit_tree (args : string array) = failwith "unimplemented"
 
-  let log (args : string array) = failwith "unimplemented"
+  let log_data = 
+    ref {
+      stdout = [];
+      stderr = [];
+      out_and_err = [];
+    }
+
+  let set_log_data out err out_and_err=
+    log_data := make_result out err out_and_err
+
+  let log (args : string array) =
+    !log_data
 
   let add (args : string array) = failwith "unimplemented"
 
@@ -283,8 +310,18 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let diff (args : string array) = failwith "unimplemented"
 
+  let head_data = 
+    ref {
+      stdout = [];
+      stderr = [];
+      out_and_err = [];
+    }
+
+  let set_head_data out err out_and_err=
+    head_data := make_result out err out_and_err
+
   let head (args : string array) =
-    failwith "unimplemented"
+    !head_data
 
   let checkout (args : string array) =
     failwith "unimplemented"
@@ -294,7 +331,18 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let revparse (args : string array) = failwith "unimplemented"
 
-  let status (args : string array) = failwith "unimplemented"
+  let set_status_data out err out_and_err=
+    log_data := make_result out err out_and_err
+
+  let status_data =
+    ref {
+      stdout = [];
+      stderr = [];
+      out_and_err = [];
+    }
+
+  let status (args : string array) = 
+    !status_data
 
   let head (args : string array) = failwith "unimplemented"
 

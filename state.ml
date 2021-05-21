@@ -45,6 +45,10 @@ module type State = sig
       [st] *)
   val commit_history : t -> MPorcelain.commit_t list
 
+  val tracked : t -> string list
+
+  val staged : t -> string list
+
   (** [head st] is the commit pointed to by the head in the current
       state [st] *)
   val head : t -> string
