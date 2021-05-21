@@ -29,9 +29,11 @@ let empty_commit_history () =
 
 let some_commit_history () = 
   MockPlumbing.set_log_data 
-    ["59689ce (setup project files, 2021-03-22)";"b92c19e (Initial commit, 2021-03-04)"] 
+    ["59689ce (setup project files, 2021-03-22)";
+     "b92c19e (Initial commit, 2021-03-04)"] 
     [] 
-    ["59689ce (setup project files, 2021-03-22)";"b92c19e (Initial commit, 2021-03-04)"]
+    ["59689ce (setup project files, 2021-03-22)";
+     "b92c19e (Initial commit, 2021-03-04)"]
 
 let is_commit_history_empty st =
   match TestState.commit_history st with
@@ -92,8 +94,10 @@ let head_exists st =
   | _ -> true
 
 let init_state_tests = [
-  init_state_test "no commit history" empty_commit_history is_commit_history_empty;
-  init_state_test "some commit history" some_commit_history is_commit_history_not_empty;
+  init_state_test "no commit history" empty_commit_history 
+    is_commit_history_empty;
+  init_state_test "some commit history" some_commit_history 
+    is_commit_history_not_empty;
   init_state_test "no tracked" no_tracked_data is_no_tracked;
   init_state_test "some tracked" some_tracked_data is_tracked;
   init_state_test "no staged" no_staged_data is_no_staged;
@@ -103,7 +107,7 @@ let init_state_tests = [
 ]
 
 let is_curs c st =
-  TestState.get_curs st = 1
+  TestState.get_curs st = c
 
 let exec_test
   (name : string) 
@@ -133,26 +137,49 @@ let exec_tests = [
 
   exec_test "navup at top of file" (Command.NavUp true) (fun () -> ()) 
     (fun () -> ()) (is_curs 0);
+
   exec_test "navdown top of file" (Command.NavUp true) (fun () -> ())
     (fun () -> ()) (is_curs 1);
 ]
 
 let printable_of_state_tests = []
-let get_curs_tests = []
-let set_curs_tests = []
+
+let set_mode_test
+  (name : string) 
+  (mode) : test =
+name >:: fun _ ->
+  let st = TestState.init_state "as" in
+  let st' = TestState.set_mode st mode in
+  assert_bool "set mode" (TestState.get_mode st' = mode) 
+
+let set_mode_tests = [
+  set_mode_test "normal" TestState.Normal;
+  set_mode_test "commit mode" TestState.CommitMode;
+  set_mode_test "commit done" (TestState.CommandDone "");
+  set_mode_test "diff" (TestState.DiffMode "");
+  set_mode_test "push" TestState.PushMode;
+  set_mode_test "push elsewhere" TestState.PushElsewhereMode;
+  set_mode_test "push elsewhere done" (TestState.PushElsewhereDone "");
+  set_mode_test "pull" TestState.PullMode;
+  set_mode_test "branch" TestState.BranchMode;
+  set_mode_test "checkout branch" TestState.CheckoutGetBranchNameMode;
+  set_mode_test "create branch" TestState.CreateGetBranchNameMode;
+  set_mode_test "delete branch" TestState.DeleteGetBranchNameMode;
+  set_mode_test "pull elsewhere" TestState.PullElsewhereMode;
+  set_mode_test "pull elsewhere done" (TestState.PullElsewhereDone "")
+]
 
 let state_tests = 
   init_state_tests
   @ exec_tests
-  @ printable_of_state_tests
-  @ get_curs_tests
-  @ set_curs_tests
+  @ set_mode_tests
 
 (*****************************************************)
 (* Command Tests *)
 (*****************************************************)
 
-(** [parse_key_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key k] is exp*)
+(** [parse_key_test k exp] constructs an OUnit test named [n] that
+    asserts [Command.parse_key k] is exp*)
 let parse_key_test
   (name : string)
   (key : int)
@@ -160,7 +187,8 @@ let parse_key_test
 name >:: fun _ ->
 assert_equal exp (Command.string_of_cmd (Command.parse_key key))
 
-(** [parse_key_diff_mode_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key_diff_mode k] is exp*)
+(** [parse_key_diff_mode_test k exp] constructs an OUnit test named [n]
+    that asserts [Command.parse_key_diff_mode k] is exp*)
 let parse_key_diff_mode_test
   (name : string)
   (key : int)
@@ -168,7 +196,8 @@ let parse_key_diff_mode_test
 name >:: fun _ ->
 assert_equal exp (Command.string_of_cmd (Command.parse_key_diff_mode key))
 
-(** [parse_key_diff_mode_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key_pull_mode k] is exp*)
+(** [parse_key_diff_mode_test k exp] constructs an OUnit test named [n]
+    that asserts [Command.parse_key_pull_mode k] is exp*)
 let parse_key_pull_mode_test
   (name : string)
   (key : int)
@@ -176,7 +205,8 @@ let parse_key_pull_mode_test
 name >:: fun _ ->
 assert_equal exp (Command.string_of_cmd (Command.parse_key_pull_mode key))
 
-(** [parse_key_push_mode_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key_push_mode k] is exp*)
+(** [parse_key_push_mode_test k exp] constructs an OUnit test named [n]
+    that asserts [Command.parse_key_push_mode k] is exp*)
 let parse_key_push_mode_test
   (name : string)
   (key : int)
@@ -184,7 +214,8 @@ let parse_key_push_mode_test
 name >:: fun _ ->
 assert_equal exp (Command.string_of_cmd (Command.parse_key_push_mode key))
 
-(** [parse_key_branch_mode_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key_branch_mode k] is exp*)
+(** [parse_key_branch_mode_test k exp] constructs an OUnit test named [n] 
+    that asserts [Command.parse_key_branch_mode k] is exp*)
 let parse_key_branch_mode_test
   (name : string)
   (key : int)
@@ -224,9 +255,12 @@ let parse_key_push_mode_tests = [
 ]
 
 let parse_key_branch_mode_tests = [
-  parse_key_branch_mode_test "b is branch" (int_of_char 'b') "checkout branch prompt";
-  parse_key_branch_mode_test "c is branch" (int_of_char 'c') "create branch prompt";
-  parse_key_branch_mode_test "x is branch" (int_of_char 'x') "delete branch prompt"
+  parse_key_branch_mode_test "b is branch" (int_of_char 'b')
+    "checkout branch prompt";
+  parse_key_branch_mode_test "c is branch" (int_of_char 'c')
+    "create branch prompt";
+  parse_key_branch_mode_test "x is branch" (int_of_char 'x')
+    "delete branch prompt"
 ]
 
 (** Tests for [Command] module *)
