@@ -11,6 +11,36 @@ module TestPorcelain = PorcelainImpl (MockPlumbing)
 module TestState = StateImpl (MockPlumbing)
 
 (*****************************************************)
+(* Porcelain Tests *)
+(*****************************************************)
+
+(** [porcelain_test n f] constructs an OUnit test named [n] that
+    asserts no exception is thrown when [f] executed *) 
+let porcelain_test
+  (name : string)
+  (f) : test =
+name >:: fun _ ->
+  f ();
+  assert_bool "no exception thrown" true 
+
+let porcelain_tests = [
+  porcelain_test "pull none" (fun () -> TestPorcelain.pull None);
+  porcelain_test "pull some" (fun () -> TestPorcelain.pull (Some "master"));
+  porcelain_test "push none" (fun () -> TestPorcelain.push None);
+  porcelain_test "push some" (fun () -> TestPorcelain.push (Some "master"));
+  porcelain_test "log none" (fun () -> TestPorcelain.log None);
+  porcelain_test "get_head" (fun () -> TestPorcelain.get_head);
+  porcelain_test "get_upstream" (fun () -> TestPorcelain.get_upstream);
+  porcelain_test "get_push" (fun () -> TestPorcelain.get_push);
+  porcelain_test "commit" (fun () -> TestPorcelain.commit "msg");
+  porcelain_test "diff" (fun () -> TestPorcelain.diff);
+  porcelain_test "status" (fun () -> TestPorcelain.status);
+  porcelain_test "checkout" (fun () -> TestPorcelain.checkout "ha");
+  porcelain_test "create branch" (fun () -> TestPorcelain.create_branch"hah");
+  porcelain_test "delete branch" (fun () -> TestPorcelain.delete_branch"hah");
+]
+
+(*****************************************************)
 (* State Tests *)
 (*****************************************************)
 
@@ -277,6 +307,10 @@ let command_tests =
 
 let suite =
   "test suite for ogit"
-  >::: List.flatten [ command_tests; state_tests(*plumbing_tests; state_tests; porcelain_tests *)]
+  >::: List.flatten [
+    command_tests; 
+    state_tests; 
+    porcelain_tests
+  ]
 
 let _ = run_test_tt_main suite
