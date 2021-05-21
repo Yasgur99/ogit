@@ -247,16 +247,19 @@ struct
   let blank_line : MState.printable = { text = " "; color = "white" }
 
   let render_command_done state win msg =
+    render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) true commit_header;
     render_line win (MState.get_curs state) true
       { text = msg; color = "white" }
 
   let render_pull_elsewhere_done state win msg =
+    render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) false pull_elsewhere_header;
     render_line win (MState.get_curs state) false
       { text = msg; color = "white" }
 
   let render_push_elsewhere_done state win msg =
+    render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) false push_elsewhere_header;
     render_line win (MState.get_curs state) false
       { text = msg; color = "white" }
@@ -270,7 +273,6 @@ struct
     cursor_reset win;
     let render_curs = MState.get_mode state <> CommitMode in
     render_lines win lines curs render_curs;
-    render_line win curs true blank_line;
     match MState.get_mode state with
     | CommandDone msg -> render_command_done state win msg
     | PullElsewhereDone msg -> render_pull_elsewhere_done state win msg
@@ -298,7 +300,7 @@ struct
       check_err (Curses.wrefresh win)
 
   let render_scroll_down st win =
-    let btm_line = !top_line + fst (Curses.getmaxyx win) in
+    let btm_line = !top_line + fst (Curses.getmaxyx win) - 1 in
     if btm_line >= Array.length !screen then ()
     else
       let scr = !screen in
@@ -316,6 +318,7 @@ struct
 
   let render_commit_mode state win =
     render_normal state win;
+    render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) false commit_msg_prompt;
     let msg = parse_string win "" in
     check_err (Curses.noecho ());
@@ -361,9 +364,11 @@ struct
     render_normal state win;
     match MState.get_mode state with
     | DiffMode str ->
-        if str = "MENU" then
-          render_lines win diff_options (MState.get_curs state) true
+        if str = "MENU" then (
+          render_line win (MState.get_curs state) true blank_line;
+          render_lines win diff_options (MState.get_curs state) true)
         else (
+          render_line win (MState.get_curs state) true blank_line;
           render_line win (MState.get_curs state) true diff_header;
           render_lines win (diff_to_lines str) (MState.get_curs state)
             true)
@@ -371,20 +376,24 @@ struct
 
   let render_push_mode state win =
     render_normal state win;
+    render_line win (MState.get_curs state) true blank_line;
     render_lines win push_options (MState.get_curs state) true
 
   let render_pull_mode state win =
     render_normal state win;
+    render_line win (MState.get_curs state) true blank_line;
     render_lines win pull_options (MState.get_curs state) true
 
   let render_branch_mode state win =
     render_normal state win;
+    render_line win (MState.get_curs state) true blank_line;
     render_lines win branch_options (MState.get_curs state) true
 
   let get_branch_msg_prompt : MState.printable =
     { text = "Enter branch name: "; color = "green" }
 
   let prompt_branch_name state win =
+    render_line win (MState.get_curs state) true blank_line;
     render_normal state win;
     render_line win (MState.get_curs state) false get_branch_msg_prompt;
     let msg = parse_string win "" in
