@@ -2,6 +2,9 @@ open OUnit2
 open Plumbing
 open Porcelain
 open Renderer
+open State
+
+(*
 (** Some Helper Methods *)
 
 (** [pp_string s] pretty-prints string [s]. *)
@@ -21,47 +24,6 @@ let pp_list pp_elt lst =
     loop 0 "" lst
   in
   "[" ^ pp_elts lst ^ "]"
-
-(** [rmr p] recursibley removes the direcory [p] and everything in it *)
-let rec rmr path =
-  match Sys.is_directory path with
-  | true ->
-      let files = Sys.readdir path in
-      Array.iter (fun file -> rmr (Filename.concat path file)) files;
-      Unix.rmdir path
-  | false -> Sys.remove path
-
-let init_repo name =
-  ignore (Plumbing.init [|name|])
-
-(** [plumbing_test n a ch cl] constructs an OUnit test named [n] that
-    asserts [ch] to check side effects and then calls [cl] which cleans
-    up the side effects *)
-let plumbing_test_side_effect
-    (name : string)
-    (f : string array -> 'a)
-    (args : string array)
-    (check_side_effect : unit -> bool)
-    (clean_side_effect : unit -> unit) : test =
-  name >:: fun _ ->
-    f args;
-    try
-      let res = assert_bool "side effect did not occur" (check_side_effect ()) in 
-      clean_side_effect (); 
-      res
-    with Failure f -> 
-      clean_side_effect (); 
-      raise (Failure f)
-
-(** [plumbing_test n a ch cl] constructs an OUnit test named [n] that
-    asserts [Plumbing.get_out (f args)] is equal to [res] *)
-let plumbing_test
-    (name : string)
-    (f : string array -> 'a)
-    (args : string array)
-    (res : string list) : test =
-  name >:: fun _ ->
-    assert_equal res (Plumbing.get_out (f args))
 
 (** [check_err_raises_test n err] constructs an OUnit test named [n] that asserts [Command.check_err] raises [Command.Program_terminate] *)
 (*let check_err_raises_test
@@ -88,73 +50,6 @@ assert_equal exp ""
 name >:: fun _ ->
 assert_equal (Renderer.check_err err) ()
 *)
-(** Tests for [Plumbing.init] *)
-let init_tests =
-  [
-    plumbing_test_side_effect "init tmp" Plumbing.init [| "tmp" |]
-      (fun () -> Sys.file_exists "tmp/.git")
-      (fun () -> rmr "tmp");
-  ]
-
-(** Tests for [Plumbing.hash_object] *)
-let hash_object_tests = []
-
-(** Tests for [Plumbing.cat_file] *)
-let cat_file_tests = []
-
-(** Tests for [Plumbing.update_index] *)
-let update_index_tests = []
-
-(** Tests for [Plumbing.write_tree] *)
-let write_tree_tests = []
-
-(** Tests for [Plumbing.read_tree] *)
-let read_tree_tests = []
-
-(** Tests for [Plumbing.commit_tree] *)
-let commit_tree_tests = []
-
-(** Tests for [Plumbing.log] *)
-let log_tests = [
-  plumbing_test "log empty" Plumbing.log [|"tmp"|] ["fatal: your current branch 'master' does not have any commits yet"]
-]
-
-(** Tests for [Plumbing.add] *)
-let add_tests = [
-  plumbing_test "nothing specified" Plumbing.add [||] [""];
-  plumbing_test "add one file" Plumbing.add [|"test1.txt";|] [""];
-  plumbing_test "add multiple" Plumbing.add [|"test1.txt"; "test2.txt"|] [""];
-]
-
-(** Tests for [Plumbing.commit] *)
-let commit_tests = [
-  plumbing_test "nothing to commit" Plumbing.commit [||] [""];
-  plumbing_test "commit staged no message" Plumbing.commit [||] [""];
-  plumbing_test "commit staged with message" Plumbing.commit [|"-m"; "message"|] [""]
-]
-
-(** Tests for [Plumbing.show] *)
-let show_tests = [
-  plumbing_test "show empty" Plumbing.show [|"tmp"|] [""];
-  plumbing_test "one comit" Plumbing.show [|"tmp"|] [""]
-]
-
-(** Tests for [Plumbing.diff] *)
-let diff_tests = [
-  plumbing_test "no diff" Plumbing.diff [||] [""];
-  plumbing_test "one file has one new line" Plumbing.diff [||] [""];
-  plumbing_test "diff a specific file" Plumbing.diff [|"test.txt"|] [""]
-]
-
-(** Tests for [Plumbing.status] *)
-let status_tests =
-  [
-    plumbing_test "no commits" Plumbing.status [||] [ "" ];
-    plumbing_test "nothing to commit" Plumbing.status [||] [ "" ];
-    plumbing_test "untracked files" Plumbing.status [||] [ "" ];
-    plumbing_test "check file specifically" Plumbing.status
-      [| "test.txt" |] [ "" ];
-  ]
 
 (** 
 
@@ -374,7 +269,7 @@ let status_tests = [
 
 (** Tests for [Porcelain] module *)
 let porcelain_tests = status_tests
-
+*)
 (*****************************************************)
 (* State Tests *)
 (*****************************************************)
@@ -425,7 +320,7 @@ let state_tests =
   @ exec_tests
   @ printable_of_state_tests
   @ get_curs_tests
-  @ [set_curs_tests]
+  @ set_curs_tests
 
 (*****************************************************)
 (* Command Tests *)
@@ -439,6 +334,38 @@ let parse_key_test
 name >:: fun _ ->
 assert_equal exp (Command.string_of_cmd (Command.parse_key key))
 
+(** [parse_key_diff_mode_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key_diff_mode k] is exp*)
+let parse_key_diff_mode_test
+  (name : string)
+  (key : int)
+  (exp: string) : test =
+name >:: fun _ ->
+assert_equal exp (Command.string_of_cmd (Command.parse_key_diff_mode key))
+
+(** [parse_key_diff_mode_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key_pull_mode k] is exp*)
+let parse_key_pull_mode_test
+  (name : string)
+  (key : int)
+  (exp: string) : test =
+name >:: fun _ ->
+assert_equal exp (Command.string_of_cmd (Command.parse_key_pull_mode key))
+
+(** [parse_key_push_mode_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key_push_mode k] is exp*)
+let parse_key_push_mode_test
+  (name : string)
+  (key : int)
+  (exp: string) : test =
+name >:: fun _ ->
+assert_equal exp (Command.string_of_cmd (Command.parse_key_push_mode key))
+
+(** [parse_key_branch_mode_test k exp] constructs an OUnit test named [n] that asserts [Command.parse_key_branch_mode k] is exp*)
+let parse_key_branch_mode_test
+  (name : string)
+  (key : int)
+  (exp: string) : test =
+name >:: fun _ ->
+assert_equal exp (Command.string_of_cmd (Command.parse_key_branch_mode key))
+
 (** Tests for [Command.parse_key] *)
 let parse_key_tests = [
   parse_key_test "s is stage" (int_of_char 's') "stage";
@@ -451,15 +378,44 @@ let parse_key_tests = [
   parse_key_test "unsupported is nop" (int_of_char '[') "nop"
 ]
 
+let parse_key_diff_mode_tests = [
+  parse_key_diff_mode_test "s is diff" (int_of_char 's') "diff";
+  parse_key_diff_mode_test "t is diff" (int_of_char 't') "diff";
+  parse_key_diff_mode_test "a is diff" (int_of_char 'a') "diff";
+  parse_key_diff_mode_test "f is diff" (int_of_char 'f') "diff"
+]
+
+let parse_key_pull_mode_tests = [
+  parse_key_pull_mode_test "p is pull" (int_of_char 'p') "pull";
+  parse_key_pull_mode_test "u is pull" (int_of_char 'u') "pull";
+  parse_key_pull_mode_test "e is pull" (int_of_char 'e') "pullelsewhere"
+]
+
+let parse_key_push_mode_tests = [
+  parse_key_push_mode_test "p is push" (int_of_char 'p') "push";
+  parse_key_push_mode_test "u is push" (int_of_char 'u') "push";
+  parse_key_push_mode_test "e is push" (int_of_char 'e') "push"
+]
+
+let parse_key_branch_mode_tests = [
+  parse_key_branch_mode_test "b is branch" (int_of_char 'b') "checkout branch prompt";
+  parse_key_branch_mode_test "c is branch" (int_of_char 'c') "create branch prompt";
+  parse_key_branch_mode_test "x is branch" (int_of_char 'x') "delete branch prompt"
+]
+
 (** Tests for [Command] module *)
 let command_tests =
    parse_key_tests
+   @ parse_key_diff_mode_tests
+   @ parse_key_pull_mode_tests
+   @ parse_key_push_mode_tests
+   @ parse_key_branch_mode_tests
 
 (*****************************************************)
 (* Mock Plumbing *)
 (*****************************************************)
-module TestPorcelain = Porcelain (MockPlumbing)
-module TestState = State (MockPlumbing)
+(*module TestPorcelain = PorcelainImpl (MockPlumbing)
+module TestState = StateImpl (MockPlumbing)*)
 (*****************************************************)
 (* Test Suite *)
 (*****************************************************)
