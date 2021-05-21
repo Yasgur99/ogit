@@ -13,6 +13,12 @@ let run_commit_mode win (st : MyState.t) =
   let cmd = Command.Commit msg in
   MyState.exec st cmd
 
+let run_push_remote_mode win (st : MyState.t) =
+  let user = MyRenderer.render_username_mode st win in
+  let pass = MyRenderer.render_password_mode st win in
+  let cmd = Command.PushRemote (user, pass) in
+  MyState.exec st cmd
+
 let run_pull_elsewhere_mode win (st : MyState.t) =
   let msg = MyRenderer.render_pull_elsewhere_mode st win in
   let cmd = Command.PullElsewhere msg in
@@ -68,6 +74,7 @@ let rec run win (st : MyState.t) =
       run win (run_normal win st Command.parse_key)
   | MyState.PushMode ->
       run win (run_normal win st Command.parse_key_push_mode)
+  | MyState.PushRemoteMode -> run win (run_push_remote_mode win st)
   | MyState.PushElsewhereMode ->
       run win (run_push_elsewhere_mode win st)
   | MyState.PushElsewhereDone _ ->

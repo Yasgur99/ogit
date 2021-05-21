@@ -15,6 +15,8 @@ module type State = sig
     | CommandDone of string
     | DiffMode of string
     | PushMode
+    | PushRemoteMode
+    | PushRemoteDone of string * string
     | PushElsewhereMode
     | PushElsewhereDone of string
     | PullMode
@@ -99,6 +101,8 @@ module StateImpl (P : Plumbing) : State = struct
     | CommandDone of string
     | DiffMode of string
     | PushMode
+    | PushRemoteMode
+    | PushRemoteDone of string * string
     | PushElsewhereMode
     | PushElsewhereDone of string
     | PullMode
@@ -233,6 +237,7 @@ module StateImpl (P : Plumbing) : State = struct
     let new_mode =
       match cmd with
       | Command.Commit _ -> CommitMode
+      | Command.PushRemote _ -> PushRemoteMode
       | Command.PushElsewhere _ -> PushElsewhereMode
       | Command.PullElsewhere _ -> PullElsewhereMode
       | _ -> st.mode
@@ -381,7 +386,7 @@ module StateImpl (P : Plumbing) : State = struct
     let out = MPorcelain.pull (Some msg) in
     set_mode (update_git_state st) (CommandDone out)
 
-  let exec_push_remote st u p =
+  let exec_push_remote st u p (* Figure out User/Pass *)=
     let out = MPorcelain.push None in
     set_mode (update_git_state st) (CommandDone out)
 

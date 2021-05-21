@@ -99,7 +99,7 @@ let string_of_cmd cmd =
   | PullOriginMaster -> "pull"
   | PullElsewhere _ -> "pullelsewhere"
   | PushMenu -> "push"
-  | PushRemote _ -> "push"
+  | PushRemote _ -> "push remote"
   | PushOriginMaster -> "push"
   | BranchMenu -> "branch"
   | CheckoutBranchPrompt -> "checkout branch prompt"
