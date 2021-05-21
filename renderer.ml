@@ -211,22 +211,22 @@ struct
     ]
 
   let pull_elsewhere_msg_prompt : MState.printable =
-    { text = "Enter\n    branch to pull from: "; color = "green" }
+    { text = "Enter branch to pull from: "; color = "green" }
 
   let pull_elsewhere_header : MState.printable =
-    { text = "Pull\nComplete!"; color = "green" }
+    { text = "Results: "; color = "green" }
 
   let push_elsewhere_msg_prompt : MState.printable =
-    { text = "Enter\nbranch to push to: "; color = "green" }
+    { text = "Enter branch to push to: "; color = "green" }
 
   let push_elsewhere_header : MState.printable =
-    { text = "Push\nComplete!"; color = "green" }
+    { text = "Results: "; color = "green" }
 
   let push_options : MState.printable list =
     [
       { text = "p  push to remote"; color = "green" };
       { text = "u  push origin/master"; color = "green" };
-      { text = "e  push elsewheree"; color = "green" };
+      { text = "e  push elsewhere"; color = "green" };
     ]
 
   let pull_options : MState.printable list =

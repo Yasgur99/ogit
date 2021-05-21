@@ -230,8 +230,7 @@ module ProdPlumbing : Plumbing = struct
       (Array.append [| "git"; "symbolic-ref"; "HEAD" |] args)
 
   let checkout (args : string array) =
-    fork_and_execv "git" 
-      (Array.append [| "git"; "checkout"; |] args)
+    fork_and_execv "git" (Array.append [| "git"; "checkout" |] args)
 
   let git (args : string array) =
     fork_and_execv "git" (Array.append [| "git" |] args)
@@ -283,14 +282,11 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let diff (args : string array) = failwith "unimplemented"
 
-  let head (args : string array) =
-    failwith "unimplemented"
+  let head (args : string array) = failwith "unimplemented"
 
-  let checkout (args : string array) =
-    failwith "unimplemented"
+  let checkout (args : string array) = failwith "unimplemented"
 
-  let git (args : string array) =
-    failwith "unimplemented"
+  let git (args : string array) = failwith "unimplemented"
 
   let revparse (args : string array) = failwith "unimplemented"
 

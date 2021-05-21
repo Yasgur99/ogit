@@ -6,6 +6,10 @@ type branch_name = string
 
 type key = int
 
+type username = string
+
+type password = string
+
 type t =
   | Stage
   | Unstage
@@ -23,7 +27,7 @@ type t =
   | PullOriginMaster
   | PullElsewhere of string
   | PushMenu
-  | PushRemote
+  | PushRemote of username * password
   | PushOriginMaster
   | BranchMenu
   | CheckoutBranchPrompt
@@ -67,7 +71,7 @@ let parse_key_pull_mode key =
   else parse_key key
 
 let parse_key_push_mode key =
-  if key = int_of_char 'p' then PushRemote
+  if key = int_of_char 'p' then PushRemote ("", "")
   else if key = int_of_char 'u' then PushOriginMaster
   else if key = int_of_char 'e' then PushElsewhere ""
   else parse_key key
@@ -95,7 +99,7 @@ let string_of_cmd cmd =
   | PullOriginMaster -> "pull"
   | PullElsewhere _ -> "pullelsewhere"
   | PushMenu -> "push"
-  | PushRemote -> "push"
+  | PushRemote _ -> "push"
   | PushOriginMaster -> "push"
   | BranchMenu -> "branch"
   | CheckoutBranchPrompt -> "checkout branch prompt"
