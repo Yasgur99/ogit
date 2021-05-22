@@ -231,8 +231,8 @@ let set_mode_tests =
     set_mode_test "checkout branch" TestState.CheckoutGetBranchNameMode;
     set_mode_test "create branch" TestState.CreateGetBranchNameMode;
     set_mode_test "delete branch" TestState.DeleteGetBranchNameMode;
-    set_mode_test "pull elsewhere" TestState.PullElsewhereMode;
-    set_mode_test "pull elsewhere done" (TestState.PullElsewhereDone "");
+    set_mode_test "pull elsewhere" (TestState.PullMode ("a", "b", "c"));
+    set_mode_test "stash" TestState.StashMode;
   ]
 
 let state_tests = init_state_tests @ exec_tests @ set_mode_tests
