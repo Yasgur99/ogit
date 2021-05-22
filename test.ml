@@ -346,8 +346,10 @@ let parse_key_branch_mode_tests =
 
 (** Tests for [Command] module *)
 let command_tests =
-  parse_key_tests @ parse_key_diff_mode_tests
-  @ parse_key_pull_mode_tests @ parse_key_push_mode_tests
+  parse_key_tests 
+  @ parse_key_diff_mode_tests
+  @ parse_key_pull_mode_tests 
+  @ parse_key_push_mode_tests
   @ parse_key_branch_mode_tests
 
 (*****************************************************)
@@ -356,6 +358,10 @@ let command_tests =
 
 let suite =
   "test suite for ogit"
-  >::: List.flatten [ command_tests; state_tests; porcelain_tests ]
+  >::: List.flatten [ 
+    command_tests; 
+    state_tests; 
+    porcelain_tests 
+  ]
 
 let _ = run_test_tt_main suite
