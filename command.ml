@@ -70,13 +70,13 @@ let parse_key_diff_mode key =
 
 let parse_key_pull_mode key =
   if key = int_of_char 'p' then Pull ("", "", "remote")
-  else if key = int_of_char 'u' then Pull ("", "", "origin/master")
+  else if key = int_of_char 'u' then Pull ("", "", "origin master")
   else if key = int_of_char 'e' then Pull ("", "", "")
   else parse_key key
 
 let parse_key_push_mode key =
   if key = int_of_char 'p' then Push ("", "", "remote")
-  else if key = int_of_char 'u' then Push ("", "", "origin/master")
+  else if key = int_of_char 'u' then Push ("", "", "origin master")
   else if key = int_of_char 'e' then Pull ("", "", "")
   else parse_key key
 
