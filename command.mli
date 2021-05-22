@@ -56,6 +56,7 @@ type t =
   | Stash
   | StashPop
   | StashApply
+  (* | All *)
   | Clear
   | Nop
 

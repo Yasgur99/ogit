@@ -419,6 +419,8 @@ module StateImpl (P : Plumbing) : State = struct
     let out = MPorcelain.stash_pop () in
     set_mode (update_git_state st) (CommandDone out)
 
+  (* let exec_all st = exec_add st; exec_commit msg; *)
+
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
     | Command.NavDown false -> OffScrDown
@@ -447,6 +449,7 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.BackPull -> set_mode st (PullMode ("m", "m", "m"))
     | Command.BackPush -> set_mode st (PushMode ("m", "m", "m"))
     | Command.BackBranch -> set_mode st BranchMode
+    (* | Command.All -> exec_all st *)
     | Command.Nop -> st
     | Command.Quit -> raise Command.Program_terminate
     (* NORMAL MODE *)
