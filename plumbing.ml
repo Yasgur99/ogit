@@ -129,6 +129,17 @@ module ProdPlumbing : Plumbing = struct
       close_in in_ch;
       !lines
 
+  let read_channel channel =
+    let lines = ref [] in
+    try
+      while true do
+        lines := input_line channel :: !lines
+      done;
+      !lines
+    with End_of_file ->
+      close_in channel;
+      !lines
+
   (** [fork_and_execv e a] is the result of executing program [exe] with
       arguments [args]*)
   let fork_and_execv (exe : string) (args : string array) sin : result =
@@ -171,20 +182,19 @@ module ProdPlumbing : Plumbing = struct
         Unix.close inp);
       make_result stdout stdin out_and_err)
 
-  let fork_and_execp (exe : string) (args : string array) sin : result =
-    let stdout = sin in
-    let stdin = sin in
-    let out_and_err = [ "Done" ] in
-    make_result stdout stdin out_and_err
+  let fork_and_execp sin =
+    let out_and_err =
+      read_channel (Unix.open_process_args_in "git push" sin)
+    in
+    make_result [] [] out_and_err
 
   let init (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "init" |] args) []
 
   let push (args : string array) (up : string list) =
-    fork_and_execp "git" (Array.append [| "git"; "push" |] args) up
+    fork_and_execp (Array.append [| "git"; "push" |] (Array.of_list up))
 
-  let pull (args : string array) up =
-    fork_and_execp "git" (Array.append [| "git"; "pull" |] args) up
+  let pull (args : string array) up = failwith "unimplemented"
 
   let hash_object (args : string array) =
     fork_and_execv "git"
