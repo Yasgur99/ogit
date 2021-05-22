@@ -24,44 +24,10 @@ module type Porcelain = sig
   val init : string option -> unit
 
   (** [pull] pulls files from repository *)
-  val pull : string option -> string
+  val pull : string -> string -> string -> string
 
   (** [push] pulls files from repository *)
-  val push : string option -> string
-
-  (** [hash_object f] calls [Plumbing.hash_object] with command line
-      argument -w, which stores data in file with filename [f] in a
-      repository's .git/objects directory and is the object that refers
-      to that data object *)
-  val hash_object : string -> object_id
-
-  (** [cat_file h] calls git cat-file on object [h] with option -p,
-      which displays the content of an object in the repository *)
-  val cat_file : object_id -> object_content
-
-  (** [cat_file_type h] calls git cat-file on object [h] with option -t,
-      which displays the type of the object if [o] = -t *)
-  val cat_file_type : object_id -> object_type
-
-  (** [update_index h f] adds the object [h] with filename [f] to the
-      staging area *)
-  val update_index : object_id -> string -> unit
-
-  (** [write_tree] writes the staging area out to a tree object and
-      genereates a tree object from the state of the index if the tree
-      does not yet exist *)
-  val write_tree : unit -> object_id
-
-  (** [read_tree h] reads tree object [h] into the staging area *)
-  val read_tree : object_id -> unit
-
-  (** [read_tree h p] reads tree object [h] into the staging area with
-      prefix [p] *)
-  val read_tree_prefix : object_id -> string -> unit
-
-  (** [commit_tree h m] creates and is a commit object from tree object
-      [h] with commit message [m] *)
-  val commit_tree : object_id -> string -> object_id
+  val push : string -> string -> string -> string
 
   (** [log h] is the list of commit objects that are reachable from HEAD
       in reverse chronological order if [h] is [None], otherwise the
@@ -84,9 +50,6 @@ module type Porcelain = sig
   (** [commit msg] commits the changes in the staging area with commit
       message [msg] *)
   val commit : string -> string
-
-  (** [show] shows the staged, unstaged, and untracked files *)
-  val show : unit -> unit
 
   (** [diff] shows the diffs of tracked files *)
   val diff : unit -> string
@@ -162,68 +125,34 @@ module PorcelainImpl (P : Plumbing) = struct
         rm_leading_spaces (String.sub str 0 (String.length str - 1))
     | h :: t -> str
 
-  let pull = function
-    | None ->
-        P.pull [||]
+  let pull u p b =
+    match b with
+    | "remote" ->
+        P.pull [||] [ u; p ]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
-    | Some x ->
-        P.pull [| x |]
-        |> P.get_out
-        |> List.map rm_leading_spaces
-        |> List.rev |> String.concat "\n"
-
-  let push x =
-    match x with
-    | None ->
-        P.push [||]
-        |> P.get_out
-        |> List.map rm_leading_spaces
-        |> List.rev |> String.concat "\n"
-    | Some x ->
-        P.push [| x |]
+    | branch ->
+        P.pull [| branch |] [ u; p ]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
 
-  let hash_object file : object_id = failwith "unimplemented"
-
-  (* Plumbing.hash_object [| "-w"; file |] *)
-
-  let cat_file hash = failwith "unimplemented"
-
-  (* Plumbing.cat_file [| "-p"; hash |]*)
-
-  let cat_file_type hash = failwith "unimplemented"
-
-  (* Plumbing.cat_file [|"-t"; hash|] *)
-
-  let update_index hash file = failwith "unimplemented"
-
-  (* Plumbing.update_index [| hash; file|] (* not sure of this one *) *)
-
-  let write_tree () = failwith "Unimplemented"
-
-  (* Plumbing.write_tree [||] *)
-
-  let read_tree hash = failwith "unimplemented"
-
-  (* Plumbing.read_tree [| hash |] *)
-
-  let read_tree_prefix hash prefix = failwith "unimplemented"
-
-  (* Plumbing.read_tree [| prefix; hash |] *)
-
-  let commit_tree hash message = failwith "unimplemented"
-
-  (* Plumbing.commit_tree [| "-m"; message; hash|] *)
-  (* not sure if -m "msg" comes before or after hash I see both in doc *)
+  let push u p b =
+    match b with
+    | "remote" ->
+        P.push [||] [ u; p ]
+        |> P.get_out
+        |> List.map rm_leading_spaces
+        |> List.rev |> String.concat "\n"
+    | branch ->
+        P.push [| branch |] [ u; p ]
+        |> P.get_out
+        |> List.map rm_leading_spaces
+        |> List.rev |> String.concat "\n"
 
   let commit_t_of_commit_oneline line =
     let hash = String.sub line 0 7 in
-
-    (*print_endline (string_of_int (String.length line));*)
     let msg = "  " ^ String.sub line 9 (String.length line - 22) in
     { tree = hash; msg }
 
@@ -301,8 +230,6 @@ module PorcelainImpl (P : Plumbing) = struct
     |> P.get_out
     |> List.map rm_leading_spaces
     |> List.rev |> String.concat "\n"
-
-  let show () = failwith "unimplemented" (*Plumbing.show [||]*)
 
   let diff () =
     P.diff [||]

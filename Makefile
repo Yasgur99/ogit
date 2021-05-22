@@ -34,3 +34,6 @@ clean:
 		ocamlbuild -clean
 			rm -rf _doc.public _doc.private 
 
+docs: 
+	mkdir -p _doc
+	ocamldoc -d _doc -html command.mli plumbing.ml porcelain.ml state.ml

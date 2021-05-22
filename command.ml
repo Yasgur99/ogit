@@ -6,10 +6,6 @@ type branch_name = string
 
 type key = int
 
-type username = string
-
-type password = string
-
 type t =
   | Stage
   | Unstage
@@ -23,12 +19,9 @@ type t =
   | DiffStaged
   | DiffAll
   | PullMenu
-  | PullRemote
-  | PullOriginMaster
-  | PullElsewhere of string
+  | Pull of string * string * string
   | PushMenu
-  | PushRemote of username * password
-  | PushOriginMaster
+  | Push of string * string * string
   | BranchMenu
   | CheckoutBranchPrompt
   | CreateBranchPrompt
@@ -36,7 +29,16 @@ type t =
   | CheckoutBranch of string
   | CreateBranch of string
   | DeleteBranch of string
-  | PushElsewhere of string
+  | NormalTutorial
+  | BackNormal
+  | DiffTutorial
+  | BackDiff
+  | BranchTutorial
+  | BackBranch
+  | PullTutorial
+  | BackPull
+  | PushTutorial
+  | BackPush
   | Clear
   | Nop
 
@@ -55,6 +57,7 @@ let parse_key key =
   else if key = int_of_char 'P' then PushMenu
   else if key = int_of_char ' ' then Clear
   else if key = int_of_char 'b' then BranchMenu
+  else if key = int_of_char 'i' then NormalTutorial
   else Nop
 
 let parse_key_diff_mode key =
@@ -62,25 +65,43 @@ let parse_key_diff_mode key =
   else if key = int_of_char 't' then DiffTracked
   else if key = int_of_char 'a' then DiffAll
   else if key = int_of_char 'f' then DiffFile
+  else if key = int_of_char 'i' then DiffTutorial
   else parse_key key
 
 let parse_key_pull_mode key =
-  if key = int_of_char 'p' then PullRemote
-  else if key = int_of_char 'u' then PullOriginMaster
-  else if key = int_of_char 'e' then PullElsewhere ""
+  if key = int_of_char 'p' then Pull ("", "", "remote")
+  else if key = int_of_char 'u' then Pull ("", "", "origin master")
+  else if key = int_of_char 'e' then Pull ("", "", "")
   else parse_key key
 
 let parse_key_push_mode key =
-  if key = int_of_char 'p' then PushRemote ("", "")
-  else if key = int_of_char 'u' then PushOriginMaster
-  else if key = int_of_char 'e' then PushElsewhere ""
+  if key = int_of_char 'p' then Push ("", "", "remote")
+  else if key = int_of_char 'u' then Push ("", "", "origin master")
+  else if key = int_of_char 'e' then Pull ("", "", "")
   else parse_key key
 
 let parse_key_branch_mode key =
   if key = int_of_char 'b' then CheckoutBranchPrompt
   else if key = int_of_char 'c' then CreateBranchPrompt
   else if key = int_of_char 'x' then DeleteBranchPrompt
+  else if key = int_of_char 'i' then BranchTutorial
   else parse_key key
+
+let parse_key_normal_tutorial key =
+  if key = int_of_char 'i' then BackNormal else parse_key key
+
+let parse_key_diff_tutorial key =
+  if key = int_of_char 'i' then BackDiff else parse_key_diff_mode key
+
+let parse_key_pull_tutorial key =
+  if key = int_of_char 'i' then BackPull else parse_key_pull_mode key
+
+let parse_key_push_tutorial key =
+  if key = int_of_char 'i' then BackPush else parse_key_push_mode key
+
+let parse_key_branch_tutorial key =
+  if key = int_of_char 'i' then BackBranch
+  else parse_key_branch_mode key
 
 let string_of_cmd cmd =
   match cmd with
@@ -94,13 +115,10 @@ let string_of_cmd cmd =
   | DiffTracked -> "diff"
   | DiffFile -> "diff"
   | DiffAll -> "diff"
+  | Pull (_, _, _) -> "pull"
   | PullMenu -> "pull"
-  | PullRemote -> "pull"
-  | PullOriginMaster -> "pull"
-  | PullElsewhere _ -> "pullelsewhere"
   | PushMenu -> "push"
-  | PushRemote _ -> "push remote"
-  | PushOriginMaster -> "push"
+  | Push (_, _, _) -> "push"
   | BranchMenu -> "branch"
   | CheckoutBranchPrompt -> "checkout branch prompt"
   | CreateBranchPrompt -> "create branch prompt"
@@ -108,7 +126,16 @@ let string_of_cmd cmd =
   | CheckoutBranch _ -> "checkout branch"
   | CreateBranch _ -> "create branch"
   | DeleteBranch _ -> "delete branch"
-  | PushElsewhere _ -> "push"
   | Clear -> "clear"
   | Quit -> "quit"
+  | NormalTutorial -> "tutorial"
+  | DiffTutorial -> "tutorial"
+  | PullTutorial -> "tutorial"
+  | PushTutorial -> "tutorial"
+  | BranchTutorial -> "tutorial"
+  | BackNormal -> "back"
+  | BackDiff -> "back"
+  | BackPull -> "back"
+  | BackPush -> "back"
+  | BackBranch -> "back"
   | Nop -> "nop"
