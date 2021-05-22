@@ -24,7 +24,7 @@ module type Porcelain = sig
   val init : string option -> unit
 
   (** [pull] pulls files from repository *)
-  val pull : string option -> string
+  val pull : string -> string -> string -> string
 
   (** [push] pulls files from repository *)
   val push : string option -> string
@@ -128,14 +128,15 @@ module PorcelainImpl (P : Plumbing) = struct
         rm_leading_spaces (String.sub str 0 (String.length str - 1))
     | h :: t -> str
 
-  let pull = function
-    | None ->
-        P.pull [||]
+  let pull u p b =
+    match b with
+    | "remote" ->
+        P.pull [||] [ u; p ]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
-    | Some x ->
-        P.pull [| x |]
+    | branch ->
+        P.pull [| branch |] [ u; p ]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"

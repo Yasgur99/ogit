@@ -31,7 +31,7 @@ module type Plumbing = sig
   val push : string array -> result
 
   (** [pull args] calls git pull with arguments [args] *)
-  val pull : string array -> result
+  val pull : string array -> string list -> result
 
   (** [hash_object args] calls git hash-object with arguments [args] and
       is the output to standard output *)
@@ -131,7 +131,7 @@ module ProdPlumbing : Plumbing = struct
 
   (** [fork_and_execvp e a] is the result of executing program [exe]
       with arguments [args]*)
-  let fork_and_execv (exe : string) (args : string array) : result =
+  let fork_and_execv (exe : string) (args : string array) sin : result =
     let inp_stdout, out_stdout = Unix.pipe () in
     (* Pipe for stdout *)
     let inp_stderr, out_stderr = Unix.pipe () in
@@ -162,79 +162,95 @@ module ProdPlumbing : Plumbing = struct
       (* Not used by parent*)
       Unix.close out;
       (* Not used by parent*)
-      let stdout = read inp_stdout in
-      let stdin = read inp_stderr in
+      let stdout = if sin = [] then read inp_stdout else sin in
+      let stdin = if sin = [] then read inp_stderr else sin in
       let out_and_err = read inp in
       (* Does not close the pipes because [read fd] does that when it
          closes the input channel it creates. Unix.close inp_stderr;
          Unix.close inp_stdout; Unix.close inp; *)
+      if sin <> [] then (
+        Unix.close inp_stderr;
+        Unix.close inp_stdout;
+        Unix.close inp);
       make_result stdout stdin out_and_err)
 
   let init (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "init" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "init" |] args) []
 
   let push (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "push" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "push" |] args) []
 
-  let pull (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
+  let pull (args : string array) up =
+    fork_and_execv "git" (Array.append [| "git"; "pull" |] args) up
 
   let hash_object (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "hash-object" |] args)
+    fork_and_execv "git"
+      (Array.append [| "git"; "hash-object" |] args)
+      []
 
   let cat_file (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "cat-file" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "cat-file" |] args) []
 
   let update_index (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "update-index" |] args)
+    fork_and_execv "git"
+      (Array.append [| "git"; "update-index" |] args)
+      []
 
   let write_tree (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "write-tree" |] args)
+    fork_and_execv "git"
+      (Array.append [| "git"; "write-tree" |] args)
+      []
 
   let read_tree (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "read-tree" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "read-tree" |] args) []
 
   let commit_tree (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "commit-tree" |] args)
+    fork_and_execv "git"
+      (Array.append [| "git"; "commit-tree" |] args)
+      []
 
   let log (args : string array) =
     fork_and_execv "git"
       (Array.append
          [| "git"; "--no-pager"; "log"; "--format=reference" |]
          args)
+      []
 
   let add (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "add" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "add" |] args) []
 
   let restore (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "restore" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "restore" |] args) []
 
   let commit (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "commit" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "commit" |] args) []
 
   let show (args : string array) =
     fork_and_execv "git"
       (Array.append [| "git"; "--no-pager"; "show" |] args)
+      []
 
   let diff (args : string array) =
     fork_and_execv "git"
       (Array.append [| "git"; "--no-pager"; "diff" |] args)
+      []
 
   let revparse (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "rev-parse" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "rev-parse" |] args) []
 
   let status (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "status" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "status" |] args) []
 
   let head (args : string array) =
     fork_and_execv "git"
       (Array.append [| "git"; "symbolic-ref"; "HEAD" |] args)
+      []
 
   let checkout (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "checkout" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "checkout" |] args) []
 
   let git (args : string array) =
-    fork_and_execv "git" (Array.append [| "git" |] args)
+    fork_and_execv "git" (Array.append [| "git" |] args) []
 end
 
 module MockPlumbing : PlumbingWithSet = struct
@@ -266,7 +282,7 @@ module MockPlumbing : PlumbingWithSet = struct
     let new_args = Array.of_list ("push" :: Array.to_list args) in
     git new_args
 
-  let pull (args : string array) =
+  let pull (args : string array) up =
     let new_args = Array.of_list ("pull" :: Array.to_list args) in
     git new_args
 
