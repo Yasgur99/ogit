@@ -449,9 +449,12 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.Push (u, p, b) ->
         if u = "" || p = "" || b = "" then st else exec_push st u p b
     (* BRANCH MODE *)
-    | Command.CheckoutBranch b -> exec_checkout_branch st b
-    | Command.CreateBranch b -> exec_create_branch st b
-    | Command.DeleteBranch b -> exec_delete_branch st b
+    | Command.CheckoutBranch b ->
+        if b = "" then st else exec_checkout_branch st b
+    | Command.CreateBranch b ->
+        if b = "" then st else exec_create_branch st b
+    | Command.DeleteBranch b ->
+        if b = "" then st else exec_delete_branch st b
     | Command.CheckoutBranchPrompt ->
         set_mode st CheckoutGetBranchNameMode
     | Command.CreateBranchPrompt -> set_mode st CreateGetBranchNameMode
