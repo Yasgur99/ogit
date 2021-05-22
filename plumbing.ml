@@ -106,13 +106,20 @@ module ProdPlumbing : Plumbing = struct
   }
 
   let make_result out err out_and_err =
-    { stdout = out; stderr = err; out_and_err }
+    { 
+      stdout = out;
+      stderr = err;
+      out_and_err 
+    }
 
-  let get_stdout result = result.stdout
+  let get_stdout result = 
+    result.stdout
 
-  let get_stderr result = result.stderr
+  let get_stderr result = 
+    result.stderr
 
-  let get_out result = result.out_and_err
+  let get_out result = 
+    result.out_and_err
 
   (** Helper Methods *)
 
@@ -245,16 +252,24 @@ module MockPlumbing : PlumbingWithSet = struct
     out_and_err : string list; (*exit_code : int;*)
   }
 
-  let get_stdout result = result.stdout
+  let get_stdout result = 
+    result.stdout
 
-  let get_stderr result = result.stderr
+  let get_stderr result =
+    result.stderr
 
-  let get_out result = result.out_and_err
+  let get_out result = 
+    result.out_and_err
 
   let make_result out err out_and_err =
-    { stdout = out; stderr = err; out_and_err }
+    { 
+      stdout = out;
+      stderr = err;
+      out_and_err 
+    }
 
-  let git (args : string array) = make_result [] [] []
+  let git (args : string array) =
+    make_result [] [] []
 
   let init (args : string array) =
     make_result

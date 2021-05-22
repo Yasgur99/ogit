@@ -156,7 +156,10 @@ module PorcelainImpl (P : Plumbing) = struct
   let commit_t_of_commit_oneline line =
     let hash = String.sub line 0 7 in
     let msg = "  " ^ String.sub line 9 (String.length line - 22) in
-    { tree = hash; msg }
+    { 
+      tree = hash;
+      msg 
+    }
 
   let commit_t_list_of_res res =
     let lines = P.get_out res in
@@ -241,7 +244,11 @@ module PorcelainImpl (P : Plumbing) = struct
     |> List.map rm_leading_spaces
     |> List.rev |> String.concat "\n"
 
-  let empty_status_t = { untracked = []; tracked = []; staged = [] }
+  let empty_status_t = { 
+    untracked = []; 
+    tracked = []; 
+    staged = [] 
+  }
 
   let add_to_untracked status filename =
     {
@@ -322,11 +329,15 @@ module PorcelainImpl (P : Plumbing) = struct
     let res = P.checkout [| "-d"; branch |] in
     P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
 
-  let get_untracked status = status.untracked
+  let get_untracked status = 
+    status.untracked
 
-  let get_tracked status = status.tracked
+  let get_tracked status = 
+    status.tracked
 
-  let get_staged status = status.staged
+  let get_staged status = 
+    status.staged
 
-  let string_of_commit_t c = c.tree ^ " " ^ c.msg
+  let string_of_commit_t c = 
+    c.tree ^ " " ^ c.msg
 end
