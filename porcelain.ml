@@ -29,40 +29,6 @@ module type Porcelain = sig
   (** [push] pulls files from repository *)
   val push : string option -> string
 
-  (** [hash_object f] calls [Plumbing.hash_object] with command line
-      argument -w, which stores data in file with filename [f] in a
-      repository's .git/objects directory and is the object that refers
-      to that data object *)
-  val hash_object : string -> object_id
-
-  (** [cat_file h] calls git cat-file on object [h] with option -p,
-      which displays the content of an object in the repository *)
-  val cat_file : object_id -> object_content
-
-  (** [cat_file_type h] calls git cat-file on object [h] with option -t,
-      which displays the type of the object if [o] = -t *)
-  val cat_file_type : object_id -> object_type
-
-  (** [update_index h f] adds the object [h] with filename [f] to the
-      staging area *)
-  val update_index : object_id -> string -> unit
-
-  (** [write_tree] writes the staging area out to a tree object and
-      genereates a tree object from the state of the index if the tree
-      does not yet exist *)
-  val write_tree : unit -> object_id
-
-  (** [read_tree h] reads tree object [h] into the staging area *)
-  val read_tree : object_id -> unit
-
-  (** [read_tree h p] reads tree object [h] into the staging area with
-      prefix [p] *)
-  val read_tree_prefix : object_id -> string -> unit
-
-  (** [commit_tree h m] creates and is a commit object from tree object
-      [h] with commit message [m] *)
-  val commit_tree : object_id -> string -> object_id
-
   (** [log h] is the list of commit objects that are reachable from HEAD
       in reverse chronological order if [h] is [None], otherwise the
       commit objects that are reachable by following parents of commit
@@ -187,43 +153,8 @@ module PorcelainImpl (P : Plumbing) = struct
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
 
-  let hash_object file : object_id = failwith "unimplemented"
-
-  (* Plumbing.hash_object [| "-w"; file |] *)
-
-  let cat_file hash = failwith "unimplemented"
-
-  (* Plumbing.cat_file [| "-p"; hash |]*)
-
-  let cat_file_type hash = failwith "unimplemented"
-
-  (* Plumbing.cat_file [|"-t"; hash|] *)
-
-  let update_index hash file = failwith "unimplemented"
-
-  (* Plumbing.update_index [| hash; file|] (* not sure of this one *) *)
-
-  let write_tree () = failwith "Unimplemented"
-
-  (* Plumbing.write_tree [||] *)
-
-  let read_tree hash = failwith "unimplemented"
-
-  (* Plumbing.read_tree [| hash |] *)
-
-  let read_tree_prefix hash prefix = failwith "unimplemented"
-
-  (* Plumbing.read_tree [| prefix; hash |] *)
-
-  let commit_tree hash message = failwith "unimplemented"
-
-  (* Plumbing.commit_tree [| "-m"; message; hash|] *)
-  (* not sure if -m "msg" comes before or after hash I see both in doc *)
-
   let commit_t_of_commit_oneline line =
     let hash = String.sub line 0 7 in
-
-    (*print_endline (string_of_int (String.length line));*)
     let msg = "  " ^ String.sub line 9 (String.length line - 22) in
     { tree = hash; msg }
 

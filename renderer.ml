@@ -363,6 +363,29 @@ struct
         render_lines win push_options curs true
     | _ -> check_err (Curses.wrefresh win)
 
+  let render_tutorial state win (mode : MState.render_mode) =
+    render_normal state win true;
+    match mode with
+    | NormalTutorialMode ->
+        render_lines win normal_tutorial (MState.get_curs state) true
+    | DiffTutorialMode ->
+        render_lines win
+          (diff_options @ [ blank_line ] @ diff_tutorial)
+          (MState.get_curs state) true
+    | PullTutorialMode ->
+        render_lines win
+          (pull_options @ [ blank_line ] @ pull_tutorial)
+          (MState.get_curs state) true
+    | PushTutorialMode ->
+        render_lines win
+          (push_options @ [ blank_line ] @ push_tutorial)
+          (MState.get_curs state) true
+    | BranchTutorialMode ->
+        render_lines win
+          (branch_options @ [ blank_line ] @ branch_tutorial)
+          (MState.get_curs state) true
+    | _ -> failwith "use of wrong renderer"
+
   let render_scroll_up st win =
     Curses.werase win;
     cursor_reset win;
@@ -463,6 +486,13 @@ struct
         | Normal -> render_normal state win true
         | CommitMode -> render_normal state win true
         | BranchMode -> render_branch_mode state win
+        | NormalTutorialMode ->
+            render_tutorial state win NormalTutorialMode
+        | DiffTutorialMode -> render_tutorial state win DiffTutorialMode
+        | PullTutorialMode -> render_tutorial state win PullTutorialMode
+        | PushTutorialMode -> render_tutorial state win PushTutorialMode
+        | BranchTutorialMode ->
+            render_tutorial state win BranchTutorialMode
         | _ -> failwith "should call mode render method directly")
 
   let render_with_parse state win prompt =

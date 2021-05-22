@@ -30,8 +30,15 @@ type t =
   | CreateBranch of string
   | DeleteBranch of string
   | NormalTutorial
+  | BackNormal
   | DiffTutorial
+  | BackDiff
   | BranchTutorial
+  | BackBranch
+  | PullTutorial
+  | BackPull
+  | PushTutorial
+  | BackPush
   | Clear
   | Nop
 
@@ -79,3 +86,56 @@ let parse_key_branch_mode key =
   else if key = int_of_char 'x' then DeleteBranchPrompt
   else if key = int_of_char 'i' then BranchTutorial
   else parse_key key
+
+let parse_key_normal_tutorial key =
+  if key = int_of_char 'i' then BackNormal else parse_key key
+
+let parse_key_diff_tutorial key =
+  if key = int_of_char 'i' then BackDiff else parse_key_diff_mode key
+
+let parse_key_pull_tutorial key =
+  if key = int_of_char 'i' then BackPull else parse_key_pull_mode key
+
+let parse_key_push_tutorial key =
+  if key = int_of_char 'i' then BackPush else parse_key_push_mode key
+
+let parse_key_branch_tutorial key =
+  if key = int_of_char 'i' then BackBranch
+  else parse_key_branch_mode key
+
+let string_of_cmd cmd =
+  match cmd with
+  | Stage -> "stage"
+  | Unstage -> "unstage"
+  | NavUp _ -> "navup"
+  | NavDown _ -> "navdown"
+  | Commit _ -> "commit"
+  | DiffMenu -> "diff"
+  | DiffStaged -> "diff"
+  | DiffTracked -> "diff"
+  | DiffFile -> "diff"
+  | DiffAll -> "diff"
+  | Pull (_, _, _) -> "pull"
+  | PullMenu -> "pull"
+  | PushMenu -> "push"
+  | Push (_, _, _) -> "push"
+  | BranchMenu -> "branch"
+  | CheckoutBranchPrompt -> "checkout branch prompt"
+  | CreateBranchPrompt -> "create branch prompt"
+  | DeleteBranchPrompt -> "delete branch prompt"
+  | CheckoutBranch _ -> "checkout branch"
+  | CreateBranch _ -> "create branch"
+  | DeleteBranch _ -> "delete branch"
+  | Clear -> "clear"
+  | Quit -> "quit"
+  | NormalTutorial -> "tutorial"
+  | DiffTutorial -> "tutorial"
+  | PullTutorial -> "tutorial"
+  | PushTutorial -> "tutorial"
+  | BranchTutorial -> "tutorial"
+  | BackNormal -> "back"
+  | BackDiff -> "back"
+  | BackPull -> "back"
+  | BackPush -> "back"
+  | BackBranch -> "back"
+  | Nop -> "nop"

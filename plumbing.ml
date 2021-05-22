@@ -329,12 +329,6 @@ module MockPlumbing : PlumbingWithSet = struct
     let new_args = Array.of_list ("add" :: Array.to_list args) in
     git new_args
 
-  let head (args : string array) = failwith "unimplemented"
-
-  let checkout (args : string array) = failwith "unimplemented"
-
-  let git (args : string array) = failwith "unimplemented"
-
   let restore (args : string array) =
     let new_args = Array.of_list ("restore" :: Array.to_list args) in
     git new_args

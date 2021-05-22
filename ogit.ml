@@ -86,6 +86,16 @@ let rec run win (st : MyState.t) =
   | MyState.Normal -> run win (run_normal win st Command.parse_key)
   | MyState.BranchMode ->
       run win (run_normal win st Command.parse_key_branch_mode)
+  | MyState.NormalTutorialMode ->
+      run win (run_normal win st Command.parse_key_normal_tutorial)
+  | MyState.DiffTutorialMode ->
+      run win (run_normal win st Command.parse_key_diff_tutorial)
+  | MyState.PullTutorialMode ->
+      run win (run_normal win st Command.parse_key_pull_tutorial)
+  | MyState.PushTutorialMode ->
+      run win (run_normal win st Command.parse_key_push_tutorial)
+  | MyState.BranchTutorialMode ->
+      run win (run_normal win st Command.parse_key_branch_tutorial)
   | _ -> run win (run_input_mode win st)
 
 let run_git args =

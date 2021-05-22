@@ -44,8 +44,15 @@ type t =
   | CreateBranch of string
   | DeleteBranch of string
   | NormalTutorial
+  | BackNormal
   | DiffTutorial
+  | BackDiff
   | BranchTutorial
+  | BackBranch
+  | PullTutorial
+  | BackPull
+  | PushTutorial
+  | BackPush
   | Clear
   | Nop
 
@@ -73,3 +80,26 @@ val parse_key_push_mode : key -> t
 (** [parse_key_branch_mode key] has the same function as [parse_key key]
     but works when branch menu has been activated *)
 val parse_key_branch_mode : key -> t
+
+(** [parse_key_normal_tutorial key] has the same function as
+    [parse_key key] but works when normal tutorial has been activated *)
+val parse_key_normal_tutorial : key -> t
+
+(** [parse_key_diff_tutorial key] has the same function as
+    [parse_key key] but works when normal tutorial has been activated *)
+val parse_key_diff_tutorial : key -> t
+
+(** [parse_key_pull_tutorial key] has the same function as
+    [parse_key key] but works when normal tutorial has been activated *)
+val parse_key_pull_tutorial : key -> t
+
+(** [parse_key_push_tutorial key] has the same function as
+    [parse_key key] but works when normal tutorial has been activated *)
+val parse_key_push_tutorial : key -> t
+
+(** [parse_key_branch_tutorial key] has the same function as
+    [parse_key key] but works when normal tutorial has been activated *)
+val parse_key_branch_tutorial : key -> t
+
+(** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)
+val string_of_cmd : t -> string

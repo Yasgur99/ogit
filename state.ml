@@ -383,9 +383,13 @@ module StateImpl (P : Plumbing) : State = struct
     if u = "" || p = "" || b = "" then set_mode st (PullMode (u, p, b))
     else if u = "m" && p = "m" && b = "m" then
       set_mode st (PullMode ("", "", ""))
-    else failwith "Unimplemented"
+    else st
 
-  let exec_push st username password branch = failwith "Unimplemented"
+  let exec_push st u p b =
+    if u = "" || p = "" || b = "" then set_mode st (PullMode (u, p, b))
+    else if u = "m" && p = "m" && b = "m" then
+      set_mode st (PullMode ("", "", ""))
+    else st
 
   let exec_checkout_branch st branch =
     let msg = MPorcelain.checkout branch in
@@ -424,8 +428,8 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.BranchTutorial -> set_mode st BranchTutorialMode
     | Command.BackNormal -> set_mode st Normal
     | Command.BackDiff -> set_mode st (DiffMode "MENU")
-    | Command.BackPull -> set_mode st PullMode
-    | Command.BackPush -> set_mode st PushMode
+    | Command.BackPull -> set_mode st (PullMode ("m", "m", "m"))
+    | Command.BackPush -> set_mode st (PushMode ("m", "m", "m"))
     | Command.BackBranch -> set_mode st BranchMode
     | Command.Nop -> st
     | Command.Quit -> raise Command.Program_terminate
