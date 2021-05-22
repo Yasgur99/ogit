@@ -20,32 +20,7 @@ module type Renderer = sig
 
   val render : MState.t -> Curses.window -> unit
 
-  val render_commit_mode : MState.t -> Curses.window -> string
-
-  val render_diff_mode : MState.t -> Curses.window -> unit
-
-  val render_push_mode : MState.t -> Curses.window -> unit
-
-  val render_pull_mode : MState.t -> Curses.window -> unit
-
-  val render_branch_mode : MState.t -> Curses.window -> unit
-
-  val render_checkout_get_branch_mode :
-    MState.t -> Curses.window -> string
-
-  val render_create_get_branch_mode :
-    MState.t -> Curses.window -> string
-
-  val render_delete_get_branch_mode :
-    MState.t -> Curses.window -> string
-
-  val render_pull_elsewhere_mode : MState.t -> Curses.window -> string
-
-  val render_push_elsewhere_mode : MState.t -> Curses.window -> string
-
-  val render_username_mode : MState.t -> Curses.window -> string
-
-  val render_password_mode : MState.t -> Curses.window -> string
+  val render_input_mode : MState.t -> Curses.window -> string
 
   val get_color : string -> int
 end
@@ -178,8 +153,8 @@ struct
   let render_lines win lines curs render_curs =
     List.iter (render_line win curs render_curs) lines
 
-  let rec parse_string win str =
-    check_err (Curses.echo ());
+  let rec parse_string win str echo =
+    if echo then check_err (Curses.echo ());
     enable_color "cyan_back";
     check_err (Curses.waddstr win " ");
     disable_color "cyan_back";
@@ -194,9 +169,9 @@ struct
           else String.sub str 0 (String.length str - 1)
         in
         Curses.clrtoeol ();
-        parse_string win new_str)
-      else parse_string win (str ^ String.make 1 (char_of_int key))
-    with _ -> parse_string win str
+        parse_string win new_str echo)
+      else parse_string win (str ^ String.make 1 (char_of_int key)) echo
+    with _ -> parse_string win str echo
 
   let commit_msg_prompt : MState.printable =
     { text = "Enter your commit message: "; color = "green" }
@@ -256,19 +231,7 @@ struct
     render_line win (MState.get_curs state) true
       { text = msg; color = "white" }
 
-  let render_pull_elsewhere_done state win msg =
-    render_line win (MState.get_curs state) true blank_line;
-    render_line win (MState.get_curs state) false results_header;
-    render_line win (MState.get_curs state) false
-      { text = msg; color = "white" }
-
-  let render_push_elsewhere_done state win msg =
-    render_line win (MState.get_curs state) true blank_line;
-    render_line win (MState.get_curs state) false results_header;
-    render_line win (MState.get_curs state) false
-      { text = msg; color = "white" }
-
-  let render_normal state win =
+  let render_normal state win render_curs =
     let curs = MState.get_curs state in
     Curses.werase win;
     screen := [||];
@@ -279,7 +242,12 @@ struct
     render_lines win lines curs render_curs;
     match MState.get_mode state with
     | CommandDone msg -> render_command_done state win msg
-    | PullElsewhereDone msg -> render_pull_elsewhere_done state win msg
+    | PullMode (_, _, _) ->
+        render_line win curs true blank_line;
+        render_lines win pull_options curs true
+    | PushMode (_, _, _) ->
+        render_line win curs true blank_line;
+        render_lines win push_options curs true
     | _ -> check_err (Curses.wrefresh win)
 
   let render_scroll_up st win =
@@ -288,7 +256,7 @@ struct
     let scr = !screen in
     let max_y = fst (Curses.getmaxyx win) in
     let len = Array.length scr in
-    if !top_line <= 1 || len < max_y then render_normal st win
+    if !top_line <= 1 || len < max_y then render_normal st win true
     else
       let new_top = !top_line - 1 in
       let new_btm = new_top + max_y - 1 in
@@ -320,33 +288,6 @@ struct
       screen := scr;
       check_err (Curses.wrefresh win)
 
-  let render_commit_mode state win =
-    render_normal state win;
-    render_line win (MState.get_curs state) true blank_line;
-    render_line win (MState.get_curs state) false commit_msg_prompt;
-    let msg = parse_string win "" in
-    check_err (Curses.noecho ());
-    render_normal (MState.update_mode state Command.Nop) win;
-    msg
-
-  let render_pull_elsewhere_mode state win =
-    render_normal state win;
-    render_line win (MState.get_curs state) false
-      pull_elsewhere_msg_prompt;
-    let msg = parse_string win "" in
-    check_err (Curses.noecho ());
-    render_normal (MState.update_mode state Command.Nop) win;
-    msg
-
-  let render_push_elsewhere_mode state win =
-    render_normal state win;
-    render_line win (MState.get_curs state) false
-      push_elsewhere_msg_prompt;
-    let msg = parse_string win "" in
-    check_err (Curses.noecho ());
-    render_normal (MState.update_mode state Command.Nop) win;
-    msg
-
   let diff_color str =
     let clr =
       if String.length str < 2 then "white"
@@ -365,7 +306,7 @@ struct
     String.split_on_char '\n' str |> List.map diff_color
 
   let render_diff_mode state win =
-    render_normal state win;
+    render_normal state win true;
     match MState.get_mode state with
     | DiffMode str ->
         if str = "MENU" then (
@@ -376,61 +317,25 @@ struct
           render_line win (MState.get_curs state) true diff_header;
           render_lines win (diff_to_lines str) (MState.get_curs state)
             true)
-    | _ -> failwith "Wrong render function"
+    | _ -> failwith "Wrong render function: not in diff mode"
 
   let render_push_mode state win =
-    render_normal state win;
+    render_normal state win true;
     render_line win (MState.get_curs state) true blank_line;
     render_lines win push_options (MState.get_curs state) true
 
-  let render_username_mode state win =
-    render_normal state win;
-    render_line win (MState.get_curs state) true blank_line;
-    render_line win (MState.get_curs state) false username_prompt;
-    let user = parse_string win "" in
-    check_err (Curses.noecho ());
-    render_normal (MState.update_mode state Command.Nop) win;
-    user
-
-  let render_password_mode state win =
-    render_normal state win;
-    render_line win (MState.get_curs state) true blank_line;
-    render_line win (MState.get_curs state) false password_prompt;
-    let pass = parse_string win "" in
-    check_err (Curses.noecho ());
-    render_normal (MState.update_mode state Command.Nop) win;
-    pass
-
   let render_pull_mode state win =
-    render_normal state win;
+    render_normal state win true;
     render_line win (MState.get_curs state) true blank_line;
     render_lines win pull_options (MState.get_curs state) true
 
   let render_branch_mode state win =
-    render_normal state win;
+    render_normal state win true;
     render_line win (MState.get_curs state) true blank_line;
     render_lines win branch_options (MState.get_curs state) true
 
   let get_branch_msg_prompt : MState.printable =
     { text = "Enter branch name: "; color = "green" }
-
-  let prompt_branch_name state win =
-    render_line win (MState.get_curs state) true blank_line;
-    render_normal state win;
-    render_line win (MState.get_curs state) false get_branch_msg_prompt;
-    let msg = parse_string win "" in
-    check_err (Curses.noecho ());
-    render_normal (MState.update_mode state Command.Nop) win;
-    msg
-
-  let render_checkout_get_branch_mode state win =
-    prompt_branch_name state win
-
-  let render_create_get_branch_mode state win =
-    prompt_branch_name state win
-
-  let render_delete_get_branch_mode state win =
-    prompt_branch_name state win
 
   let rec render state win =
     match MState.get_curs_state state with
@@ -439,11 +344,68 @@ struct
     | MState.OnScr -> (
         match MState.get_mode state with
         | DiffMode _ -> render_diff_mode state win
-        | CommandDone _ -> render_normal state win
-        | PushMode -> render_push_mode state win
-        | PullMode -> render_pull_mode state win
-        | Normal -> render_normal state win
-        | CommitMode -> render_normal state win
+        | CommandDone _ -> render_normal state win true
+        | PullMode ("m", "m", "m") -> render_normal state win true
+        | PushMode ("m", "m", "m") -> render_normal state win true
+        | PushMode (_, _, _) -> render_push_mode state win
+        | PullMode (_, _, _) -> render_pull_mode state win
+        | Normal -> render_normal state win true
+        | CommitMode -> render_normal state win true
         | BranchMode -> render_branch_mode state win
         | _ -> failwith "should call mode render method directly")
+
+  let render_with_parse state win prompt =
+    Curses.werase win;
+    render_normal state win false;
+    render_line win (MState.get_curs state) false blank_line;
+    render_line win (MState.get_curs state) false prompt;
+    let input = parse_string win "" (prompt <> password_prompt) in
+    check_err (Curses.noecho ());
+    input
+
+  let render_push_pull_mode state win =
+    try
+      let prompt, u, p, b, pull =
+        match MState.get_mode state with
+        | PullMode ("", p, b) -> (username_prompt, "", p, b, true)
+        | PullMode (u, "", b) -> (password_prompt, u, "", b, true)
+        | PullMode (u, p, "") -> (get_branch_msg_prompt, u, p, "", true)
+        | PullMode ("m", "m", "m") ->
+            render_normal state win true;
+            raise Command.Program_terminate
+        | PushMode ("", p, b) -> (username_prompt, "", p, b, false)
+        | PushMode (u, "", b) -> (password_prompt, u, "", b, false)
+        | PushMode (u, p, "") -> (get_branch_msg_prompt, u, p, "", false)
+        | PushMode ("m", "m", "m") ->
+            render_normal state win true;
+            raise Command.Program_terminate
+        | _ ->
+            failwith "Wrong render function: not in a push or pull mode"
+      in
+      let out = render_with_parse state win prompt in
+      if
+        (prompt = password_prompt && b <> "")
+        || prompt = get_branch_msg_prompt
+      then render (MState.update_mode state Command.Nop) win;
+      out
+    with _ -> ""
+
+  let render_single_input_mode state win =
+    let prompt =
+      match MState.get_mode state with
+      | CommitMode -> commit_msg_prompt
+      | CheckoutGetBranchNameMode -> get_branch_msg_prompt
+      | CreateGetBranchNameMode -> get_branch_msg_prompt
+      | DeleteGetBranchNameMode -> get_branch_msg_prompt
+      | _ -> failwith "Wrong render function: not in an input mode"
+    in
+    let out = render_with_parse state win prompt in
+    render (MState.update_mode state Command.Nop) win;
+    out
+
+  let render_input_mode state win =
+    match MState.get_mode state with
+    | PullMode (_, _, _) -> render_push_pull_mode state win
+    | PushMode (_, _, _) -> render_push_pull_mode state win
+    | _ -> render_single_input_mode state win
 end

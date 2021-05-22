@@ -14,18 +14,12 @@ module type State = sig
     | CommitMode
     | CommandDone of string
     | DiffMode of string
-    | PushMode
-    | PushRemoteMode
-    | PushRemoteDone of string * string
-    | PushElsewhereMode
-    | PushElsewhereDone of string
-    | PullMode
+    | PushMode of string * string * string
+    | PullMode of string * string * string
     | BranchMode
     | CheckoutGetBranchNameMode
     | CreateGetBranchNameMode
     | DeleteGetBranchNameMode
-    | PullElsewhereMode
-    | PullElsewhereDone of string
 
   type curs_state =
     | OffScrUp
@@ -100,18 +94,12 @@ module StateImpl (P : Plumbing) : State = struct
     | CommitMode
     | CommandDone of string
     | DiffMode of string
-    | PushMode
-    | PushRemoteMode
-    | PushRemoteDone of string * string
-    | PushElsewhereMode
-    | PushElsewhereDone of string
-    | PullMode
+    | PushMode of string * string * string
+    | PullMode of string * string * string
     | BranchMode
     | CheckoutGetBranchNameMode
     | CreateGetBranchNameMode
     | DeleteGetBranchNameMode
-    | PullElsewhereMode
-    | PullElsewhereDone of string
 
   type curs_state =
     | OffScrUp
@@ -163,7 +151,7 @@ module StateImpl (P : Plumbing) : State = struct
   let update_git_state st =
     {
       commit_history = MPorcelain.log None;
-      head = MPorcelain.get_head () ;
+      head = MPorcelain.get_head ();
       merge = MPorcelain.get_upstream ();
       push = MPorcelain.get_push ();
       untracked = MPorcelain.get_untracked (MPorcelain.status ());
@@ -216,8 +204,8 @@ module StateImpl (P : Plumbing) : State = struct
     }
 
   let max_curs_pos_normal st =
-    List.length st.untracked + List.length st.tracked 
-    + List.length st.staged + 21
+    List.length st.untracked
+    + List.length st.tracked + List.length st.staged + 21
 
   let set_mode st new_mode =
     {
@@ -237,9 +225,10 @@ module StateImpl (P : Plumbing) : State = struct
     let new_mode =
       match cmd with
       | Command.Commit _ -> CommitMode
-      | Command.PushRemote _ -> PushRemoteMode
-      | Command.PushElsewhere _ -> PushElsewhereMode
-      | Command.PullElsewhere _ -> PullElsewhereMode
+      | Command.Pull ("m", "m", "m") -> PullMode ("", "", "")
+      | Command.Push ("m", "m", "m") -> PushMode ("", "", "")
+      | Command.Push (u, p, b) -> PushMode (u, p, b)
+      | Command.Pull (u, p, b) -> PullMode (u, p, b)
       | _ -> st.mode
     in
     set_mode st new_mode
@@ -322,10 +311,10 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec_clear st =
     let new_mode_st = set_mode st Normal in
-    let new_curs = 
-      if st.curs >= max_curs_pos_normal st 
-      then max_curs_pos_normal st 
-      else st.curs in
+    let new_curs =
+      if st.curs >= max_curs_pos_normal st then max_curs_pos_normal st
+      else st.curs
+    in
     set_curs new_mode_st new_curs OnScr
 
   let exec_add st =
@@ -373,39 +362,22 @@ module StateImpl (P : Plumbing) : State = struct
     else ();
     set_mode st (DiffMode out)
 
-  let exec_pull_remote st =
-    let out = MPorcelain.pull None in
-    set_mode (update_git_state st) (CommandDone out)
+  let exec_pull st u p b =
+    if u = "" || p = "" || b = "" then set_mode st (PullMode (u, p, b))
+    else if u = "m" && p = "m" && b = "m" then
+      set_mode st (PullMode ("", "", ""))
+    else failwith "Unimplemented"
 
-  let exec_pull_origin_master st =
-    let out = MPorcelain.pull None in
-    (* TODO *)
-    set_mode (update_git_state st) (CommandDone out)
-
-  let exec_pull_elsewhere st msg =
-    let out = MPorcelain.pull (Some msg) in
-    set_mode (update_git_state st) (CommandDone out)
-
-  let exec_push_remote st u p (* Figure out User/Pass *)=
-    let out = MPorcelain.push None in
-    set_mode (update_git_state st) (CommandDone out)
-
-  let exec_push_origin_master st =
-    let out = MPorcelain.push None in
-    (* TODO *)
-    set_mode (update_git_state st) (CommandDone out)
-
-  let exec_push_elsewhere st msg =
-    let out = MPorcelain.push (Some msg) in
-    set_mode (update_git_state st) (CommandDone out)
+  let exec_push st username password branch = failwith "Unimplemented"
 
   let exec_checkout_branch st branch =
-    let msg = MPorcelain.checkout branch in 
-    set_mode (update_git_state st ) (CommandDone msg)
+    let msg = MPorcelain.checkout branch in
+    set_mode (update_git_state st) (CommandDone msg)
 
   let exec_create_branch st branch =
     let msg = MPorcelain.create_branch branch in
     set_mode (update_git_state st) (CommandDone msg)
+
   let exec_delete_branch st branch =
     let msg = MPorcelain.delete_branch branch in
     set_mode (update_git_state st) (CommandDone msg)
@@ -419,48 +391,38 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec st cmd =
     match cmd with
-    (** META COMMANDS *)
+    (* META COMMANDS *)
     | Command.NavUp b -> set_curs st (get_curs st - 1) (pos_of_cmd cmd)
     | Command.NavDown b ->
         set_curs st (get_curs st + 1) (pos_of_cmd cmd)
     | Command.DiffMenu -> set_mode st (DiffMode "MENU")
     | Command.Clear -> exec_clear st
-    | Command.PullMenu -> set_mode st PullMode
-    | Command.PushMenu -> set_mode st PushMode
+    | Command.PullMenu -> set_mode st (PullMode ("m", "m", "m"))
+    | Command.PushMenu -> set_mode st (PushMode ("m", "m", "m"))
     | Command.BranchMenu -> set_mode st BranchMode
     | Command.Nop -> st
     | Command.Quit -> raise Command.Program_terminate
-
-    (** NORMAL MODE *)
+    (* NORMAL MODE *)
     | Command.Stage -> exec_add st
     | Command.Unstage -> exec_unstage st
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
-    
-
-    (** DIFF MODE *)
+    (* DIFF MODE *)
     | Command.DiffTracked -> exec_diff_tracked st
     | Command.DiffStaged -> exec_diff_staged st
     | Command.DiffAll -> exec_diff_all st
     | Command.DiffFile -> exec_diff_file st
-
-    (** PULL MODE *)
-    | Command.PullRemote -> exec_pull_remote st
-    | Command.PullOriginMaster -> exec_pull_origin_master st
-    | Command.PullElsewhere msg ->
-        if msg = "" then st else exec_pull_elsewhere st msg
-
-    (** PUSH MODE *)
-    | Command.PushRemote (u, p) -> if u = "" then st else exec_push_remote st u p
-    | Command.PushOriginMaster -> exec_push_origin_master st
-    | Command.PushElsewhere msg ->
-        if msg = "" then st else exec_push_elsewhere st msg
-        
-    (** BRANCH MODE *)
+    (* PULL MODE *)
+    | Command.Pull (u, p, b) ->
+        if u = "" || p = "" || b = "" then st else exec_pull st u p b
+    (* PUSH MODE *)
+    | Command.Push (u, p, b) ->
+        if u = "" || p = "" || b = "" then st else exec_push st u p b
+    (* BRANCH MODE *)
     | Command.CheckoutBranch b -> exec_checkout_branch st b
     | Command.CreateBranch b -> exec_create_branch st b
     | Command.DeleteBranch b -> exec_delete_branch st b
-    | Command.CheckoutBranchPrompt -> set_mode st CheckoutGetBranchNameMode
+    | Command.CheckoutBranchPrompt ->
+        set_mode st CheckoutGetBranchNameMode
     | Command.CreateBranchPrompt -> set_mode st CreateGetBranchNameMode
     | Command.DeleteBranchPrompt -> set_mode st DeleteGetBranchNameMode
- 
-  end
+end

@@ -6,10 +6,6 @@ type branch_name = string
 
 type key = int
 
-type username = string
-
-type password = string
-
 type t =
   | Stage
   | Unstage
@@ -23,12 +19,9 @@ type t =
   | DiffStaged
   | DiffAll
   | PullMenu
-  | PullRemote
-  | PullOriginMaster
-  | PullElsewhere of string
+  | Pull of string * string * string
   | PushMenu
-  | PushRemote of username * password
-  | PushOriginMaster
+  | Push of string * string * string
   | BranchMenu
   | CheckoutBranchPrompt
   | CreateBranchPrompt
@@ -36,7 +29,6 @@ type t =
   | CheckoutBranch of string
   | CreateBranch of string
   | DeleteBranch of string
-  | PushElsewhere of string
   | Clear
   | Nop
 
@@ -65,15 +57,15 @@ let parse_key_diff_mode key =
   else parse_key key
 
 let parse_key_pull_mode key =
-  if key = int_of_char 'p' then PullRemote
-  else if key = int_of_char 'u' then PullOriginMaster
-  else if key = int_of_char 'e' then PullElsewhere ""
+  if key = int_of_char 'p' then Pull ("", "", "remote")
+  else if key = int_of_char 'u' then Pull ("", "", "origin/master")
+  else if key = int_of_char 'e' then Pull ("", "", "")
   else parse_key key
 
 let parse_key_push_mode key =
-  if key = int_of_char 'p' then PushRemote ("", "")
-  else if key = int_of_char 'u' then PushOriginMaster
-  else if key = int_of_char 'e' then PushElsewhere ""
+  if key = int_of_char 'p' then Push ("", "", "remote")
+  else if key = int_of_char 'u' then Push ("", "", "origin/master")
+  else if key = int_of_char 'e' then Pull ("", "", "")
   else parse_key key
 
 let parse_key_branch_mode key =
@@ -81,34 +73,3 @@ let parse_key_branch_mode key =
   else if key = int_of_char 'c' then CreateBranchPrompt
   else if key = int_of_char 'x' then DeleteBranchPrompt
   else parse_key key
-
-let string_of_cmd cmd =
-  match cmd with
-  | Stage -> "stage"
-  | Unstage -> "unstage"
-  | NavUp _ -> "navup"
-  | NavDown _ -> "navdown"
-  | Commit _ -> "commit"
-  | DiffMenu -> "diff"
-  | DiffStaged -> "diff"
-  | DiffTracked -> "diff"
-  | DiffFile -> "diff"
-  | DiffAll -> "diff"
-  | PullMenu -> "pull"
-  | PullRemote -> "pull"
-  | PullOriginMaster -> "pull"
-  | PullElsewhere _ -> "pullelsewhere"
-  | PushMenu -> "push"
-  | PushRemote _ -> "push remote"
-  | PushOriginMaster -> "push"
-  | BranchMenu -> "branch"
-  | CheckoutBranchPrompt -> "checkout branch prompt"
-  | CreateBranchPrompt -> "create branch prompt"
-  | DeleteBranchPrompt -> "delete branch prompt"
-  | CheckoutBranch _ -> "checkout branch"
-  | CreateBranch _ -> "create branch"
-  | DeleteBranch _ -> "delete branch"
-  | PushElsewhere _ -> "push"
-  | Clear -> "clear"
-  | Quit -> "quit"
-  | Nop -> "nop"
