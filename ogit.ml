@@ -87,6 +87,16 @@ let rec run win (st : MyState.t) =
       run win (run_create_get_branch_mode win st)
   | MyState.DeleteGetBranchNameMode ->
       run win (run_delete_get_branch_mode win st)
+  | MyState.NormalTutorialMode ->
+      run win (run_normal win st Command.parse_key_normal_tutorial)
+  | MyState.DiffTutorialMode ->
+      run win (run_normal win st Command.parse_key_diff_tutorial)
+  | MyState.PullTutorialMode ->
+      run win (run_normal win st Command.parse_key_pull_tutorial)
+  | MyState.PushTutorialMode ->
+      run win (run_normal win st Command.parse_key_push_tutorial)
+  | MyState.BranchTutorialMode ->
+      run win (run_normal win st Command.parse_key_branch_tutorial)
 
 let run_git args =
   List.iter print_endline (MPlumbing.get_out (MPlumbing.git args))
