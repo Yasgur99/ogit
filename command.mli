@@ -43,6 +43,9 @@ type t =
   | CheckoutBranch of string
   | CreateBranch of string
   | DeleteBranch of string
+  | NormalTutorial
+  | DiffTutorial
+  | BranchTutorial
   | Clear
   | Nop
 

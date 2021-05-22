@@ -20,6 +20,13 @@ module type State = sig
     | CheckoutGetBranchNameMode
     | CreateGetBranchNameMode
     | DeleteGetBranchNameMode
+    | PullElsewhereMode
+    | PullElsewhereDone of string
+    | NormalTutorialMode
+    | DiffTutorialMode
+    | PullTutorialMode
+    | PushTutorialMode
+    | BranchTutorialMode
 
   type curs_state =
     | OffScrUp
@@ -100,6 +107,13 @@ module StateImpl (P : Plumbing) : State = struct
     | CheckoutGetBranchNameMode
     | CreateGetBranchNameMode
     | DeleteGetBranchNameMode
+    | PullElsewhereMode
+    | PullElsewhereDone of string
+    | NormalTutorialMode
+    | DiffTutorialMode
+    | PullTutorialMode
+    | PushTutorialMode
+    | BranchTutorialMode
 
   type curs_state =
     | OffScrUp
@@ -254,6 +268,8 @@ module StateImpl (P : Plumbing) : State = struct
 
   let staged_header = { text = "Staged"; color = "yellow" }
 
+  let help = { text = "(To toggle help, press \'i\'.)"; color = "blue" }
+
   let blank_line = { text = " "; color = "white" }
 
   let printable_of_commit_t c =
@@ -299,6 +315,7 @@ module StateImpl (P : Plumbing) : State = struct
     @ [ push_header; push_printable ]
     @ [ blank_line ]
     @ commit_header :: commits_printable
+    @ [ blank_line ] @ [ help ]
 
   (*********************************************************)
   (* Exec *)
@@ -400,6 +417,16 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.PullMenu -> set_mode st (PullMode ("m", "m", "m"))
     | Command.PushMenu -> set_mode st (PushMode ("m", "m", "m"))
     | Command.BranchMenu -> set_mode st BranchMode
+    | Command.NormalTutorial -> set_mode st NormalTutorialMode
+    | Command.DiffTutorial -> set_mode st DiffTutorialMode
+    | Command.PullTutorial -> set_mode st PullTutorialMode
+    | Command.PushTutorial -> set_mode st PushTutorialMode
+    | Command.BranchTutorial -> set_mode st BranchTutorialMode
+    | Command.BackNormal -> set_mode st Normal
+    | Command.BackDiff -> set_mode st (DiffMode "MENU")
+    | Command.BackPull -> set_mode st PullMode
+    | Command.BackPush -> set_mode st PushMode
+    | Command.BackBranch -> set_mode st BranchMode
     | Command.Nop -> st
     | Command.Quit -> raise Command.Program_terminate
     (* NORMAL MODE *)

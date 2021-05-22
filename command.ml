@@ -29,6 +29,9 @@ type t =
   | CheckoutBranch of string
   | CreateBranch of string
   | DeleteBranch of string
+  | NormalTutorial
+  | DiffTutorial
+  | BranchTutorial
   | Clear
   | Nop
 
@@ -47,6 +50,7 @@ let parse_key key =
   else if key = int_of_char 'P' then PushMenu
   else if key = int_of_char ' ' then Clear
   else if key = int_of_char 'b' then BranchMenu
+  else if key = int_of_char 'i' then NormalTutorial
   else Nop
 
 let parse_key_diff_mode key =
@@ -54,6 +58,7 @@ let parse_key_diff_mode key =
   else if key = int_of_char 't' then DiffTracked
   else if key = int_of_char 'a' then DiffAll
   else if key = int_of_char 'f' then DiffFile
+  else if key = int_of_char 'i' then DiffTutorial
   else parse_key key
 
 let parse_key_pull_mode key =
@@ -72,4 +77,5 @@ let parse_key_branch_mode key =
   if key = int_of_char 'b' then CheckoutBranchPrompt
   else if key = int_of_char 'c' then CreateBranchPrompt
   else if key = int_of_char 'x' then DeleteBranchPrompt
+  else if key = int_of_char 'i' then BranchTutorial
   else parse_key key
