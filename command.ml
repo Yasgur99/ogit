@@ -39,6 +39,9 @@ type t =
   | BackPull
   | PushTutorial
   | BackPush
+  | Stash
+  | StashPop
+  | StashApply
   | Clear
   | Nop
 
@@ -58,6 +61,7 @@ let parse_key key =
   else if key = int_of_char ' ' then Clear
   else if key = int_of_char 'b' then BranchMenu
   else if key = int_of_char 'i' then NormalTutorial
+  else if key = int_of_char 'S' then Stash
   else Nop
 
 let parse_key_diff_mode key =
@@ -103,6 +107,11 @@ let parse_key_branch_tutorial key =
   if key = int_of_char 'i' then BackBranch
   else parse_key_branch_mode key
 
+let parse_key_stash_mode key =
+  if key = int_of_char 'p' then StashPop
+  else if key = int_of_char 'a' then StashApply
+  else parse_key key
+
 let string_of_cmd cmd =
   match cmd with
   | Stage -> "stage"
@@ -138,4 +147,7 @@ let string_of_cmd cmd =
   | BackPull -> "back"
   | BackPush -> "back"
   | BackBranch -> "back"
+  | Stash -> "stash"
+  | StashPop -> "stash"
+  | StashApply -> "apply"
   | Nop -> "nop"

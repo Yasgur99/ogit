@@ -53,6 +53,9 @@ type t =
   | BackPull
   | PushTutorial
   | BackPush
+  | Stash
+  | StashPop
+  | StashApply
   | Clear
   | Nop
 
@@ -100,6 +103,8 @@ val parse_key_push_tutorial : key -> t
 (** [parse_key_branch_tutorial key] has the same function as
     [parse_key key] but works when normal tutorial has been activated *)
 val parse_key_branch_tutorial : key -> t
+
+val parse_key_stash_mode : key -> t
 
 (** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)
 val string_of_cmd : t -> string

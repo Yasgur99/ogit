@@ -79,8 +79,12 @@ module type Plumbing = sig
   (** [head args] calls git symbolic-ref HEAD with arguments [args]*)
   val head : string array -> result
 
+  val init : string array -> result
+
   (** [checkout args] calls git checkout with arguments [args]*)
   val checkout : string array -> result
+
+  val stash : string array -> result
 
   (** [git args] calls git with arguments [args] *)
   val git : string array -> result
@@ -205,6 +209,9 @@ module ProdPlumbing : Plumbing = struct
   let cat_file (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "cat-file" |] args) []
 
+  let init (args : string array) =
+    fork_and_execv "git" (Array.append [| "init" |] args) []
+
   let update_index (args : string array) =
     fork_and_execv "git"
       (Array.append [| "git"; "update-index" |] args)
@@ -238,6 +245,9 @@ module ProdPlumbing : Plumbing = struct
 
   let commit (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "commit" |] args) []
+
+  let stash (args : string array) =
+    fork_and_execv "git" (Array.append [| "git"; "stash" |] args) []
 
   let show (args : string array) =
     fork_and_execv "git"
@@ -292,8 +302,16 @@ module MockPlumbing : PlumbingWithSet = struct
       []
       [ "Initialized empty Git repository in /home/fake/.git/" ]
 
+  let init (args : string array) =
+    let new_args = Array.of_list ("init" :: Array.to_list args) in
+    git new_args
+
   let push (args : string array) up =
     let new_args = Array.of_list ("push" :: Array.to_list args) in
+    git new_args
+
+  let stash (args : string array) =
+    let new_args = Array.of_list ("stash" :: Array.to_list args) in
     git new_args
 
   let pull (args : string array) up =

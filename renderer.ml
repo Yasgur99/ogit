@@ -223,6 +223,12 @@ struct
       { text = "a  all"; color = "green" };
     ]
 
+  let stash_options : MState.printable list =
+    [
+      { text = "a  apply"; color = "green" };
+      { text = "p  pop"; color = "green" };
+    ]
+
   let blank_line : MState.printable = { text = " "; color = "white" }
 
   let tutorial : MState.printable list =
@@ -453,6 +459,11 @@ struct
             true)
     | _ -> failwith "Wrong render function: not in diff mode"
 
+  let render_stash_mode state win =
+    render_normal state win true;
+    render_line win (MState.get_curs state) true blank_line;
+    render_lines win stash_options (MState.get_curs state) true
+
   let render_push_mode state win =
     render_normal state win true;
     render_line win (MState.get_curs state) true blank_line;
@@ -493,6 +504,7 @@ struct
         | PushTutorialMode -> render_tutorial state win PushTutorialMode
         | BranchTutorialMode ->
             render_tutorial state win BranchTutorialMode
+        | StashMode -> render_stash_mode state win
         | _ -> render_normal state win true)
 
   let render_with_parse state win prompt =

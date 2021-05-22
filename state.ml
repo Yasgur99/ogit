@@ -26,6 +26,7 @@ module type State = sig
     | PullTutorialMode
     | PushTutorialMode
     | BranchTutorialMode
+    | StashMode
 
   type curs_state =
     | OffScrUp
@@ -112,6 +113,7 @@ module StateImpl (P : Plumbing) : State = struct
     | PullTutorialMode
     | PushTutorialMode
     | BranchTutorialMode
+    | StashMode
 
   type curs_state =
     | OffScrUp
@@ -405,6 +407,14 @@ module StateImpl (P : Plumbing) : State = struct
     let msg = MPorcelain.delete_branch branch in
     set_mode (update_git_state st) (CommandDone msg)
 
+  let exec_stash_apply st =
+    let out = MPorcelain.stash_apply () in
+    set_mode (update_git_state st) (CommandDone out)
+
+  let exec_stash_pop st =
+    let out = MPorcelain.stash_pop () in
+    set_mode (update_git_state st) (CommandDone out)
+
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
     | Command.NavDown false -> OffScrDown
@@ -461,4 +471,8 @@ module StateImpl (P : Plumbing) : State = struct
         set_mode st CheckoutGetBranchNameMode
     | Command.CreateBranchPrompt -> set_mode st CreateGetBranchNameMode
     | Command.DeleteBranchPrompt -> set_mode st DeleteGetBranchNameMode
+    (* STASH MODE *)
+    | Command.Stash -> set_mode st StashMode
+    | Command.StashApply -> exec_stash_apply st
+    | Command.StashPop -> exec_stash_pop st
 end

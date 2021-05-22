@@ -64,6 +64,10 @@ module type Porcelain = sig
 
   val delete_branch : string -> string
 
+  val stash_apply : unit -> string
+
+  val stash_pop : unit -> string
+
   (** [string_of_commit c] is a commit in the form [hash msg] *)
   val string_of_commit_t : commit_t -> string
 
@@ -112,10 +116,6 @@ module PorcelainImpl (P : Plumbing) = struct
     tracked : string list;
     staged : string list;
   }
-
-  let init (dir : string option) : unit = failwith "Unimplemented"
-  (* match dir with | None -> Plumbing.init [||] | Some _ ->
-     Plumbing.init [| dir |] *)
 
   let rec rm_leading_spaces str =
     match String.split_on_char ' ' str with
@@ -298,6 +298,11 @@ module PorcelainImpl (P : Plumbing) = struct
     | "UU" -> add_to_staged_and_tracked status filename
     | _ -> failwith "TODO throw some failure exception"
 
+  let init (dir : string option) : unit =
+    match dir with
+    | None -> ignore (P.init [||])
+    | Some d -> ignore (P.init [| d |])
+
   let status_t_of_string_list lines =
     List.fold_left add_to_status_t empty_status_t lines
 
@@ -316,6 +321,14 @@ module PorcelainImpl (P : Plumbing) = struct
 
   let delete_branch branch =
     let res = P.checkout [| "-d"; branch |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
+
+  let stash_apply () =
+    let res = P.stash [| "apply" |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
+
+  let stash_pop () =
+    let res = P.stash [| "pop" |] in
     P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
 
   let get_untracked status = status.untracked

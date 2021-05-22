@@ -96,6 +96,8 @@ let rec run win (st : MyState.t) =
       run win (run_normal win st Command.parse_key_push_tutorial)
   | MyState.BranchTutorialMode ->
       run win (run_normal win st Command.parse_key_branch_tutorial)
+  | MyState.StashMode ->
+      run win (run_normal win st Command.parse_key_stash_mode)
   | _ -> run win (run_input_mode win st)
 
 let run_git args =
