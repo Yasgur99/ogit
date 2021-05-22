@@ -77,14 +77,10 @@ let rec run win (st : MyState.t) =
   | MyState.PushRemoteMode -> run win (run_push_remote_mode win st)
   | MyState.PushElsewhereMode ->
       run win (run_push_elsewhere_mode win st)
-  | MyState.PushElsewhereDone _ ->
-      run win (run_normal win st Command.parse_key)
   | MyState.PullMode ->
       run win (run_normal win st Command.parse_key_pull_mode)
   | MyState.PullElsewhereMode ->
       run win (run_pull_elsewhere_mode win st)
-  | MyState.PullElsewhereDone _ ->
-      run win (run_normal win st Command.parse_key)
   | MyState.Normal -> run win (run_normal win st Command.parse_key)
   | MyState.BranchMode ->
       run win (run_normal win st Command.parse_key_branch_mode)

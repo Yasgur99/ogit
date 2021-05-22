@@ -279,7 +279,6 @@ struct
     render_lines win lines curs render_curs;
     match MState.get_mode state with
     | CommandDone msg -> render_command_done state win msg
-    | PullElsewhereDone msg -> render_pull_elsewhere_done state win msg
     | _ -> check_err (Curses.wrefresh win)
 
   let render_scroll_up st win =

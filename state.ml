@@ -16,16 +16,14 @@ module type State = sig
     | DiffMode of string
     | PushMode
     | PushRemoteMode
-    | PushRemoteDone of string * string
     | PushElsewhereMode
-    | PushElsewhereDone of string
     | PullMode
     | BranchMode
     | CheckoutGetBranchNameMode
     | CreateGetBranchNameMode
     | DeleteGetBranchNameMode
     | PullElsewhereMode
-    | PullElsewhereDone of string
+
 
   type curs_state =
     | OffScrUp
@@ -102,16 +100,13 @@ module StateImpl (P : Plumbing) : State = struct
     | DiffMode of string
     | PushMode
     | PushRemoteMode
-    | PushRemoteDone of string * string
     | PushElsewhereMode
-    | PushElsewhereDone of string
     | PullMode
     | BranchMode
     | CheckoutGetBranchNameMode
     | CreateGetBranchNameMode
     | DeleteGetBranchNameMode
     | PullElsewhereMode
-    | PullElsewhereDone of string
 
   type curs_state =
     | OffScrUp
@@ -406,6 +401,7 @@ module StateImpl (P : Plumbing) : State = struct
   let exec_create_branch st branch =
     let msg = MPorcelain.create_branch branch in
     set_mode (update_git_state st) (CommandDone msg)
+    
   let exec_delete_branch st branch =
     let msg = MPorcelain.delete_branch branch in
     set_mode (update_git_state st) (CommandDone msg)
