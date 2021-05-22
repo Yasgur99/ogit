@@ -82,8 +82,6 @@ struct
 
   let top_line = ref 0
 
-  let has_scrolled = ref false
-
   let enable_color color =
     Curses.attron (Curses.A.color_pair (get_color color))
 
@@ -222,6 +220,9 @@ struct
       { text = "f  file"; color = "green" };
       { text = "a  all"; color = "green" };
     ]
+
+  let get_branch_msg_prompt : MState.printable =
+    { text = "Enter branch name: "; color = "green" }
 
   let stash_options : MState.printable list =
     [
@@ -410,7 +411,6 @@ struct
       done;
       screen := scr;
       top_line := !top_line - 1;
-      has_scrolled := true;
       check_err (Curses.wrefresh win)
 
   let render_scroll_down st win =
@@ -478,9 +478,6 @@ struct
     render_normal state win true;
     render_line win (MState.get_curs state) true blank_line;
     render_lines win branch_options (MState.get_curs state) true
-
-  let get_branch_msg_prompt : MState.printable =
-    { text = "Enter branch name: "; color = "green" }
 
   let rec render state win =
     match MState.get_curs_state state with

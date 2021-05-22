@@ -197,6 +197,10 @@ module StateImpl (P : Plumbing) : State = struct
 
   let get_mode st = st.mode
 
+  let max_curs_pos_normal st =
+    List.length st.untracked
+    + List.length st.tracked + List.length st.staged + 21
+
   let set_curs st i curs_st =
     let y =
       match curs_st with
