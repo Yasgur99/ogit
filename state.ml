@@ -15,6 +15,8 @@ module type State = sig
     | CommandDone of string
     | DiffMode of string
     | PushMode
+    | PushRemoteMode
+    | PushRemoteDone of string * string
     | PushElsewhereMode
     | PushElsewhereDone of string
     | PullMode
@@ -49,6 +51,10 @@ module type State = sig
   (** [commit_history st] is the commit history of the current state
       [st] *)
   val commit_history : t -> MPorcelain.commit_t list
+
+  val tracked : t -> string list
+
+  val staged : t -> string list
 
   (** [head st] is the commit pointed to by the head in the current
       state [st] *)
@@ -100,6 +106,8 @@ module StateImpl (P : Plumbing) : State = struct
     | CommandDone of string
     | DiffMode of string
     | PushMode
+    | PushRemoteMode
+    | PushRemoteDone of string * string
     | PushElsewhereMode
     | PushElsewhereDone of string
     | PullMode
@@ -239,6 +247,7 @@ module StateImpl (P : Plumbing) : State = struct
     let new_mode =
       match cmd with
       | Command.Commit _ -> CommitMode
+      | Command.PushRemote _ -> PushRemoteMode
       | Command.PushElsewhere _ -> PushElsewhereMode
       | Command.PullElsewhere _ -> PullElsewhereMode
       | _ -> st.mode
@@ -327,7 +336,10 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec_clear st =
     let new_mode_st = set_mode st Normal in
-    let new_curs = if st.curs >= max_curs_pos_normal st then max_curs_pos_normal st else st.curs in
+    let new_curs = 
+      if st.curs >= max_curs_pos_normal st 
+      then max_curs_pos_normal st 
+      else st.curs in
     set_curs new_mode_st new_curs OnScr
 
   let exec_add st =
@@ -376,30 +388,30 @@ module StateImpl (P : Plumbing) : State = struct
     set_mode st (DiffMode out)
 
   let exec_pull_remote st =
-    MPorcelain.pull None;
-    set_mode (update_git_state st) Normal
+    let out = MPorcelain.pull None in
+    set_mode (update_git_state st) (CommandDone out)
 
   let exec_pull_origin_master st =
-    MPorcelain.pull None;
+    let out = MPorcelain.pull None in
     (* TODO *)
-    set_mode (update_git_state st) Normal
+    set_mode (update_git_state st) (CommandDone out)
 
   let exec_pull_elsewhere st msg =
-    MPorcelain.pull (Some msg);
-    set_mode (update_git_state st) Normal
+    let out = MPorcelain.pull (Some msg) in
+    set_mode (update_git_state st) (CommandDone out)
 
-  let exec_push_remote st =
-    MPorcelain.push None;
-    set_mode (update_git_state st) Normal
+  let exec_push_remote st u p (* Figure out User/Pass *)=
+    let out = MPorcelain.push None in
+    set_mode (update_git_state st) (CommandDone out)
 
   let exec_push_origin_master st =
-    MPorcelain.push None;
+    let out = MPorcelain.push None in
     (* TODO *)
-    set_mode (update_git_state st) Normal
+    set_mode (update_git_state st) (CommandDone out)
 
   let exec_push_elsewhere st msg =
-    MPorcelain.push (Some msg);
-    set_mode (update_git_state st) Normal
+    let out = MPorcelain.push (Some msg) in
+    set_mode (update_git_state st) (CommandDone out)
 
   let exec_checkout_branch st branch =
     let msg = MPorcelain.checkout branch in 
@@ -447,6 +459,7 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.Stage -> exec_add st
     | Command.Unstage -> exec_unstage st
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
+    
 
     (** DIFF MODE *)
     | Command.DiffTracked -> exec_diff_tracked st
@@ -461,7 +474,7 @@ module StateImpl (P : Plumbing) : State = struct
         if msg = "" then st else exec_pull_elsewhere st msg
 
     (** PUSH MODE *)
-    | Command.PushRemote -> exec_push_remote st
+    | Command.PushRemote (u, p) -> if u = "" then st else exec_push_remote st u p
     | Command.PushOriginMaster -> exec_push_origin_master st
     | Command.PushElsewhere msg ->
         if msg = "" then st else exec_push_elsewhere st msg
@@ -474,4 +487,4 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.CreateBranchPrompt -> set_mode st CreateGetBranchNameMode
     | Command.DeleteBranchPrompt -> set_mode st DeleteGetBranchNameMode
  
-    end
+  end

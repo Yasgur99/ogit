@@ -92,7 +92,12 @@ end
 module type PlumbingWithSet = sig
   include Plumbing
 
-  (** TODO: add setup methods **)
+  val set_log_data : string list -> string list -> string list -> unit
+
+  val set_status_data :
+    string list -> string list -> string list -> unit
+
+  val set_head_data : string list -> string list -> string list -> unit
 end
 
 module ProdPlumbing : Plumbing = struct
@@ -173,7 +178,7 @@ module ProdPlumbing : Plumbing = struct
     fork_and_execv "git" (Array.append [| "git"; "init" |] args)
 
   let push (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "push" |] args)
 
   let pull (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "pull" |] args)
@@ -230,8 +235,7 @@ module ProdPlumbing : Plumbing = struct
       (Array.append [| "git"; "symbolic-ref"; "HEAD" |] args)
 
   let checkout (args : string array) =
-    fork_and_execv "git" 
-      (Array.append [| "git"; "checkout"; |] args)
+    fork_and_execv "git" (Array.append [| "git"; "checkout" |] args)
 
   let git (args : string array) =
     fork_and_execv "git" (Array.append [| "git" |] args)
@@ -245,58 +249,136 @@ module MockPlumbing : PlumbingWithSet = struct
     out_and_err : string list; (*exit_code : int;*)
   }
 
-  let get_stdout result = failwith "unimplemented"
+  let get_stdout result = result.stdout
 
-  let get_stderr result = failwith "unimplemented"
+  let get_stderr result = result.stderr
 
-  let get_out result = failwith "unimplemented"
+  let get_out result = result.out_and_err
 
-  let make_result out err out_and_err = failwith "unimpelented"
+  let make_result out err out_and_err =
+    { stdout = out; stderr = err; out_and_err }
 
-  let init (args : string array) = failwith "unimplemented"
+  let git (args : string array) = failwith "git unimplemented"
 
-  let push (args : string array) = failwith "unimplemented"
+  let init (args : string array) =
+    make_result
+      [ "Initialized empty Git repository in /home/fake/.git/" ]
+      []
+      [ "Initialized empty Git repository in /home/fake/.git/" ]
 
-  let pull (args : string array) = failwith "unimplemented"
+  let push (args : string array) =
+    let new_args = Array.of_list ("push" :: Array.to_list args) in
+    git new_args
 
-  let hash_object (args : string array) = failwith "unimplemented"
+  let pull (args : string array) =
+    let new_args = Array.of_list ("pull" :: Array.to_list args) in
+    git new_args
 
-  let cat_file (args : string array) = failwith "unimplemented"
+  let hash_object (args : string array) =
+    let new_args =
+      Array.of_list ("hash_object" :: Array.to_list args)
+    in
+    git new_args
 
-  let update_index (args : string array) = failwith "unimplemented"
+  let cat_file (args : string array) =
+    let new_args = Array.of_list ("cat_file" :: Array.to_list args) in
+    git new_args
 
-  let write_tree (args : string array) = failwith "unimplemented"
+  let update_index (args : string array) =
+    let new_args =
+      Array.of_list ("update-index" :: Array.to_list args)
+    in
+    git new_args
 
-  let read_tree (args : string array) = failwith "unimplemented"
+  let write_tree (args : string array) =
+    let new_args = Array.of_list ("write-tree" :: Array.to_list args) in
+    git new_args
 
-  let commit_tree (args : string array) = failwith "unimplemented"
+  let read_tree (args : string array) =
+    let new_args = Array.of_list ("read-tree" :: Array.to_list args) in
+    git new_args
 
-  let log (args : string array) = failwith "unimplemented"
+  let commit_tree (args : string array) =
+    let new_args =
+      Array.of_list ("commit-tree" :: Array.to_list args)
+    in
+    git new_args
 
-  let add (args : string array) = failwith "unimplemented"
+  let log_data =
+    ref
+      {
+        stdout =
+          [
+            "59689ce (setup project files, 2021-03-22)";
+            "b92c19e (Initial commit, 2021-03-04)";
+          ];
+        stderr = [];
+        out_and_err =
+          [
+            "59689ce (setup project files, 2021-03-22)";
+            "b92c19e (Initial commit, 2021-03-04)";
+          ];
+      }
 
-  let restore (args : string array) = failwith "unimplemented"
+  let set_log_data out err out_and_err =
+    log_data := make_result out err out_and_err
 
-  let commit (args : string array) = failwith "unimplemented"
+  let log (args : string array) = !log_data
 
-  let show (args : string array) = failwith "unimplemented"
-
-  let diff (args : string array) = failwith "unimplemented"
-
-  let head (args : string array) =
-    failwith "unimplemented"
-
-  let checkout (args : string array) =
-    failwith "unimplemented"
-
-  let git (args : string array) =
-    failwith "unimplemented"
-
-  let revparse (args : string array) = failwith "unimplemented"
-
-  let status (args : string array) = failwith "unimplemented"
+  let add (args : string array) =
+    let new_args = Array.of_list ("add" :: Array.to_list args) in
+    git new_args
 
   let head (args : string array) = failwith "unimplemented"
 
+  let checkout (args : string array) = failwith "unimplemented"
+
   let git (args : string array) = failwith "unimplemented"
+
+  let restore (args : string array) =
+    let new_args = Array.of_list ("restore" :: Array.to_list args) in
+    git new_args
+
+  let commit (args : string array) =
+    let new_args = Array.of_list ("commit" :: Array.to_list args) in
+    git new_args
+
+  let show (args : string array) =
+    let new_args = Array.of_list ("show" :: Array.to_list args) in
+    git new_args
+
+  let diff (args : string array) =
+    let new_args = Array.of_list ("diff" :: Array.to_list args) in
+    git new_args
+
+  let head_data =
+    ref
+      {
+        stdout = [ "origin/master" ];
+        stderr = [];
+        out_and_err = [ "origin/master" ];
+      }
+
+  let set_head_data out err out_and_err =
+    head_data := make_result out err out_and_err
+
+  let head (args : string array) = !head_data
+
+  let checkout (args : string array) =
+    let new_args = Array.of_list ("push" :: Array.to_list args) in
+    git new_args
+
+  let revparse (args : string array) =
+    {
+      stdout = [ "origin/master" ];
+      stderr = [];
+      out_and_err = [ "origin/master" ];
+    }
+
+  let set_status_data out err out_and_err =
+    log_data := make_result out err out_and_err
+
+  let status_data = ref { stdout = []; stderr = []; out_and_err = [] }
+
+  let status (args : string array) = !status_data
 end

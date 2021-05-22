@@ -18,6 +18,10 @@ type branch_name = string
     and some functions that map the name of a key to an integer. *)
 type key = int
 
+type username = string
+
+type password = string
+
 (** The type [t] represents a git command that is decomposed into a verb
     and possibly a file_name, commit_msg, or branch_name. *)
 type t =
@@ -37,7 +41,7 @@ type t =
   | PullOriginMaster
   | PullElsewhere of string
   | PushMenu
-  | PushRemote
+  | PushRemote of string * string
   | PushOriginMaster
   | BranchMenu
   | CheckoutBranchPrompt

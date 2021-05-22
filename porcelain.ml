@@ -24,10 +24,10 @@ module type Porcelain = sig
   val init : string option -> unit
 
   (** [pull] pulls files from repository *)
-  val pull : string option -> unit
+  val pull : string option -> string
 
   (** [push] pulls files from repository *)
-  val push : string option -> unit
+  val push : string option -> string
 
   (** [hash_object f] calls [Plumbing.hash_object] with command line
       argument -w, which stores data in file with filename [f] in a
@@ -154,13 +154,38 @@ module PorcelainImpl (P : Plumbing) = struct
   (* match dir with | None -> Plumbing.init [||] | Some _ ->
      Plumbing.init [| dir |] *)
 
-  let pull = function
-    | None -> ignore (P.pull [||])
-    | Some x -> ignore (P.pull [| x |])
+  let rec rm_leading_spaces str =
+    match String.split_on_char ' ' str with
+    | [] -> str
+    | [ "" ] -> str
+    | "" :: t ->
+        rm_leading_spaces (String.sub str 0 (String.length str - 1))
+    | h :: t -> str
 
-  let push = function
-    | None -> ignore (P.push [||])
-    | Some x -> ignore (P.push [| x |])
+  let pull = function
+    | None ->
+        P.pull [||]
+        |> P.get_out
+        |> List.map rm_leading_spaces
+        |> List.rev |> String.concat "\n"
+    | Some x ->
+        P.pull [| x |]
+        |> P.get_out
+        |> List.map rm_leading_spaces
+        |> List.rev |> String.concat "\n"
+
+  let push x =
+    match x with
+    | None ->
+        P.push [||]
+        |> P.get_out
+        |> List.map rm_leading_spaces
+        |> List.rev |> String.concat "\n"
+    | Some x ->
+        P.push [| x |]
+        |> P.get_out
+        |> List.map rm_leading_spaces
+        |> List.rev |> String.concat "\n"
 
   let hash_object file : object_id = failwith "unimplemented"
 
@@ -270,14 +295,6 @@ module PorcelainImpl (P : Plumbing) = struct
     let args_lst = "--staged" :: files in
     let args_arr = Array.of_list args_lst in
     ignore (P.restore args_arr)
-
-  let rec rm_leading_spaces str =
-    match String.split_on_char ' ' str with
-    | [] -> str
-    | [ "" ] -> str
-    | "" :: t ->
-        rm_leading_spaces (String.sub str 0 (String.length str - 1))
-    | h :: t -> str
 
   let commit msg =
     P.commit [| "-m"; msg |]
