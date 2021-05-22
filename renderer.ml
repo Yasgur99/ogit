@@ -355,10 +355,10 @@ struct
     render_lines win lines curs render_curs;
     match MState.get_mode state with
     | CommandDone msg -> render_command_done state win msg
-    | PullMode (_, _, _) ->
+    | PullMode ("m", "m", "m") ->
         render_line win curs true blank_line;
         render_lines win pull_options curs true
-    | PushMode (_, _, _) ->
+    | PushMode ("m", "m", "m") ->
         render_line win curs true blank_line;
         render_lines win push_options curs true
     | _ -> check_err (Curses.wrefresh win)
@@ -497,6 +497,7 @@ struct
 
   let render_with_parse state win prompt =
     Curses.werase win;
+    cursor_reset win;
     render_normal state win false;
     render_line win (MState.get_curs state) false blank_line;
     render_line win (MState.get_curs state) false prompt;

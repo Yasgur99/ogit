@@ -2,10 +2,8 @@
 (* Plumbing *)
 (*******************************************)
 module type Plumbing = sig
-  (** Representation of raw git commands.
-
-      This module represents the calling of calling git commands with
-      any command line arguments *)
+  (** Representation of raw git commands. This module represents the
+      calling of calling git commands with any command line arguments *)
 
   (** The representation of the result of executing a git command *)
   type result
@@ -21,10 +19,9 @@ module type Plumbing = sig
   val get_stderr : result -> string list
 
   (* [get_out r] is the lines of of both stdout and stderr in the order
-     that they were sent to their respective streams.
-
-     For example, if data was written to stdout, then stderr, and then
-     stdout, again, then [get_out r] follows that same order. *)
+     that they were sent to their respective streams. For example, if
+     data was written to stdout, then stderr, and then stdout, again,
+     then [get_out r] follows that same order. *)
   val get_out : result -> string list
 
   (** [init args] calls git init with arguments [args] *)
@@ -169,9 +166,8 @@ module ProdPlumbing : Plumbing = struct
       let stdin = read inp_stderr in
       let out_and_err = read inp in
       (* Does not close the pipes because [read fd] does that when it
-         closes the input channel it creates.
-
-         Unix.close inp_stderr; Unix.close inp_stdout; Unix.close inp; *)
+         closes the input channel it creates. Unix.close inp_stderr;
+         Unix.close inp_stdout; Unix.close inp; *)
       make_result stdout stdin out_and_err)
 
   let init (args : string array) =
@@ -328,6 +324,12 @@ module MockPlumbing : PlumbingWithSet = struct
   let add (args : string array) =
     let new_args = Array.of_list ("add" :: Array.to_list args) in
     git new_args
+
+  let head (args : string array) = failwith "unimplemented"
+
+  let checkout (args : string array) = failwith "unimplemented"
+
+  let git (args : string array) = failwith "unimplemented"
 
   let restore (args : string array) =
     let new_args = Array.of_list ("restore" :: Array.to_list args) in
