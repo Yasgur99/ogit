@@ -281,6 +281,12 @@ let parse_key_branch_mode_test
   assert_equal exp
     (Command.string_of_cmd (Command.parse_key_branch_mode key))
 
+let parse_key_stash_mode_test (name : string) (key : int) (exp : string)
+    : test =
+  name >:: fun _ ->
+  assert_equal exp
+    (Command.string_of_cmd (Command.parse_key_stash_mode key))
+
 (** Tests for [Command.parse_key] *)
 let parse_key_tests =
   [
@@ -300,6 +306,13 @@ let parse_key_diff_mode_tests =
     parse_key_diff_mode_test "t is diff" (int_of_char 't') "diff";
     parse_key_diff_mode_test "a is diff" (int_of_char 'a') "diff";
     parse_key_diff_mode_test "f is diff" (int_of_char 'f') "diff";
+    parse_key_diff_mode_test "k is NavUp" (int_of_char 'k') "navup";
+    parse_key_diff_mode_test "j is NavDown" (int_of_char 'j') "navdown";
+    parse_key_diff_mode_test "Up is NavUp" Curses.Key.up "navup";
+    parse_key_diff_mode_test "Down is NavDown" Curses.Key.down "navdown";
+    parse_key_diff_mode_test "q is quit" (int_of_char 'q') "quit";
+    parse_key_diff_mode_test "unsupported is nop" (int_of_char '[')
+      "nop";
   ]
 
 let parse_key_pull_mode_tests =
@@ -307,6 +320,13 @@ let parse_key_pull_mode_tests =
     parse_key_pull_mode_test "p is pull" (int_of_char 'p') "pull";
     parse_key_pull_mode_test "u is pull" (int_of_char 'u') "pull";
     parse_key_pull_mode_test "e is pull" (int_of_char 'e') "pull";
+    parse_key_pull_mode_test "k is NavUp" (int_of_char 'k') "navup";
+    parse_key_pull_mode_test "j is NavDown" (int_of_char 'j') "navdown";
+    parse_key_pull_mode_test "Up is NavUp" Curses.Key.up "navup";
+    parse_key_pull_mode_test "Down is NavDown" Curses.Key.down "navdown";
+    parse_key_pull_mode_test "q is quit" (int_of_char 'q') "quit";
+    parse_key_pull_mode_test "unsupported is nop" (int_of_char '[')
+      "nop";
   ]
 
 let parse_key_push_mode_tests =
@@ -314,6 +334,13 @@ let parse_key_push_mode_tests =
     parse_key_push_mode_test "p is push" (int_of_char 'p') "push";
     parse_key_push_mode_test "u is push" (int_of_char 'u') "push";
     parse_key_push_mode_test "e is push" (int_of_char 'e') "pull";
+    parse_key_push_mode_test "k is NavUp" (int_of_char 'k') "navup";
+    parse_key_push_mode_test "j is NavDown" (int_of_char 'j') "navdown";
+    parse_key_push_mode_test "Up is NavUp" Curses.Key.up "navup";
+    parse_key_push_mode_test "Down is NavDown" Curses.Key.down "navdown";
+    parse_key_push_mode_test "q is quit" (int_of_char 'q') "quit";
+    parse_key_push_mode_test "unsupported is nop" (int_of_char '[')
+      "nop";
   ]
 
 let parse_key_branch_mode_tests =
@@ -324,6 +351,29 @@ let parse_key_branch_mode_tests =
       "create branch prompt";
     parse_key_branch_mode_test "x is branch" (int_of_char 'x')
       "delete branch prompt";
+    parse_key_branch_mode_test "k is NavUp" (int_of_char 'k') "navup";
+    parse_key_branch_mode_test "j is NavDown" (int_of_char 'j')
+      "navdown";
+    parse_key_branch_mode_test "Up is NavUp" Curses.Key.up "navup";
+    parse_key_branch_mode_test "Down is NavDown" Curses.Key.down
+      "navdown";
+    parse_key_branch_mode_test "q is quit" (int_of_char 'q') "quit";
+    parse_key_branch_mode_test "unsupported is nop" (int_of_char '[')
+      "nop";
+  ]
+
+let parse_key_stash_mode_tests =
+  [
+    parse_key_stash_mode_test "a is stash" (int_of_char 'a') "stash";
+    parse_key_stash_mode_test "p is stash" (int_of_char 'p') "stash";
+    parse_key_stash_mode_test "k is NavUp" (int_of_char 'k') "navup";
+    parse_key_stash_mode_test "j is NavDown" (int_of_char 'j') "navdown";
+    parse_key_stash_mode_test "Up is NavUp" Curses.Key.up "navup";
+    parse_key_stash_mode_test "Down is NavDown" Curses.Key.down
+      "navdown";
+    parse_key_stash_mode_test "q is quit" (int_of_char 'q') "quit";
+    parse_key_stash_mode_test "unsupported is nop" (int_of_char '[')
+      "nop";
   ]
 
 (** Tests for [Command] module *)
