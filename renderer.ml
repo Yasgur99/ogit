@@ -493,7 +493,7 @@ struct
         | PushTutorialMode -> render_tutorial state win PushTutorialMode
         | BranchTutorialMode ->
             render_tutorial state win BranchTutorialMode
-        | _ -> failwith "should call mode render method directly")
+        | _ -> render_normal state win true)
 
   let render_with_parse state win prompt =
     Curses.werase win;
