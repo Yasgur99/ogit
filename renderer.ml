@@ -173,7 +173,7 @@ struct
       enable_color line.color;
       check_err (Curses.waddstr win line.text);
       disable_color line.color;
-      cursor_nextline win)
+      cursor_nextline win )
 
   let render_lines win lines curs render_curs =
     List.iter (render_line win curs render_curs) lines
@@ -194,7 +194,7 @@ struct
           else String.sub str 0 (String.length str - 1)
         in
         Curses.clrtoeol ();
-        parse_string win new_str)
+        parse_string win new_str )
       else parse_string win (str ^ String.make 1 (char_of_int key))
     with _ -> parse_string win str
 
@@ -250,6 +250,119 @@ struct
 
   let blank_line : MState.printable = { text = " "; color = "white" }
 
+  let tutorial : MState.printable list =
+    [
+      { text = "To quit OGit, press \'q\'."; color = "blue" };
+      blank_line;
+      { text = "To clear screen, press the space bar."; color = "blue" };
+      blank_line;
+      {
+        text =
+          "Use the up/down arrow keys to navigate over files on which \
+           you want to perform actions.";
+        color = "blue";
+      };
+      {
+        text =
+          "Alternatively, you may press \'k\' to navigate up and \'j\' \
+           to navigate down.";
+        color = "blue";
+      };
+      blank_line;
+    ]
+
+  let normal_tutorial : MState.printable list =
+    tutorial
+    @ [
+        { text = "For diff menu, press shift + \'d\'."; color = "blue" };
+        { text = "For pull menu, press shift + \'l\'."; color = "blue" };
+        { text = "For push menu, press shift + \'p\'."; color = "blue" };
+        { text = "For branch menu, press \'b\'."; color = "blue" };
+        blank_line;
+        { text = "To stage, press \'s\'."; color = "blue" };
+        { text = "To unstage, press \'u\'."; color = "blue" };
+        { text = "To commit, press \'c\'."; color = "blue" };
+      ]
+
+  let diff_tutorial : MState.printable list =
+    tutorial
+    @ [
+        { text = "For pull menu, press shift + \'l\'."; color = "blue" };
+        { text = "For push menu, press shift + \'p\'."; color = "blue" };
+        { text = "For branch menu, press \'b\'."; color = "blue" };
+        blank_line;
+        {
+          text = "To view diff of staged, press \'s\'.";
+          color = "blue";
+        };
+        {
+          text = "To view diff of tracked, press \'t\'.";
+          color = "blue";
+        };
+        { text = "To view entire diff, press \'a\'."; color = "blue" };
+        {
+          text = "To view diff of specific file, press \'f\'.";
+          color = "blue";
+        };
+      ]
+
+  let pull_tutorial : MState.printable list =
+    tutorial
+    @ [
+        { text = "For diff menu, press shift + \'d\'."; color = "blue" };
+        { text = "For push menu, press shift + \'p\'."; color = "blue" };
+        { text = "For branch menu, press \'b\'."; color = "blue" };
+        blank_line;
+        { text = "To pull from remote, press \'p\'."; color = "blue" };
+        {
+          text = "To pull from origin/master, press \'u\'.";
+          color = "blue";
+        };
+        {
+          text = "To pull from elsewhere, press \'e\'.";
+          color = "blue";
+        };
+      ]
+
+  let push_tutorial : MState.printable list =
+    tutorial
+    @ [
+        { text = "For diff menu, press shift + \'d\'."; color = "blue" };
+        { text = "For pull menu, press shift + \'l\'."; color = "blue" };
+        { text = "For branch menu, press \'b\'."; color = "blue" };
+        blank_line;
+        { text = "To push from remote, press \'p\'."; color = "blue" };
+        {
+          text = "To push from origin/master, press \'u\'.";
+          color = "blue";
+        };
+        {
+          text = "To push from elsewhere, press \'e\'.";
+          color = "blue";
+        };
+      ]
+
+  let branch_tutorial : MState.printable list =
+    tutorial
+    @ [
+        { text = "For diff menu, press shift + \'d\'."; color = "blue" };
+        { text = "For pull menu, press shift + \'l\'."; color = "blue" };
+        { text = "For push menu, press shift + \'p\'."; color = "blue" };
+        blank_line;
+        {
+          text = "To checkout branch prompt, press \'b\'.";
+          color = "blue";
+        };
+        {
+          text = "To create branch prompt, press \'c\'.";
+          color = "blue";
+        };
+        {
+          text = "To delete branch prompt, press \'x\'.";
+          color = "blue";
+        };
+      ]
+
   let render_command_done state win msg =
     render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) true results_header;
@@ -296,7 +409,7 @@ struct
       Curses.werase win;
       cursor_reset win;
       for i = new_top to new_btm do
-        render_line win (MState.get_curs st - 1) true (Array.get scr i)
+        render_line win (MState.get_curs st - 1) true scr.(i)
       done;
       screen := scr;
       top_line := !top_line - 1;
@@ -312,9 +425,7 @@ struct
       Curses.werase win;
       cursor_reset win;
       for i = !top_line + 1 to btm_line do
-        render_line win
-          (fst (Curses.getmaxyx win) - 2)
-          true (Array.get scr i)
+        render_line win (fst (Curses.getmaxyx win) - 2) true scr.(i)
       done;
       top_line := !top_line + 1;
       screen := scr;
@@ -375,7 +486,7 @@ struct
           render_line win (MState.get_curs state) true blank_line;
           render_line win (MState.get_curs state) true diff_header;
           render_lines win (diff_to_lines str) (MState.get_curs state)
-            true)
+            true )
     | _ -> failwith "Wrong render function"
 
   let render_push_mode state win =
@@ -432,6 +543,29 @@ struct
   let render_delete_get_branch_mode state win =
     prompt_branch_name state win
 
+  let render_tutorial state win (mode : MState.render_mode) =
+    render_normal state win;
+    match mode with
+    | NormalTutorialMode ->
+        render_lines win normal_tutorial (MState.get_curs state) true
+    | DiffTutorialMode ->
+        render_lines win
+          (diff_options @ [ blank_line ] @ diff_tutorial)
+          (MState.get_curs state) true
+    | PullTutorialMode ->
+        render_lines win
+          (pull_options @ [ blank_line ] @ pull_tutorial)
+          (MState.get_curs state) true
+    | PushTutorialMode ->
+        render_lines win
+          (push_options @ [ blank_line ] @ push_tutorial)
+          (MState.get_curs state) true
+    | BranchTutorialMode ->
+        render_lines win
+          (branch_options @ [ blank_line ] @ branch_tutorial)
+          (MState.get_curs state) true
+    | _ -> failwith "use of wrong renderer"
+
   let rec render state win =
     match MState.get_curs_state state with
     | MState.OffScrUp -> render_scroll_up state win
@@ -445,5 +579,12 @@ struct
         | Normal -> render_normal state win
         | CommitMode -> render_normal state win
         | BranchMode -> render_branch_mode state win
-        | _ -> failwith "should call mode render method directly")
+        | NormalTutorialMode ->
+            render_tutorial state win NormalTutorialMode
+        | DiffTutorialMode -> render_tutorial state win DiffTutorialMode
+        | PullTutorialMode -> render_tutorial state win PullTutorialMode
+        | PushTutorialMode -> render_tutorial state win PushTutorialMode
+        | BranchTutorialMode ->
+            render_tutorial state win BranchTutorialMode
+        | _ -> failwith "should call mode render method directly" )
 end
