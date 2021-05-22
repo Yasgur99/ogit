@@ -391,7 +391,9 @@ module StateImpl (P : Plumbing) : State = struct
     if u = "" || p = "" || b = "" then set_mode st (PullMode (u, p, b))
     else if u = "m" && p = "m" && b = "m" then
       set_mode st (PullMode ("", "", ""))
-    else set_mode st (CommandDone "")
+    else
+      let out = MPorcelain.push u p b in
+      set_mode st (CommandDone out)
 
   let exec_checkout_branch st branch =
     let msg = MPorcelain.checkout branch in

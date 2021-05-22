@@ -28,7 +28,7 @@ module type Plumbing = sig
   val init : string array -> result
 
   (** [push] calls git push with arguments [args]*)
-  val push : string array -> result
+  val push : string array -> string list -> result
 
   (** [pull args] calls git pull with arguments [args] *)
   val pull : string array -> string list -> result
@@ -180,8 +180,8 @@ module ProdPlumbing : Plumbing = struct
   let init (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "init" |] args) []
 
-  let push (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "push" |] args) []
+  let push (args : string array) (up : string list) =
+    fork_and_execp "git" (Array.append [| "git"; "push" |] args) up
 
   let pull (args : string array) up =
     fork_and_execp "git" (Array.append [| "git"; "pull" |] args) up
@@ -281,7 +281,7 @@ module MockPlumbing : PlumbingWithSet = struct
       []
       [ "Initialized empty Git repository in /home/fake/.git/" ]
 
-  let push (args : string array) =
+  let push (args : string array) up =
     let new_args = Array.of_list ("push" :: Array.to_list args) in
     git new_args
 

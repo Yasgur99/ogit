@@ -27,7 +27,7 @@ module type Porcelain = sig
   val pull : string -> string -> string -> string
 
   (** [push] pulls files from repository *)
-  val push : string option -> string
+  val push : string -> string -> string -> string
 
   (** [log h] is the list of commit objects that are reachable from HEAD
       in reverse chronological order if [h] is [None], otherwise the
@@ -138,15 +138,15 @@ module PorcelainImpl (P : Plumbing) = struct
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
 
-  let push x =
-    match x with
-    | None ->
-        P.push [||]
+  let push u p b =
+    match b with
+    | "remote" ->
+        P.push [||] [ u; p ]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
-    | Some x ->
-        P.push [| x |]
+    | branch ->
+        P.push [| branch |] [ u; p ]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
