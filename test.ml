@@ -4,58 +4,60 @@ open Porcelain
 open Renderer
 open State
 
-(**
-  Our approach to testing:
+(** Our approach to testing:
 
-   Originally, our project was very difficult to test since every module
-   except the Command module depended on side effects in the file system.
+    Originally, our project was very difficult to test since every
+    module except the Command module depended on side effects in the
+    file system.
 
-   For example, if a git stage command was issued, the renderer, porcelain,
-   and porcelain module were affected by whether that file existed in the 
-   filesystem, and whether that file was actually moved to the staging area.
+    For example, if a git stage command was issued, the renderer,
+    porcelain, and porcelain module were affected by whether that file
+    existed in the filesystem, and whether that file was actually moved
+    to the staging area.
 
-   In addition to this, it was difficult to test using the file system because
-   our test git files and commands were leaking into the git project that
-   was used for tracking the project.
+    In addition to this, it was difficult to test using the file system
+    because our test git files and commands were leaking into the git
+    project that was used for tracking the project.
 
-   Lastly, it was difficult because setup and cleanup as hard. We were
-   having to write tests that modified the file system, and that made it
-   feel like we needed to write tests for our test code. For example,
-   we had to write a cleanup function that deleted files, and we found
-   that when a test assertion failed, the code to cleanup was never executed,
-   leaving our project directory messy and so the tests could not be run again
-   without manual cleanup.
+    Lastly, it was difficult because setup and cleanup as hard. We were
+    having to write tests that modified the file system, and that made
+    it feel like we needed to write tests for our test code. For
+    example, we had to write a cleanup function that deleted files, and
+    we found that when a test assertion failed, the code to cleanup was
+    never executed, leaving our project directory messy and so the tests
+    could not be run again without manual cleanup.
 
-   From here, we moved to a different approach: mocking the plumbing module,
-   which was the module that interfaced with the file system. By doing this,
-   we were able to add methods to it that did setup, so when we called 
-   normal plumbing methods, we would know exactly what the response was going 
-   to be. 
+    From here, we moved to a different approach: mocking the plumbing
+    module, which was the module that interfaced with the file system.
+    By doing this, we were able to add methods to it that did setup, so
+    when we called normal plumbing methods, we would know exactly what
+    the response was going to be.
 
-   This made it easy to test edge cases, stop our tests from affecting
-   the git tracking of this project, not have to sory about cleanup, and
-   gave us the ability to write tests cases that did what we want quickly.
+    This made it easy to test edge cases, stop our tests from affecting
+    the git tracking of this project, not have to sory about cleanup,
+    and gave us the ability to write tests cases that did what we want
+    quickly.
 
-   This means that we were able to test each individual module instead of
-   relying on integration tests or testing by manual inspection. At this point,
-   we know that each individual module works on its own. We know that each
-   individual module is correct.
+    This means that we were able to test each individual module instead
+    of relying on integration tests or testing by manual inspection. At
+    this point, we know that each individual module works on its own. We
+    know that each individual module is correct.
 
-   Although we did not test the plumbing module explicitly, we were able to
-   see that it worked through manual inspection. Since testing a GUI is not
-   easy, we relied on using the product ourselves and making sure it worked.
-   Through this and  our expectations of how git performed, we were able to
-   see if we were getting the correct data. Since the modules that display
-   data depend on the data returned by the plumbing module, its easy to know
-   if the plumbing module was working as expected. In addition, the code
-   in the plumbing module is quite trivial and its also easy to inspect
-   it and say that if it returned information then it worked.
+    Although we did not test the plumbing module explicitly, we were
+    able to see that it worked through manual inspection. Since testing
+    a GUI is not easy, we relied on using the product ourselves and
+    making sure it worked. Through this and our expectations of how git
+    performed, we were able to see if we were getting the correct data.
+    Since the modules that display data depend on the data returned by
+    the plumbing module, its easy to know if the plumbing module was
+    working as expected. In addition, the code in the plumbing module is
+    quite trivial and its also easy to inspect it and say that if it
+    returned information then it worked.
 
-   So although we did not write tests for renderer.ml or plumbing.ml, it was 
-   implicitly tested through extensive use of the product itself as well
-   as the correct data being there when testing the porcelain and state
-   modules explicitly. 
-*)
+    So although we did not write tests for renderer.ml or plumbing.ml,
+    it was implicitly tested through extensive use of the product itself
+    as well as the correct data being there when testing the porcelain
+    and state modules explicitly. *)
 
 (*****************************************************)
 (* Mock Plumbing *)
@@ -76,12 +78,12 @@ let porcelain_test (name : string) f : test =
 
 let porcelain_tests =
   [
-    porcelain_test "pull none" (fun () -> TestPorcelain.pull None);
-    porcelain_test "pull some" (fun () ->
-        TestPorcelain.pull (Some "master"));
-    porcelain_test "push none" (fun () -> TestPorcelain.push None);
-    porcelain_test "push some" (fun () ->
-        TestPorcelain.push (Some "master"));
+    porcelain_test "pull empty" (fun () -> TestPorcelain.pull "");
+    porcelain_test "pull non-empty" (fun () ->
+        TestPorcelain.pull "master");
+    porcelain_test "push empty" (fun () -> TestPorcelain.push "");
+    porcelain_test "push non-empty" (fun () ->
+        TestPorcelain.push "master");
     porcelain_test "log none" (fun () -> TestPorcelain.log None);
     porcelain_test "get_head" (fun () -> TestPorcelain.get_head);
     porcelain_test "get_upstream" (fun () -> TestPorcelain.get_upstream);
@@ -107,7 +109,7 @@ let init_state_test (name : string) setup check : test =
   assert_bool "commit history empty" (check a)
 
 let empty_commit_history () =
-  MockPlumbing.set_log_data 
+  MockPlumbing.set_log_data
     [ "fatal: there is no commit history for this project" ]
     []
     [ "fatal: there is no commit history for this project" ]
@@ -125,33 +127,23 @@ let some_commit_history () =
     ]
 
 let is_commit_history_empty st =
-  match TestState.commit_history st with 
-  | [] -> true 
-  | h :: t -> false
+  match TestState.commit_history st with [] -> true | h :: t -> false
 
 let is_commit_history_not_empty st =
-  match TestState.commit_history st with 
-  | [] -> false 
-  | h :: t -> true
+  match TestState.commit_history st with [] -> false | h :: t -> true
 
-let no_tracked_data () = 
-  MockPlumbing.set_status_data [] [] []
+let no_tracked_data () = MockPlumbing.set_status_data [] [] []
 
 let some_tracked_data () =
   MockPlumbing.set_status_data [ " M test.txt" ] [] [ " M test.txt" ]
 
 let is_no_tracked st =
-  match TestState.tracked st with 
-  | [] -> true 
-  | h :: t -> false
+  match TestState.tracked st with [] -> true | h :: t -> false
 
 let is_tracked st =
-  match TestState.tracked st with 
-  | [] -> false 
-  | h :: t -> true
+  match TestState.tracked st with [] -> false | h :: t -> true
 
-let no_staged_data () = 
-  MockPlumbing.set_status_data [] [] []
+let no_staged_data () = MockPlumbing.set_status_data [] [] []
 
 let some_staged_data () =
   MockPlumbing.set_status_data [ "M  test.txt" ] [] [ "M  test.txt" ]
@@ -160,30 +152,20 @@ let some_untracked_data () =
   MockPlumbing.set_status_data [ "?? test.txt" ] [] [ "?? test.txt" ]
 
 let is_no_staged st =
-  match TestState.staged st with 
-  | [] -> true 
-  | h :: t -> false
+  match TestState.staged st with [] -> true | h :: t -> false
 
 let is_staged st =
-  match TestState.staged st with 
-  | [] -> false 
-  | h :: t -> true
+  match TestState.staged st with [] -> false | h :: t -> true
 
 let is_normal_mode st =
-  match TestState.get_mode st with 
-  | Normal -> true 
-  | _ -> false
+  match TestState.get_mode st with Normal -> true | _ -> false
 
 let set_head () =
-  MockPlumbing.set_head_data 
-    [ "refs/heads/master" ]
-    []
+  MockPlumbing.set_head_data [ "refs/heads/master" ] []
     [ "refs/heads/master" ]
 
 let head_exists st =
-  match TestState.head st with 
-  | "" -> false 
-  | _ -> true
+  match TestState.head st with "" -> false | _ -> true
 
 let init_state_tests =
   [
@@ -346,10 +328,8 @@ let parse_key_branch_mode_tests =
 
 (** Tests for [Command] module *)
 let command_tests =
-  parse_key_tests 
-  @ parse_key_diff_mode_tests
-  @ parse_key_pull_mode_tests 
-  @ parse_key_push_mode_tests
+  parse_key_tests @ parse_key_diff_mode_tests
+  @ parse_key_pull_mode_tests @ parse_key_push_mode_tests
   @ parse_key_branch_mode_tests
 
 (*****************************************************)
@@ -358,10 +338,6 @@ let command_tests =
 
 let suite =
   "test suite for ogit"
-  >::: List.flatten [ 
-    command_tests; 
-    state_tests; 
-    porcelain_tests 
-  ]
+  >::: List.flatten [ command_tests; state_tests; porcelain_tests ]
 
 let _ = run_test_tt_main suite

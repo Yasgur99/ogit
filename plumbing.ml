@@ -183,10 +183,11 @@ module ProdPlumbing : Plumbing = struct
       make_result stdout stdin out_and_err)
 
   let fork_and_execp sin =
+    let lst = Array.to_list sin in
     let out_and_err =
       read_channel (Unix.open_process_args_in "git push" sin)
     in
-    make_result [] [] out_and_err
+    make_result lst lst out_and_err
 
   let init (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "init" |] args) []
