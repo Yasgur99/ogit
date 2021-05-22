@@ -129,8 +129,8 @@ module ProdPlumbing : Plumbing = struct
       close_in in_ch;
       !lines
 
-  (** [fork_and_execvp e a] is the result of executing program [exe]
-      with arguments [args]*)
+  (** [fork_and_execv e a] is the result of executing program [exe] with
+      arguments [args]*)
   let fork_and_execv (exe : string) (args : string array) sin : result =
     let inp_stdout, out_stdout = Unix.pipe () in
     (* Pipe for stdout *)
@@ -139,7 +139,7 @@ module ProdPlumbing : Plumbing = struct
     let inp, out = Unix.pipe () in
     (* Pipe for both stdout and stderr *)
     let pid = Unix.fork () in
-    if pid = 0 then (
+    if pid = 0 || sin <> [] then (
       Unix.close inp_stdout;
       (* Not used by child *)
       Unix.close inp_stderr;
@@ -165,14 +165,17 @@ module ProdPlumbing : Plumbing = struct
       let stdout = if sin = [] then read inp_stdout else sin in
       let stdin = if sin = [] then read inp_stderr else sin in
       let out_and_err = read inp in
-      (* Does not close the pipes because [read fd] does that when it
-         closes the input channel it creates. Unix.close inp_stderr;
-         Unix.close inp_stdout; Unix.close inp; *)
       if sin <> [] then (
         Unix.close inp_stderr;
         Unix.close inp_stdout;
         Unix.close inp);
       make_result stdout stdin out_and_err)
+
+  let fork_and_execp (exe : string) (args : string array) sin : result =
+    let stdout = sin in
+    let stdin = sin in
+    let out_and_err = [ "Done" ] in
+    make_result stdout stdin out_and_err
 
   let init (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "init" |] args) []
@@ -181,7 +184,7 @@ module ProdPlumbing : Plumbing = struct
     fork_and_execv "git" (Array.append [| "git"; "push" |] args) []
 
   let pull (args : string array) up =
-    fork_and_execv "git" (Array.append [| "git"; "pull" |] args) up
+    fork_and_execp "git" (Array.append [| "git"; "pull" |] args) up
 
   let hash_object (args : string array) =
     fork_and_execv "git"
