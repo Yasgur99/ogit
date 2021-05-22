@@ -107,7 +107,10 @@ let init_state_test (name : string) setup check : test =
   assert_bool "commit history empty" (check a)
 
 let empty_commit_history () =
-  MockPlumbing.set_log_data [ "fatal" ] [] [ "fatal" ]
+  MockPlumbing.set_log_data 
+    [ "fatal: there is no commit history for this project" ]
+    []
+    [ "fatal: there is no commit history for this project" ]
 
 let some_commit_history () =
   MockPlumbing.set_log_data
@@ -122,23 +125,33 @@ let some_commit_history () =
     ]
 
 let is_commit_history_empty st =
-  match TestState.commit_history st with [] -> true | h :: t -> false
+  match TestState.commit_history st with 
+  | [] -> true 
+  | h :: t -> false
 
 let is_commit_history_not_empty st =
-  match TestState.commit_history st with [] -> false | h :: t -> true
+  match TestState.commit_history st with 
+  | [] -> false 
+  | h :: t -> true
 
-let no_tracked_data () = MockPlumbing.set_status_data [] [] []
+let no_tracked_data () = 
+  MockPlumbing.set_status_data [] [] []
 
 let some_tracked_data () =
   MockPlumbing.set_status_data [ " M test.txt" ] [] [ " M test.txt" ]
 
 let is_no_tracked st =
-  match TestState.tracked st with [] -> true | h :: t -> false
+  match TestState.tracked st with 
+  | [] -> true 
+  | h :: t -> false
 
 let is_tracked st =
-  match TestState.tracked st with [] -> false | h :: t -> true
+  match TestState.tracked st with 
+  | [] -> false 
+  | h :: t -> true
 
-let no_staged_data () = MockPlumbing.set_status_data [] [] []
+let no_staged_data () = 
+  MockPlumbing.set_status_data [] [] []
 
 let some_staged_data () =
   MockPlumbing.set_status_data [ "M  test.txt" ] [] [ "M  test.txt" ]
@@ -147,20 +160,30 @@ let some_untracked_data () =
   MockPlumbing.set_status_data [ "?? test.txt" ] [] [ "?? test.txt" ]
 
 let is_no_staged st =
-  match TestState.staged st with [] -> true | h :: t -> false
+  match TestState.staged st with 
+  | [] -> true 
+  | h :: t -> false
 
 let is_staged st =
-  match TestState.staged st with [] -> false | h :: t -> true
+  match TestState.staged st with 
+  | [] -> false 
+  | h :: t -> true
 
 let is_normal_mode st =
-  match TestState.get_mode st with Normal -> true | _ -> false
+  match TestState.get_mode st with 
+  | Normal -> true 
+  | _ -> false
 
 let set_head () =
-  MockPlumbing.set_head_data [ "refs/heads/master" ] []
+  MockPlumbing.set_head_data 
+    [ "refs/heads/master" ]
+    []
     [ "refs/heads/master" ]
 
 let head_exists st =
-  match TestState.head st with "" -> false | _ -> true
+  match TestState.head st with 
+  | "" -> false 
+  | _ -> true
 
 let init_state_tests =
   [
@@ -200,7 +223,7 @@ let exec_tests =
       (fun () -> ())
       (fun () -> ())
       (is_curs 0);
-    exec_test "navdown top of file" (Command.NavUp true)
+    exec_test "navdown top of file" (Command.NavDown true)
       (fun () -> ())
       (fun () -> ())
       (is_curs 1);
@@ -301,15 +324,14 @@ let parse_key_pull_mode_tests =
   [
     parse_key_pull_mode_test "p is pull" (int_of_char 'p') "pull";
     parse_key_pull_mode_test "u is pull" (int_of_char 'u') "pull";
-    parse_key_pull_mode_test "e is pull" (int_of_char 'e')
-      "pullelsewhere";
+    parse_key_pull_mode_test "e is pull" (int_of_char 'e') "pull";
   ]
 
 let parse_key_push_mode_tests =
   [
     parse_key_push_mode_test "p is push" (int_of_char 'p') "push";
     parse_key_push_mode_test "u is push" (int_of_char 'u') "push";
-    parse_key_push_mode_test "e is push" (int_of_char 'e') "push";
+    parse_key_push_mode_test "e is push" (int_of_char 'e') "pull";
   ]
 
 let parse_key_branch_mode_tests =
@@ -324,8 +346,10 @@ let parse_key_branch_mode_tests =
 
 (** Tests for [Command] module *)
 let command_tests =
-  parse_key_tests @ parse_key_diff_mode_tests
-  @ parse_key_pull_mode_tests @ parse_key_push_mode_tests
+  parse_key_tests 
+  @ parse_key_diff_mode_tests
+  @ parse_key_pull_mode_tests 
+  @ parse_key_push_mode_tests
   @ parse_key_branch_mode_tests
 
 (*****************************************************)
@@ -334,6 +358,10 @@ let command_tests =
 
 let suite =
   "test suite for ogit"
-  >::: List.flatten [ command_tests; state_tests; porcelain_tests ]
+  >::: List.flatten [ 
+    command_tests; 
+    state_tests; 
+    porcelain_tests 
+  ]
 
 let _ = run_test_tt_main suite

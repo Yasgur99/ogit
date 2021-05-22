@@ -51,9 +51,6 @@ module type Porcelain = sig
       message [msg] *)
   val commit : string -> string
 
-  (** [show] shows the staged, unstaged, and untracked files *)
-  val show : unit -> unit
-
   (** [diff] shows the diffs of tracked files *)
   val diff : unit -> string
 
@@ -233,8 +230,6 @@ module PorcelainImpl (P : Plumbing) = struct
     |> P.get_out
     |> List.map rm_leading_spaces
     |> List.rev |> String.concat "\n"
-
-  let show () = failwith "unimplemented" (*Plumbing.show [||]*)
 
   let diff () =
     P.diff [||]

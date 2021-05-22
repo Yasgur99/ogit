@@ -270,7 +270,7 @@ module MockPlumbing : PlumbingWithSet = struct
   let make_result out err out_and_err =
     { stdout = out; stderr = err; out_and_err }
 
-  let git (args : string array) = failwith "git unimplemented"
+  let git (args : string array) = make_result [] [] []
 
   let init (args : string array) =
     make_result
@@ -321,14 +321,14 @@ module MockPlumbing : PlumbingWithSet = struct
       {
         stdout =
           [
-            "59689ce (setup project files, 2021-03-22)";
-            "b92c19e (Initial commit, 2021-03-04)";
+            "ed5cbd6 (Push/pull front end, 2021-05-21)";
+            "1190b75 (Push/pull front end, 2021-05-21)";
           ];
         stderr = [];
         out_and_err =
           [
-            "59689ce (setup project files, 2021-03-22)";
-            "b92c19e (Initial commit, 2021-03-04)";
+            "ed5cbd6 (Push/pull front end, 2021-05-21)";
+            "1190b75 (Push/pull front end, 2021-05-21)";
           ];
       }
 
@@ -340,12 +340,6 @@ module MockPlumbing : PlumbingWithSet = struct
   let add (args : string array) =
     let new_args = Array.of_list ("add" :: Array.to_list args) in
     git new_args
-
-  let head (args : string array) = failwith "unimplemented"
-
-  let checkout (args : string array) = failwith "unimplemented"
-
-  let git (args : string array) = failwith "unimplemented"
 
   let restore (args : string array) =
     let new_args = Array.of_list ("restore" :: Array.to_list args) in
@@ -366,9 +360,9 @@ module MockPlumbing : PlumbingWithSet = struct
   let head_data =
     ref
       {
-        stdout = [ "origin/master" ];
+        stdout = [ "refs/heads/master" ];
         stderr = [];
-        out_and_err = [ "origin/master" ];
+        out_and_err = [ "refs/heads/master" ];
       }
 
   let set_head_data out err out_and_err =
@@ -387,10 +381,10 @@ module MockPlumbing : PlumbingWithSet = struct
       out_and_err = [ "origin/master" ];
     }
 
-  let set_status_data out err out_and_err =
-    log_data := make_result out err out_and_err
-
   let status_data = ref { stdout = []; stderr = []; out_and_err = [] }
+
+  let set_status_data out err out_and_err =
+    status_data := make_result out err out_and_err
 
   let status (args : string array) = !status_data
 end
