@@ -2,3 +2,4 @@ B _build
 PKG ounit2
 PKG curses
 PKG str
+PKG yojson

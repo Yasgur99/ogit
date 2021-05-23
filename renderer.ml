@@ -232,118 +232,35 @@ struct
 
   let blank_line : MState.printable = { text = " "; color = "white" }
 
-  let tutorial : MState.printable list =
-    [
-      { text = "To quit OGit, press \'q\'."; color = "blue" };
-      blank_line;
-      { text = "To clear screen, press the space bar."; color = "blue" };
-      blank_line;
+  open Yojson.Basic.Util
+
+  let to_printable_list =
+    let printable_of_json json : MState.printable =
       {
-        text =
-          "Use the up/down arrow keys to navigate over files on which \
-           you want to perform actions.";
-        color = "blue";
-      };
-      {
-        text =
-          "Alternatively, you may press \'k\' to navigate up and \'j\' \
-           to navigate down.";
-        color = "blue";
-      };
-      blank_line;
-    ]
+        text = json |> member "text" |> to_string;
+        color = json |> member "color" |> to_string;
+      }
+    in
+    List.map printable_of_json
+
+  let tutorial_from_json name =
+    Yojson.Basic.from_file "tutorial.json"
+    |> member name |> to_list |> to_printable_list
 
   let normal_tutorial : MState.printable list =
-    tutorial
-    @ [
-        { text = "For diff menu, press shift + \'d\'."; color = "blue" };
-        { text = "For pull menu, press shift + \'l\'."; color = "blue" };
-        { text = "For push menu, press shift + \'p\'."; color = "blue" };
-        { text = "For branch menu, press \'b\'."; color = "blue" };
-        blank_line;
-        { text = "To stage, press \'s\'."; color = "blue" };
-        { text = "To unstage, press \'u\'."; color = "blue" };
-        { text = "To commit, press \'c\'."; color = "blue" };
-      ]
+    tutorial_from_json "normal tutorial"
 
   let diff_tutorial : MState.printable list =
-    tutorial
-    @ [
-        { text = "For pull menu, press shift + \'l\'."; color = "blue" };
-        { text = "For push menu, press shift + \'p\'."; color = "blue" };
-        { text = "For branch menu, press \'b\'."; color = "blue" };
-        blank_line;
-        {
-          text = "To view diff of staged, press \'s\'.";
-          color = "blue";
-        };
-        {
-          text = "To view diff of tracked, press \'t\'.";
-          color = "blue";
-        };
-        { text = "To view entire diff, press \'a\'."; color = "blue" };
-        {
-          text = "To view diff of specific file, press \'f\'.";
-          color = "blue";
-        };
-      ]
+    tutorial_from_json "diff tutorial"
 
   let pull_tutorial : MState.printable list =
-    tutorial
-    @ [
-        { text = "For diff menu, press shift + \'d\'."; color = "blue" };
-        { text = "For push menu, press shift + \'p\'."; color = "blue" };
-        { text = "For branch menu, press \'b\'."; color = "blue" };
-        blank_line;
-        { text = "To pull from remote, press \'p\'."; color = "blue" };
-        {
-          text = "To pull from origin/master, press \'u\'.";
-          color = "blue";
-        };
-        {
-          text = "To pull from elsewhere, press \'e\'.";
-          color = "blue";
-        };
-      ]
+    tutorial_from_json "pull tutorial"
 
   let push_tutorial : MState.printable list =
-    tutorial
-    @ [
-        { text = "For diff menu, press shift + \'d\'."; color = "blue" };
-        { text = "For pull menu, press shift + \'l\'."; color = "blue" };
-        { text = "For branch menu, press \'b\'."; color = "blue" };
-        blank_line;
-        { text = "To push from remote, press \'p\'."; color = "blue" };
-        {
-          text = "To push from origin/master, press \'u\'.";
-          color = "blue";
-        };
-        {
-          text = "To push from elsewhere, press \'e\'.";
-          color = "blue";
-        };
-      ]
+    tutorial_from_json "push tutorial"
 
   let branch_tutorial : MState.printable list =
-    tutorial
-    @ [
-        { text = "For diff menu, press shift + \'d\'."; color = "blue" };
-        { text = "For pull menu, press shift + \'l\'."; color = "blue" };
-        { text = "For push menu, press shift + \'p\'."; color = "blue" };
-        blank_line;
-        {
-          text = "To checkout branch prompt, press \'b\'.";
-          color = "blue";
-        };
-        {
-          text = "To create branch prompt, press \'c\'.";
-          color = "blue";
-        };
-        {
-          text = "To delete branch prompt, press \'x\'.";
-          color = "blue";
-        };
-      ]
+    tutorial_from_json "branch tutorial"
 
   let render_command_done state win msg =
     render_line win (MState.get_curs state) true blank_line;
@@ -451,7 +368,7 @@ struct
     | DiffMode str ->
         if str = "MENU" then (
           render_line win (MState.get_curs state) true blank_line;
-          render_lines win diff_options (MState.get_curs state) true)
+          render_lines win diff_options (MState.get_curs state) true )
         else (
           render_line win (MState.get_curs state) true blank_line;
           render_line win (MState.get_curs state) true diff_header;
