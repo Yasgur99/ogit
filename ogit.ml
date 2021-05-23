@@ -56,7 +56,7 @@ let run_pull_mode win (st : MyState.t) =
 
 let run_all_mode win (st : MyState.t) =
   let cmd = Command.StageAll in
-  MyState.exec st cmd;
+  ignore (MyState.exec st cmd);
   let msg = MyRenderer.render_input_mode st win in
   let cmd = Command.Commit msg in
   MyState.exec st cmd
