@@ -1,3 +1,6 @@
+
+(** A programmer friendly wrapper of git system commands *)
+
 open Plumbing
 
 module type Porcelain = sig
