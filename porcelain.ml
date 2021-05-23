@@ -13,12 +13,18 @@ module type Porcelain = sig
   (** The abstract type of a git commit object *)
   type commit_t
 
+  (** The type identifying any object *)
   type object_id = string
 
+  (** The abstract type containing the contents of a blob, tree, commit,
+      or tag *)
   type object_content
 
+  (** The abstract type determining whether an object is a blob, tree,
+      commit, or tag *)
   type object_type
 
+  (** The abstract type represeting the current git state *)
   type status_t
 
   (** [init d] initializes a git repository in the current working
@@ -63,16 +69,26 @@ module type Porcelain = sig
   (** [checkout b] switches to branch named [b] *)
   val checkout : string -> string
 
+  (** [create_branch b] creates a new branch with name [b] *)
   val create_branch : string -> string
 
+  (** [delete_branch b] deletes the branch named [b] *)
   val delete_branch : string -> string
 
+  (** [stash_apply] applies changes to the current working tree, leaving
+      them on the stash stack. *)
   val stash_apply : unit -> string
 
+  (** [stash_pop] applies changes to the current working tree and
+      removes them from the stash stack. *)
   val stash_pop : unit -> string
 
+  (** [reset_hard c] puts the head at the commit with hash [c], deleting
+      any changes made after [c]. *)
   val reset_hard : string -> string
 
+  (** [reset_soft c] puts the head at the commit with has [c], but keeps
+      all changes made after [c]. *)
   val reset_soft : string -> string
 
   (** [string_of_commit c] is a commit in the form [hash msg] *)

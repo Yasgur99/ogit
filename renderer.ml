@@ -21,10 +21,16 @@ module type Renderer = sig
       created by [init ()]*)
   val cleanup : unit -> unit
 
+  (** [render state win] prints all necessary information from [state]
+      to window [win]. *)
   val render : MState.t -> Curses.window -> unit
 
+  (** [render_input_mode state win] prints all necessary information
+      from [state] to window [win] and retrieves input from the user. *)
   val render_input_mode : MState.t -> Curses.window -> string
 
+  (** [get_color str] maps [str], the name of a color, to the integer
+      used by Curses to represent that color. *)
   val get_color : string -> int
 end
 
