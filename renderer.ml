@@ -1,10 +1,11 @@
-
 (** Render state to the terminal *)
 
 open Curses
 open State
 
 module type Renderer = sig
+  (** The abstract module of type [State] uesd by any module of type
+      [Renderer] to access information about the git state *)
   module MState : State
 
   (** [init ()] is a curses window. Its side effects include
@@ -12,9 +13,9 @@ module type Renderer = sig
       disables the curser, and clearning the window *)
   val init : unit -> Curses.window
 
-  (* [top_line] is the number of the line currently at the top of the
-     screen. Initially, [top_line] is 0, but it can increase or decrease
-     as a user scrolls up and down. *)
+  (** [top_line] is the number of the line currently at the top of the
+      screen. Initially, [top_line] is 0, but it can increase or
+      decrease as a user scrolls up and down. *)
   val top_line : int ref
 
   (** [cleanup ()] ends the window and cleans up the side effects
@@ -34,8 +35,12 @@ module type Renderer = sig
   val get_color : string -> int
 end
 
+(** The concrete [Renderer] used by OGit to display information to the
+    user *)
 module RendererImpl (St : State) : Renderer with module MState = St =
 struct
+  (** The [State] module used by [RendererImpl] to access information
+      about the git state *)
   module MState = St
 
   let check_err err =
@@ -63,6 +68,8 @@ struct
     check_err
       (Curses.init_pair 14 Curses.Color.black Curses.Color.white)
 
+  (** [get_color str] maps [str], the name of a color, to the integer
+      used by Curses to represent that color. *)
   let get_color color =
     let colors =
       [
@@ -89,6 +96,9 @@ struct
 
   let screen = ref [||]
 
+  (** [top_line] is the number of the line currently at the top of the
+      screen. Initially, [top_line] is 0, but it can increase or
+      decrease as a user scrolls up and down. *)
   let top_line = ref 0
 
   let enable_color color =
@@ -97,6 +107,7 @@ struct
   let disable_color color =
     Curses.attroff (Curses.A.color_pair (get_color color))
 
+  (**[init] sets up preferences for the OGit window *)
   let init () : Curses.window =
     let win = Curses.initscr () in
     init_colors ();
@@ -107,6 +118,7 @@ struct
     Curses.clear ();
     win
 
+  (**[cleanup] performs all required operations to quit OGit*)
   let cleanup () =
     check_err (Curses.curs_set 1);
     check_err (Curses.echo ());
@@ -439,6 +451,8 @@ struct
     render_line win (MState.get_curs state) true blank_line;
     render_lines win branch_options (MState.get_curs state) true
 
+  (** [render state win] prints all necessary information from [state]
+      to window [win]. *)
   let rec render state win =
     match MState.get_curs_state state with
     | MState.OffScrUp -> render_scroll_up state win
@@ -521,6 +535,8 @@ struct
     render (MState.update_mode state Command.Nop) win;
     out
 
+  (** [render_input_mode state win] prints all necessary information
+      from [state] to window [win] and retrieves input from the user. *)
   let render_input_mode state win =
     match MState.get_mode state with
     | PullMode (_, _, _) -> render_push_pull_mode state win

@@ -1,13 +1,25 @@
+(** Uses functions from all other modules to run commands and display
+    the result to the user *)
+
 open Plumbing
 open State
 open Renderer
+
+(** The plumbing used by OGit while running *)
 module MPlumbing = ProdPlumbing
+
+(** The state used by OGit while running *)
 module MyState = StateImpl (MPlumbing)
+
+(** The renderer used by OGit while running *)
 module MyRenderer = RendererImpl (MyState)
+
 open MPlumbing
 open MyState
 open MyRenderer
 
+(**[run_input_mode win st] runs OGit in window [win] when [st] is in a
+   mode which requires user input*)
 let run_input_mode win (st : MyState.t) =
   let input = MyRenderer.render_input_mode st win in
   let cmd =
@@ -22,6 +34,8 @@ let run_input_mode win (st : MyState.t) =
   in
   MyState.exec st cmd
 
+(**[run_push_mode win st] runs OGit in window [win] when [st] is in
+   [Push] mode*)
 let run_push_mode win (st : MyState.t) =
   let input = MyRenderer.render_input_mode st win in
   let cmd =
@@ -39,6 +53,8 @@ let run_push_mode win (st : MyState.t) =
   let new_st = MyState.update_mode st cmd in
   MyState.exec new_st cmd
 
+(**[run_pull_mode win st] runs OGit in window [win] when [st] is in
+   [Pull] mode*)
 let run_pull_mode win (st : MyState.t) =
   let input = MyRenderer.render_input_mode st win in
   let cmd =
@@ -56,6 +72,8 @@ let run_pull_mode win (st : MyState.t) =
   let new_st = MyState.update_mode st cmd in
   MyState.exec new_st cmd
 
+(**[run_all_mode win st] runs OGit in window [win] when [st] is in [All]
+   mode*)
 let run_all_mode win (st : MyState.t) =
   let cmd = Command.StageAll in
   ignore (MyState.exec st cmd);
@@ -63,6 +81,8 @@ let run_all_mode win (st : MyState.t) =
   let cmd = Command.Commit msg in
   MyState.exec st cmd
 
+(**[run_normal win st] runs OGit in window [win] when [st] is in any
+   mode that requires no user input*)
 let run_normal win st parse_fun =
   MyRenderer.render st win;
   let max_y = fst (Curses.getmaxyx win) in
@@ -84,6 +104,8 @@ let run_normal win st parse_fun =
   let new_st = MyState.update_mode st full_cmd in
   MyState.exec new_st full_cmd
 
+(**[run win st] uses the appropriate function to run window [win] based
+   on the mode of [st]*)
 let rec run win (st : MyState.t) =
   match MyState.get_mode st with
   | MyState.DiffMode _ ->
@@ -116,6 +138,7 @@ let rec run win (st : MyState.t) =
   | MyState.AllMode -> run win (run_all_mode win st)
   | _ -> run win (run_input_mode win st)
 
+(**[run_git args] prints the results of all git operations*)
 let run_git args =
   List.iter print_endline (MPlumbing.get_out (MPlumbing.git args))
 
