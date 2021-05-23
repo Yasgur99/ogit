@@ -146,7 +146,7 @@ struct
       enable_color line.color;
       check_err (Curses.waddstr win line.text);
       disable_color line.color;
-      cursor_nextline win)
+      cursor_nextline win )
 
   let render_lines win lines curs render_curs =
     List.iter (render_line win curs render_curs) lines
@@ -167,7 +167,7 @@ struct
           else String.sub str 0 (String.length str - 1)
         in
         Curses.clrtoeol ();
-        parse_string win new_str echo)
+        parse_string win new_str echo )
       else parse_string win (str ^ String.make 1 (char_of_int key)) echo
     with _ -> parse_string win str echo
 
@@ -294,19 +294,23 @@ struct
         render_lines win normal_tutorial (MState.get_curs state) true
     | DiffTutorialMode ->
         render_lines win
-          (diff_options @ [ blank_line ] @ diff_tutorial)
+          ( [ blank_line ] @ diff_options @ [ blank_line ]
+          @ diff_tutorial )
           (MState.get_curs state) true
     | PullTutorialMode ->
         render_lines win
-          (pull_options @ [ blank_line ] @ pull_tutorial)
+          ( [ blank_line ] @ pull_options @ [ blank_line ]
+          @ pull_tutorial )
           (MState.get_curs state) true
     | PushTutorialMode ->
         render_lines win
-          (push_options @ [ blank_line ] @ push_tutorial)
+          ( [ blank_line ] @ push_options @ [ blank_line ]
+          @ push_tutorial )
           (MState.get_curs state) true
     | BranchTutorialMode ->
         render_lines win
-          (branch_options @ [ blank_line ] @ branch_tutorial)
+          ( [ blank_line ] @ branch_options @ [ blank_line ]
+          @ branch_tutorial )
           (MState.get_curs state) true
     | _ -> failwith "use of wrong renderer"
 
@@ -373,7 +377,7 @@ struct
           render_line win (MState.get_curs state) true blank_line;
           render_line win (MState.get_curs state) true diff_header;
           render_lines win (diff_to_lines str) (MState.get_curs state)
-            true)
+            true )
     | _ -> failwith "Wrong render function: not in diff mode"
 
   let render_stash_mode state win =
@@ -419,7 +423,7 @@ struct
         | BranchTutorialMode ->
             render_tutorial state win BranchTutorialMode
         | StashMode -> render_stash_mode state win
-        | _ -> render_normal state win true)
+        | _ -> render_normal state win true )
 
   let render_with_parse state win prompt =
     Curses.werase win;
