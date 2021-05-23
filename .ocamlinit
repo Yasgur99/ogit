@@ -1,4 +1,5 @@
 #require "ounit2";;
 #require "curses";;
 #require "str";;
+#require "yojson";;
 #directory "_build";;
