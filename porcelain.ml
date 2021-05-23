@@ -68,6 +68,10 @@ module type Porcelain = sig
 
   val stash_pop : unit -> string
 
+  val reset_hard : string -> string
+
+  val reset_soft : string -> string
+
   (** [string_of_commit c] is a commit in the form [hash msg] *)
   val string_of_commit_t : commit_t -> string
 
@@ -331,6 +335,14 @@ module PorcelainImpl (P : Plumbing) = struct
 
   let delete_branch branch =
     let res = P.branch [| "-d"; branch |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
+
+  let reset_hard commit =
+    let res = P.reset [| "--hard"; commit |] in
+    P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
+
+  let reset_soft commit =
+    let res = P.reset [| "--soft"; commit |] in
     P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
 
   let stash_apply () =

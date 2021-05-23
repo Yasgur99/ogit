@@ -89,6 +89,8 @@ module type Plumbing = sig
 
   val stash : string array -> result
 
+  val reset : string array -> result
+
   (** [git args] calls git with arguments [args] *)
   val git : string array -> result
 end
@@ -247,6 +249,9 @@ module ProdPlumbing : Plumbing = struct
   let stash (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "stash" |] args)
 
+  let reset (args : string array) =
+    fork_and_execv "git" (Array.append [| "git"; "rest" |] args)
+
   let git (args : string array) =
     fork_and_execv "git" (Array.append [| "git" |] args)
 end
@@ -387,6 +392,10 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let checkout (args : string array) =
     let new_args = Array.of_list ("push" :: Array.to_list args) in
+    git new_args
+
+  let reset (args : string array) =
+    let new_args = Array.of_list ("reset" :: Array.to_list args) in
     git new_args
 
   let revparse (args : string array) =

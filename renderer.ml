@@ -187,6 +187,15 @@ struct
       { text = "x  delete branch"; color = "green" };
     ]
 
+  let reset_options : MState.printable list =
+    [
+      { text = "h  reset hard"; color = "green" };
+      { text = "s  reset soft"; color = "green" };
+    ]
+
+  let reset_prompt : MState.printable =
+    { text = "Enter commit to reset to : "; color = "green" }
+
   let username_prompt : MState.printable =
     { text = "Enter username: "; color = "green" }
 
@@ -376,6 +385,11 @@ struct
             true)
     | _ -> failwith "Wrong render function: not in diff mode"
 
+  let render_reset_mode state win =
+    render_normal state win true;
+    render_line win (MState.get_curs state) true blank_line;
+    render_lines win reset_options (MState.get_curs state) true
+
   let render_stash_mode state win =
     render_normal state win true;
     render_line win (MState.get_curs state) true blank_line;
@@ -419,6 +433,7 @@ struct
         | BranchTutorialMode ->
             render_tutorial state win BranchTutorialMode
         | StashMode -> render_stash_mode state win
+        | ResetMode -> render_reset_mode state win
         | _ -> render_normal state win true)
 
   let render_with_parse state win prompt =
@@ -466,6 +481,7 @@ struct
       | CheckoutGetBranchNameMode -> get_branch_msg_prompt
       | CreateGetBranchNameMode -> get_branch_msg_prompt
       | DeleteGetBranchNameMode -> get_branch_msg_prompt
+      | ResetGetCommitMode _ -> reset_prompt
       | _ -> failwith "Wrong render function: not in an input mode"
     in
     let out = render_with_parse state win prompt in

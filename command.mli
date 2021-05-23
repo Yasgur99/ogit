@@ -59,6 +59,9 @@ type t =
   | All
   | StageAll
   | UnstageAll
+  | ResetMenu
+  | ResetHard of string
+  | ResetSoft of string
   | Clear
   | Nop
 
@@ -108,6 +111,8 @@ val parse_key_push_tutorial : key -> t
 val parse_key_branch_tutorial : key -> t
 
 val parse_key_stash_mode : key -> t
+
+val parse_key_reset_mode : key -> t
 
 (** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)
 val string_of_cmd : t -> string

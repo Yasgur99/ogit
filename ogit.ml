@@ -16,6 +16,8 @@ let run_input_mode win (st : MyState.t) =
     | CheckoutGetBranchNameMode -> Command.CheckoutBranch input
     | CreateGetBranchNameMode -> Command.CreateBranch input
     | DeleteGetBranchNameMode -> Command.DeleteBranch input
+    | ResetGetCommitMode true -> Command.ResetHard input
+    | ResetGetCommitMode false -> Command.ResetSoft input
     | _ -> failwith "Wrong run function"
   in
   MyState.exec st cmd
@@ -105,6 +107,8 @@ let rec run win (st : MyState.t) =
       run win (run_normal win st Command.parse_key_branch_tutorial)
   | MyState.StashMode ->
       run win (run_normal win st Command.parse_key_stash_mode)
+  | MyState.ResetMode ->
+      run win (run_normal win st Command.parse_key_reset_mode)
   | MyState.AllMode -> run win (run_all_mode win st)
   | _ -> run win (run_input_mode win st)
 

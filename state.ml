@@ -28,6 +28,8 @@ module type State = sig
     | BranchTutorialMode
     | StashMode
     | AllMode
+    | ResetMode
+    | ResetGetCommitMode of bool
 
   type curs_state =
     | OffScrUp
@@ -92,6 +94,10 @@ module type State = sig
       appropriate mode based on the command [cmd]. The rest of the state
       stays the same. *)
   val update_mode : t -> Command.t -> t
+
+  (** [curs_at_commit st] returns true if the cursor is hovering over a
+      commit hash in [st]. *)
+  val curs_at_commit : t -> bool
 end
 
 module StateImpl (P : Plumbing) : State = struct
@@ -116,6 +122,8 @@ module StateImpl (P : Plumbing) : State = struct
     | BranchTutorialMode
     | StashMode
     | AllMode
+    | ResetMode
+    | ResetGetCommitMode of bool
 
   type curs_state =
     | OffScrUp
@@ -140,10 +148,6 @@ module StateImpl (P : Plumbing) : State = struct
     text : string;
     color : string;
   }
-
-  exception CursOffUp
-
-  exception CursOffDown
 
   (** [init_state dir] is the state of the directory [dir]. The cursor
       points to the first line of the terminal. Requires [dir] is a
@@ -385,6 +389,10 @@ module StateImpl (P : Plumbing) : State = struct
     else ();
     set_mode st (DiffMode out)
 
+  let curs_at_commit st =
+    get_curs st <= max_curs_pos_normal st
+    && get_curs st >= max_curs_pos_normal st - 9
+
   let exec_pull st u p b =
     if u = "" || p = "" || b = "" then set_mode st (PullMode (u, p, b))
     else if u = "m" && p = "m" && b = "m" then
@@ -392,6 +400,21 @@ module StateImpl (P : Plumbing) : State = struct
     else
       let out = MPorcelain.pull u p b in
       set_mode st (CommandDone out)
+
+  let exec_reset st commit hard =
+    if commit = "" && not (curs_at_commit st) then
+      set_mode st (ResetGetCommitMode hard)
+    else
+      let cmt =
+        if commit = "" && curs_at_commit st then
+          String.sub (get_curs_content st) 0 7
+        else commit
+      in
+      let out =
+        if hard then MPorcelain.reset_hard cmt
+        else MPorcelain.reset_soft cmt
+      in
+      set_mode (update_git_state st) (CommandDone out)
 
   let exec_push st u p b =
     if u = "" || p = "" || b = "" then set_mode st (PullMode (u, p, b))
@@ -494,4 +517,8 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.Stash -> set_mode st StashMode
     | Command.StashApply -> exec_stash_apply st
     | Command.StashPop -> exec_stash_pop st
+    (* RESET MODE *)
+    | Command.ResetMenu -> set_mode st ResetMode
+    | Command.ResetHard c -> exec_reset st c true
+    | Command.ResetSoft c -> exec_reset st c false
 end

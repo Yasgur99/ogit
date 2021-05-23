@@ -45,6 +45,9 @@ type t =
   | All
   | StageAll
   | UnstageAll
+  | ResetMenu
+  | ResetHard of string
+  | ResetSoft of string
   | Clear
   | Nop
 
@@ -68,6 +71,7 @@ let parse_key key =
   else if key = int_of_char 'a' then All
   else if key = int_of_char 'y' then StageAll
   else if key = int_of_char 'w' then UnstageAll
+  else if key = int_of_char 'R' then ResetMenu
   else Nop
 
 let parse_key_diff_mode key =
@@ -97,6 +101,11 @@ let parse_key_branch_mode key =
   else if key = int_of_char 'c' then CreateBranchPrompt
   else if key = int_of_char 'x' then DeleteBranchPrompt
   else if key = int_of_char 'i' then BranchTutorial
+  else parse_key key
+
+let parse_key_reset_mode key =
+  if key = int_of_char 'h' then ResetHard ""
+  else if key = int_of_char 's' then ResetSoft ""
   else parse_key key
 
 let parse_key_normal_tutorial key =
@@ -161,4 +170,7 @@ let string_of_cmd cmd =
   | StageAll -> "stage all files"
   | UnstageAll -> "unstage all files"
   | All -> "Push all files"
+  | ResetMenu -> "reset"
+  | ResetHard _ -> "reset"
+  | ResetSoft _ -> "reset"
   | Nop -> "nop"
