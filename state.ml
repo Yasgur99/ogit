@@ -33,6 +33,9 @@ module type State = sig
     | ResetMode
     | ResetGetCommitMode of bool
 
+  (** The variant type representing whether or not the cursor is
+      attempting to go off the screen, and if it is, then whether it is
+      attempting to go up or down*)
   type curs_state =
     | OffScrUp
     | OffScrDown
@@ -53,8 +56,10 @@ module type State = sig
       [st] *)
   val commit_history : t -> MPorcelain.commit_t list
 
+  (** [tracked st] is the list of all tracked files in [st] *)
   val tracked : t -> string list
 
+  (** [staged st] is the list of all staged files in [st] *)
   val staged : t -> string list
 
   (** [head st] is the commit pointed to by the head in the current
@@ -90,6 +95,9 @@ module type State = sig
       [new_mode]. *)
   val set_mode : t -> render_mode -> t
 
+  (** [get_curs_state st] returns whether or not the cursor of [st] is
+      attempting to leave the screen, and if it is, then whether it is
+      attempting to go up or down *)
   val get_curs_state : t -> curs_state
 
   (** [update_mode st cmd] automatically changes the mode of [st] to the
