@@ -29,6 +29,8 @@ module type State = sig
     | PullTutorialMode
     | PushTutorialMode
     | BranchTutorialMode
+    | StashTutorialMode
+    | ResetTutorialMode
     | StashMode
     | AllMode
     | ResetMode
@@ -123,6 +125,8 @@ module StateImpl (P : Plumbing) : State = struct
     | PullTutorialMode
     | PushTutorialMode
     | BranchTutorialMode
+    | StashTutorialMode
+    | ResetTutorialMode
     | StashMode
     | AllMode
     | ResetMode
@@ -475,19 +479,24 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.PullMenu -> set_mode st (PullMode ("m", "m", "m"))
     | Command.PushMenu -> set_mode st (PushMode ("m", "m", "m"))
     | Command.BranchMenu -> set_mode st BranchMode
+    | Command.All -> set_mode st AllMode
+    | Command.Nop -> st
+    | Command.Quit -> raise Command.Program_terminate
+    (* TUTORIAL *)
     | Command.NormalTutorial -> set_mode st NormalTutorialMode
     | Command.DiffTutorial -> set_mode st DiffTutorialMode
     | Command.PullTutorial -> set_mode st PullTutorialMode
     | Command.PushTutorial -> set_mode st PushTutorialMode
     | Command.BranchTutorial -> set_mode st BranchTutorialMode
+    | Command.StashTutorial -> set_mode st StashTutorialMode
+    | Command.ResetTutorial -> set_mode st ResetTutorialMode
     | Command.BackNormal -> set_mode st Normal
     | Command.BackDiff -> set_mode st (DiffMode "MENU")
     | Command.BackPull -> set_mode st (PullMode ("m", "m", "m"))
     | Command.BackPush -> set_mode st (PushMode ("m", "m", "m"))
     | Command.BackBranch -> set_mode st BranchMode
-    | Command.All -> set_mode st AllMode
-    | Command.Nop -> st
-    | Command.Quit -> raise Command.Program_terminate
+    | Command.BackStash -> set_mode st StashMode
+    | Command.BackReset -> set_mode st ResetMode
     (* NORMAL MODE *)
     | Command.Stage -> exec_add st
     | Command.StageAll -> exec_stage_all st

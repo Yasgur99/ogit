@@ -42,11 +42,6 @@ docs: docs-public
 
 docs-public: build
 	mkdir -p _doc.public
-	ocamlfind ocamldoc -I _build -package porcelain
-
-docs-public: build
-	mkdir -p _doc.public
 	ocamlfind ocamldoc -I _build -package $(PKGS) \
 		-html -stars -d _doc.public authors.mli command.mli plumbing.ml porcelain.ml state.ml renderer.ml ogit.ml
-
 

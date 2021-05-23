@@ -105,6 +105,10 @@ let rec run win (st : MyState.t) =
       run win (run_normal win st Command.parse_key_push_tutorial)
   | MyState.BranchTutorialMode ->
       run win (run_normal win st Command.parse_key_branch_tutorial)
+  | MyState.ResetTutorialMode ->
+      run win (run_normal win st Command.parse_key_reset_tutorial)
+  | MyState.StashTutorialMode ->
+      run win (run_normal win st Command.parse_key_stash_tutorial)
   | MyState.StashMode ->
       run win (run_normal win st Command.parse_key_stash_mode)
   | MyState.ResetMode ->

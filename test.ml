@@ -232,8 +232,13 @@ let set_mode_tests =
     set_mode_test "create branch" TestState.CreateGetBranchNameMode;
     set_mode_test "delete branch" TestState.DeleteGetBranchNameMode;
     set_mode_test "pull elsewhere" (TestState.PullMode ("a", "b", "c"));
+    set_mode_test "push elsewhere" (TestState.PushMode ("a", "b", "c"));
     set_mode_test "stash" TestState.StashMode;
     set_mode_test "reset" TestState.ResetMode;
+    set_mode_test "reset hard get commit"
+      (TestState.ResetGetCommitMode true);
+    set_mode_test "reset soft get commit"
+      (TestState.ResetGetCommitMode false);
   ]
 
 let state_tests = init_state_tests @ exec_tests @ set_mode_tests

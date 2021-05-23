@@ -274,6 +274,12 @@ struct
   let branch_tutorial : MState.printable list =
     tutorial_from_json "branch tutorial"
 
+  let reset_tutorial : MState.printable list =
+    tutorial_from_json "reset tutorial"
+
+  let stash_tutorial : MState.printable list =
+    tutorial_from_json "stash tutorial"
+
   let render_command_done state win msg =
     render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) true results_header;
@@ -306,19 +312,33 @@ struct
         render_lines win normal_tutorial (MState.get_curs state) true
     | DiffTutorialMode ->
         render_lines win
-          (diff_options @ [ blank_line ] @ diff_tutorial)
+          ([ blank_line ] @ diff_options @ [ blank_line ]
+         @ diff_tutorial)
           (MState.get_curs state) true
     | PullTutorialMode ->
         render_lines win
-          (pull_options @ [ blank_line ] @ pull_tutorial)
+          ([ blank_line ] @ pull_options @ [ blank_line ]
+         @ pull_tutorial)
           (MState.get_curs state) true
     | PushTutorialMode ->
         render_lines win
-          (push_options @ [ blank_line ] @ push_tutorial)
+          ([ blank_line ] @ push_options @ [ blank_line ]
+         @ push_tutorial)
           (MState.get_curs state) true
     | BranchTutorialMode ->
         render_lines win
-          (branch_options @ [ blank_line ] @ branch_tutorial)
+          ([ blank_line ] @ branch_options @ [ blank_line ]
+         @ branch_tutorial)
+          (MState.get_curs state) true
+    | StashTutorialMode ->
+        render_lines win
+          ([ blank_line ] @ stash_options @ [ blank_line ]
+         @ stash_tutorial)
+          (MState.get_curs state) true
+    | ResetTutorialMode ->
+        render_lines win
+          ([ blank_line ] @ reset_options @ [ blank_line ]
+         @ reset_tutorial)
           (MState.get_curs state) true
     | _ -> failwith "use of wrong renderer"
 
@@ -435,6 +455,10 @@ struct
         | PushTutorialMode -> render_tutorial state win PushTutorialMode
         | BranchTutorialMode ->
             render_tutorial state win BranchTutorialMode
+        | StashTutorialMode ->
+            render_tutorial state win StashTutorialMode
+        | ResetTutorialMode ->
+            render_tutorial state win ResetTutorialMode
         | StashMode -> render_stash_mode state win
         | ResetMode -> render_reset_mode state win
         | _ -> render_normal state win true)
