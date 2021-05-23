@@ -128,12 +128,12 @@ module PorcelainImpl (P : Plumbing) = struct
   let pull u p b =
     match b with
     | "remote" ->
-        P.pull [||] [ u; p ]
+        P.pull [||]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
     | branch ->
-        P.pull [| branch |] [ u; p ]
+        P.pull [| branch |]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
@@ -141,12 +141,12 @@ module PorcelainImpl (P : Plumbing) = struct
   let push u p b =
     match b with
     | "remote" ->
-        P.push [||] [ u; p ]
+        P.push [||]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
     | branch ->
-        P.push [| branch |] [ u; p ]
+        P.push [| branch |]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"

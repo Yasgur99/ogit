@@ -85,6 +85,8 @@ module type Plumbing = sig
   (** [checkout args] calls git checkout with arguments [args]*)
   val checkout : string array -> result
 
+  val stash : string array -> result
+
   (** [git args] calls git with arguments [args] *)
   val git : string array -> result
 end
@@ -237,6 +239,9 @@ module ProdPlumbing : Plumbing = struct
   let checkout (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "checkout" |] args)
 
+  let stash (args : string array) =
+    fork_and_execv "git" (Array.append [| "git"; "stash" |] args)
+
   let git (args : string array) =
     fork_and_execv "git" (Array.append [| "git" |] args)
 end
@@ -327,6 +332,10 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let add (args : string array) =
     let new_args = Array.of_list ("add" :: Array.to_list args) in
+    git new_args
+
+  let stash (args : string array) =
+    let new_args = Array.of_list ("stash" :: Array.to_list args) in
     git new_args
 
   let head (args : string array) = failwith "unimplemented"

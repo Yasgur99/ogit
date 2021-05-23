@@ -1,8 +1,11 @@
 MODULES=plumbing porcelain command state renderer ogit authors
 OBJECTS=$(MODULES:=.cmo)
 BYTES=$(MODULES:=.byte)
-MLS=$(MODULES:=.ml)
-MLIS=$(MODULES:=.mli)
+MLS_WITHOUT_MLIS=plumbing porcelain ogit renderer test
+MLS=$(UNITS:=.ml) $(MLS_WITHOUT_MLIS:=.ml)
+MLIS_WITH_MLS=authors command
+MLIS=$(UNITS:=.mli) $(MLIS_WITH_MLS:=.mli)
+DOCS=command.mli
 TEST=test.byte
 MAIN=ogit.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind
@@ -32,8 +35,10 @@ zip:
 			
 clean:
 		ocamlbuild -clean
-			rm -rf _doc.public _doc.private 
+			rm -rf _doc.p
 
-docs: 
-	mkdir -p _doc
-	ocamldoc -d _doc -html command.mli plumbing.ml porcelain.ml state.ml
+docs: docs-public
+
+docs-public: build
+	mkdir -p _doc.public
+	ocamlfind ocamldoc -I _build -package $(MLS)
