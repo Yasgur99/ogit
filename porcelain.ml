@@ -320,7 +320,7 @@ module PorcelainImpl (P : Plumbing) = struct
     P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
 
   let delete_branch branch =
-    let res = P.checkout [| "-d"; branch |] in
+    let res = P.branch [| "-d"; branch |] in
     P.get_out res |> List.fold_left (fun acc x -> acc ^ x ^ "\n") ""
 
   let stash_apply () =

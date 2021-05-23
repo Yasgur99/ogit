@@ -85,6 +85,8 @@ module type Plumbing = sig
   (** [checkout args] calls git checkout with arguments [args]*)
   val checkout : string array -> result
 
+  val branch : string array -> result
+
   val stash : string array -> result
 
   (** [git args] calls git with arguments [args] *)
@@ -239,6 +241,9 @@ module ProdPlumbing : Plumbing = struct
   let checkout (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "checkout" |] args)
 
+  let branch (args : string array) =
+    fork_and_execv "git" (Array.append [| "git"; "branch" |] args)
+
   let stash (args : string array) =
     fork_and_execv "git" (Array.append [| "git"; "stash" |] args)
 
@@ -263,7 +268,7 @@ module MockPlumbing : PlumbingWithSet = struct
   let make_result out err out_and_err =
     { stdout = out; stderr = err; out_and_err }
 
-  let git (args : string array) = failwith "git unimplemented"
+  let git (args : string array) = failwith "unimplemented"
 
   let init (args : string array) =
     make_result
@@ -286,6 +291,10 @@ module MockPlumbing : PlumbingWithSet = struct
     git new_args
 
   let cat_file (args : string array) =
+    let new_args = Array.of_list ("cat_file" :: Array.to_list args) in
+    git new_args
+
+  let branch (args : string array) =
     let new_args = Array.of_list ("cat_file" :: Array.to_list args) in
     git new_args
 
@@ -341,8 +350,6 @@ module MockPlumbing : PlumbingWithSet = struct
   let head (args : string array) = failwith "unimplemented"
 
   let checkout (args : string array) = failwith "unimplemented"
-
-  let git (args : string array) = failwith "unimplemented"
 
   let restore (args : string array) =
     let new_args = Array.of_list ("restore" :: Array.to_list args) in
