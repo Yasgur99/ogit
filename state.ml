@@ -423,7 +423,7 @@ module StateImpl (P : Plumbing) : State = struct
 
   let exec_stage_all st =
     MPorcelain.add st.untracked;
-    update_git_state st;
+    ignore (update_git_state st);
     MPorcelain.add st.tracked;
     update_git_state st
 
