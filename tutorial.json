@@ -61,6 +61,10 @@
       "color": "blue"
     },
     {
+      "text": "To stage all files, press 'y'.",
+      "color": "blue"
+    },
+    {
       "text": "To stage, commit, and push all files, press 'a'.",
       "color": "blue"
     }
