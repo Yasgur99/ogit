@@ -42,7 +42,8 @@ type t =
   | Stash
   | StashPop
   | StashApply
-  (* | All *)
+  | All
+  | StageAll
   | Clear
   | Nop
 
@@ -63,7 +64,7 @@ let parse_key key =
   else if key = int_of_char 'b' then BranchMenu
   else if key = int_of_char 'i' then NormalTutorial
   else if key = int_of_char 'S' then Stash
-    (* else if key = int_of_char 'a' then All *)
+  else if key = int_of_char 'a' then All
   else Nop
 
 let parse_key_diff_mode key =
@@ -154,5 +155,6 @@ let string_of_cmd cmd =
   | Stash -> "stash"
   | StashPop -> "stash"
   | StashApply -> "apply"
-  (* | All -> "Push from untracked" *)
+  | StageAll -> "stage all files"
+  | All -> "Push from untracked"
   | Nop -> "nop"

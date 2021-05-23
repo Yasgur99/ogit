@@ -27,6 +27,7 @@ module type State = sig
     | PushTutorialMode
     | BranchTutorialMode
     | StashMode
+    | AllMode
 
   type curs_state =
     | OffScrUp
@@ -114,6 +115,7 @@ module StateImpl (P : Plumbing) : State = struct
     | PushTutorialMode
     | BranchTutorialMode
     | StashMode
+    | AllMode
 
   type curs_state =
     | OffScrUp
@@ -419,7 +421,11 @@ module StateImpl (P : Plumbing) : State = struct
     let out = MPorcelain.stash_pop () in
     set_mode (update_git_state st) (CommandDone out)
 
-  (* let exec_all st = exec_add st; exec_commit msg; *)
+  let exec_stage_all st =
+    MPorcelain.add st.untracked;
+    update_git_state st;
+    MPorcelain.add st.tracked;
+    update_git_state st
 
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
@@ -449,11 +455,12 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.BackPull -> set_mode st (PullMode ("m", "m", "m"))
     | Command.BackPush -> set_mode st (PushMode ("m", "m", "m"))
     | Command.BackBranch -> set_mode st BranchMode
-    (* | Command.All -> exec_all st *)
+    | Command.All -> set_mode st AllMode
     | Command.Nop -> st
     | Command.Quit -> raise Command.Program_terminate
     (* NORMAL MODE *)
     | Command.Stage -> exec_add st
+    | Command.StageAll -> exec_stage_all st
     | Command.Unstage -> exec_unstage st
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
     (* DIFF MODE *)

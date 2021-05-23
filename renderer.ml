@@ -368,7 +368,7 @@ struct
     | DiffMode str ->
         if str = "MENU" then (
           render_line win (MState.get_curs state) true blank_line;
-          render_lines win diff_options (MState.get_curs state) true )
+          render_lines win diff_options (MState.get_curs state) true)
         else (
           render_line win (MState.get_curs state) true blank_line;
           render_line win (MState.get_curs state) true diff_header;
@@ -462,6 +462,7 @@ struct
     let prompt =
       match MState.get_mode state with
       | CommitMode -> commit_msg_prompt
+      | AllMode -> commit_msg_prompt
       | CheckoutGetBranchNameMode -> get_branch_msg_prompt
       | CreateGetBranchNameMode -> get_branch_msg_prompt
       | DeleteGetBranchNameMode -> get_branch_msg_prompt

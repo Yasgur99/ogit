@@ -54,6 +54,13 @@ let run_pull_mode win (st : MyState.t) =
   let new_st = MyState.update_mode st cmd in
   MyState.exec new_st cmd
 
+let run_all_mode win (st : MyState.t) =
+  let cmd = Command.StageAll in
+  MyState.exec st cmd;
+  let msg = MyRenderer.render_input_mode st win in
+  let cmd = Command.Commit msg in
+  MyState.exec st cmd
+
 let run_normal win st parse_fun =
   MyRenderer.render st win;
   let max_y = fst (Curses.getmaxyx win) in
@@ -98,6 +105,7 @@ let rec run win (st : MyState.t) =
       run win (run_normal win st Command.parse_key_branch_tutorial)
   | MyState.StashMode ->
       run win (run_normal win st Command.parse_key_stash_mode)
+  | MyState.AllMode -> run win (run_all_mode win st)
   | _ -> run win (run_input_mode win st)
 
 let run_git args =
