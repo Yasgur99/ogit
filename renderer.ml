@@ -1,3 +1,6 @@
+
+(** Render state to the terminal *)
+
 open Curses
 open State
 

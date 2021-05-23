@@ -1,3 +1,6 @@
+
+(** Representation the git repository and user interface *)
+
 open Plumbing
 open Porcelain
 

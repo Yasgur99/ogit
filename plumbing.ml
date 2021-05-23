@@ -1,6 +1,4 @@
-(*******************************************)
-(* Plumbing *)
-(*******************************************)
+(** Raw interface to git system commands *)
 module type Plumbing = sig
   (** Representation of raw git commands.
 
