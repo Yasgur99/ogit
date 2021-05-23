@@ -39,6 +39,10 @@ type t =
   | BackPull
   | PushTutorial
   | BackPush
+  | StashTutorial
+  | BackStash
+  | ResetTutorial
+  | BackReset
   | Stash
   | StashPop
   | StashApply
@@ -103,9 +107,16 @@ let parse_key_branch_mode key =
   else if key = int_of_char 'i' then BranchTutorial
   else parse_key key
 
+let parse_key_stash_mode key =
+  if key = int_of_char 'p' then StashPop
+  else if key = int_of_char 'a' then StashApply
+  else if key = int_of_char 'i' then StashTutorial
+  else parse_key key
+
 let parse_key_reset_mode key =
   if key = int_of_char 'h' then ResetHard ""
   else if key = int_of_char 's' then ResetSoft ""
+  else if key = int_of_char 'i' then ResetTutorial
   else parse_key key
 
 let parse_key_normal_tutorial key =
@@ -124,10 +135,11 @@ let parse_key_branch_tutorial key =
   if key = int_of_char 'i' then BackBranch
   else parse_key_branch_mode key
 
-let parse_key_stash_mode key =
-  if key = int_of_char 'p' then StashPop
-  else if key = int_of_char 'a' then StashApply
-  else parse_key key
+let parse_key_stash_tutorial key =
+  if key = int_of_char 'i' then BackStash else parse_key_stash_mode key
+
+let parse_key_reset_tutorial key =
+  if key = int_of_char 'i' then BackReset else parse_key_reset_mode key
 
 let string_of_cmd cmd =
   match cmd with
@@ -159,6 +171,10 @@ let string_of_cmd cmd =
   | PullTutorial -> "tutorial"
   | PushTutorial -> "tutorial"
   | BranchTutorial -> "tutorial"
+  | StashTutorial -> "tutorial"
+  | BackStash -> "tutorial"
+  | ResetTutorial -> "tutorial"
+  | BackReset -> "tutorial"
   | BackNormal -> "back"
   | BackDiff -> "back"
   | BackPull -> "back"

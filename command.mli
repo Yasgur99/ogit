@@ -53,6 +53,10 @@ type t =
   | BackPull
   | PushTutorial
   | BackPush
+  | StashTutorial
+  | BackStash
+  | ResetTutorial
+  | BackReset
   | Stash
   | StashPop
   | StashApply
@@ -109,6 +113,10 @@ val parse_key_push_tutorial : key -> t
 (** [parse_key_branch_tutorial key] has the same function as
     [parse_key key] but works when normal tutorial has been activated *)
 val parse_key_branch_tutorial : key -> t
+
+val parse_key_reset_tutorial : key -> t
+
+val parse_key_stash_tutorial : key -> t
 
 val parse_key_stash_mode : key -> t
 

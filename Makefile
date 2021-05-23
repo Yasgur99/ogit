@@ -41,4 +41,4 @@ docs: docs-public
 
 docs-public: build
 	mkdir -p _doc.public
-	ocamlfind ocamldoc -I _build -package $(MLS)
+	ocamlfind ocamldoc $(MLS)
