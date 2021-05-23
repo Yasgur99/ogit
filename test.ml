@@ -233,6 +233,7 @@ let set_mode_tests =
     set_mode_test "delete branch" TestState.DeleteGetBranchNameMode;
     set_mode_test "pull elsewhere" (TestState.PullMode ("a", "b", "c"));
     set_mode_test "stash" TestState.StashMode;
+    set_mode_test "reset" TestState.ResetMode;
   ]
 
 let state_tests = init_state_tests @ exec_tests @ set_mode_tests
@@ -287,6 +288,12 @@ let parse_key_stash_mode_test (name : string) (key : int) (exp : string)
   assert_equal exp
     (Command.string_of_cmd (Command.parse_key_stash_mode key))
 
+let parse_key_reset_mode_test (name : string) (key : int) (exp : string)
+    : test =
+  name >:: fun _ ->
+  assert_equal exp
+    (Command.string_of_cmd (Command.parse_key_reset_mode key))
+
 (** Tests for [Command.parse_key] *)
 let parse_key_tests =
   [
@@ -298,6 +305,7 @@ let parse_key_tests =
     parse_key_test "Down is NavDown" Curses.Key.down "navdown";
     parse_key_test "q is quit" (int_of_char 'q') "quit";
     parse_key_test "unsupported is nop" (int_of_char '[') "nop";
+    parse_key_test "space is clear" (int_of_char ' ') "clear";
   ]
 
 let parse_key_diff_mode_tests =
@@ -313,6 +321,7 @@ let parse_key_diff_mode_tests =
     parse_key_diff_mode_test "q is quit" (int_of_char 'q') "quit";
     parse_key_diff_mode_test "unsupported is nop" (int_of_char '[')
       "nop";
+    parse_key_diff_mode_test "space is clear" (int_of_char ' ') "clear";
   ]
 
 let parse_key_pull_mode_tests =
@@ -327,6 +336,7 @@ let parse_key_pull_mode_tests =
     parse_key_pull_mode_test "q is quit" (int_of_char 'q') "quit";
     parse_key_pull_mode_test "unsupported is nop" (int_of_char '[')
       "nop";
+    parse_key_pull_mode_test "space is clear" (int_of_char ' ') "clear";
   ]
 
 let parse_key_push_mode_tests =
@@ -341,6 +351,7 @@ let parse_key_push_mode_tests =
     parse_key_push_mode_test "q is quit" (int_of_char 'q') "quit";
     parse_key_push_mode_test "unsupported is nop" (int_of_char '[')
       "nop";
+    parse_key_push_mode_test "space is clear" (int_of_char ' ') "clear";
   ]
 
 let parse_key_branch_mode_tests =
@@ -360,6 +371,8 @@ let parse_key_branch_mode_tests =
     parse_key_branch_mode_test "q is quit" (int_of_char 'q') "quit";
     parse_key_branch_mode_test "unsupported is nop" (int_of_char '[')
       "nop";
+    parse_key_branch_mode_test "space is clear" (int_of_char ' ')
+      "clear";
   ]
 
 let parse_key_stash_mode_tests =
@@ -374,6 +387,22 @@ let parse_key_stash_mode_tests =
     parse_key_stash_mode_test "q is quit" (int_of_char 'q') "quit";
     parse_key_stash_mode_test "unsupported is nop" (int_of_char '[')
       "nop";
+    parse_key_stash_mode_test "space is clear" (int_of_char ' ') "clear";
+  ]
+
+let parse_key_reset_mode_tests =
+  [
+    parse_key_reset_mode_test "h is reset" (int_of_char 'h') "reset";
+    parse_key_reset_mode_test "s is reset" (int_of_char 's') "reset";
+    parse_key_reset_mode_test "k is NavUp" (int_of_char 'k') "navup";
+    parse_key_reset_mode_test "j is NavDown" (int_of_char 'j') "navdown";
+    parse_key_reset_mode_test "Up is NavUp" Curses.Key.up "navup";
+    parse_key_reset_mode_test "Down is NavDown" Curses.Key.down
+      "navdown";
+    parse_key_reset_mode_test "q is quit" (int_of_char 'q') "quit";
+    parse_key_reset_mode_test "unsupported is nop" (int_of_char '[')
+      "nop";
+    parse_key_reset_mode_test "space is clear" (int_of_char ' ') "clear";
   ]
 
 (** Tests for [Command] module *)
