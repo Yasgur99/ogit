@@ -18,10 +18,6 @@ type branch_name = string
     and some functions that map the name of a key to an integer. *)
 type key = int
 
-type username = string
-
-type password = string
-
 (** The type [t] represents a git command that is decomposed into a verb
     and possibly a file_name, commit_msg, or branch_name. *)
 type t =
@@ -37,12 +33,9 @@ type t =
   | DiffStaged
   | DiffAll
   | PullMenu
-  | PullRemote
-  | PullOriginMaster
-  | PullElsewhere of string
+  | Pull of string * string * string
   | PushMenu
-  | PushRemote of string * string
-  | PushOriginMaster
+  | Push of string * string * string
   | BranchMenu
   | CheckoutBranchPrompt
   | CreateBranchPrompt
@@ -50,17 +43,20 @@ type t =
   | CheckoutBranch of string
   | CreateBranch of string
   | DeleteBranch of string
-  | PushElsewhere of string
   | NormalTutorial
-  | DiffTutorial
-  | PullTutorial
-  | PushTutorial
-  | BranchTutorial
   | BackNormal
+  | DiffTutorial
   | BackDiff
-  | BackPull
-  | BackPush
+  | BranchTutorial
   | BackBranch
+  | PullTutorial
+  | BackPull
+  | PushTutorial
+  | BackPush
+  | Stash
+  | StashPop
+  | StashApply
+  (* | All *)
   | Clear
   | Nop
 
@@ -108,6 +104,8 @@ val parse_key_push_tutorial : key -> t
 (** [parse_key_branch_tutorial key] has the same function as
     [parse_key key] but works when normal tutorial has been activated *)
 val parse_key_branch_tutorial : key -> t
+
+val parse_key_stash_mode : key -> t
 
 (** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)
 val string_of_cmd : t -> string

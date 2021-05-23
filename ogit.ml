@@ -8,26 +8,51 @@ open MPlumbing
 open MyState
 open MyRenderer
 
-let run_commit_mode win (st : MyState.t) =
-  let msg = MyRenderer.render_commit_mode st win in
-  let cmd = Command.Commit msg in
+let run_input_mode win (st : MyState.t) =
+  let input = MyRenderer.render_input_mode st win in
+  let cmd =
+    match MyState.get_mode st with
+    | CommitMode -> Command.Commit input
+    | CheckoutGetBranchNameMode -> Command.CheckoutBranch input
+    | CreateGetBranchNameMode -> Command.CreateBranch input
+    | DeleteGetBranchNameMode -> Command.DeleteBranch input
+    | _ -> failwith "Wrong run function"
+  in
   MyState.exec st cmd
 
-let run_push_remote_mode win (st : MyState.t) =
-  let user = MyRenderer.render_username_mode st win in
-  let pass = MyRenderer.render_password_mode st win in
-  let cmd = Command.PushRemote (user, pass) in
-  MyState.exec st cmd
+let run_push_mode win (st : MyState.t) =
+  let input = MyRenderer.render_input_mode st win in
+  let cmd =
+    if input = "" then
+      let key = Curses.wgetch win in
+      Command.parse_key_push_mode key
+    else
+      match MyState.get_mode st with
+      | PushMode ("", p, b) -> Command.Push (input, p, b)
+      | PushMode (u, "", b) -> Command.Push (u, input, b)
+      | PushMode (u, p, "") -> Command.Push (u, p, input)
+      | PushMode (u, p, b) -> Command.Push (u, p, b)
+      | _ -> failwith "Wrong run function"
+  in
+  let new_st = MyState.update_mode st cmd in
+  MyState.exec new_st cmd
 
-let run_pull_elsewhere_mode win (st : MyState.t) =
-  let msg = MyRenderer.render_pull_elsewhere_mode st win in
-  let cmd = Command.PullElsewhere msg in
-  MyState.exec st cmd
-
-let run_push_elsewhere_mode win (st : MyState.t) =
-  let msg = MyRenderer.render_push_elsewhere_mode st win in
-  let cmd = Command.PushElsewhere msg in
-  MyState.exec st cmd
+let run_pull_mode win (st : MyState.t) =
+  let input = MyRenderer.render_input_mode st win in
+  let cmd =
+    if input = "" then
+      let key = Curses.wgetch win in
+      Command.parse_key_pull_mode key
+    else
+      match MyState.get_mode st with
+      | PullMode ("", p, b) -> Command.Pull (input, p, b)
+      | PullMode (u, "", b) -> Command.Pull (u, input, b)
+      | PullMode (u, p, "") -> Command.Pull (u, p, input)
+      | PullMode (u, p, b) -> Command.Pull (u, p, b)
+      | _ -> failwith "Wrong run function"
+  in
+  let new_st = MyState.update_mode st cmd in
+  MyState.exec new_st cmd
 
 let run_normal win st parse_fun =
   MyRenderer.render st win;
@@ -50,50 +75,17 @@ let run_normal win st parse_fun =
   let new_st = MyState.update_mode st full_cmd in
   MyState.exec new_st full_cmd
 
-let run_checkout_get_branch_mode win st =
-  let branch = MyRenderer.render_checkout_get_branch_mode st win in
-  let cmd = Command.CheckoutBranch branch in
-  MyState.exec st cmd
-
-let run_create_get_branch_mode win st =
-  let branch = MyRenderer.render_create_get_branch_mode st win in
-  let cmd = Command.CreateBranch branch in
-  MyState.exec st cmd
-
-let run_delete_get_branch_mode win st =
-  let branch = MyRenderer.render_delete_get_branch_mode st win in
-  let cmd = Command.DeleteBranch branch in
-  MyState.exec st cmd
-
 let rec run win (st : MyState.t) =
   match MyState.get_mode st with
-  | MyState.CommitMode -> run win (run_commit_mode win st)
   | MyState.DiffMode _ ->
       run win (run_normal win st Command.parse_key_diff_mode)
   | MyState.CommandDone _ ->
       run win (run_normal win st Command.parse_key)
-  | MyState.PushMode ->
-      run win (run_normal win st Command.parse_key_push_mode)
-  | MyState.PushRemoteMode -> run win (run_push_remote_mode win st)
-  | MyState.PushElsewhereMode ->
-      run win (run_push_elsewhere_mode win st)
-  | MyState.PushElsewhereDone _ ->
-      run win (run_normal win st Command.parse_key)
-  | MyState.PullMode ->
-      run win (run_normal win st Command.parse_key_pull_mode)
-  | MyState.PullElsewhereMode ->
-      run win (run_pull_elsewhere_mode win st)
-  | MyState.PullElsewhereDone _ ->
-      run win (run_normal win st Command.parse_key)
+  | MyState.PushMode (_, _, _) -> run win (run_push_mode win st)
+  | MyState.PullMode (_, _, _) -> run win (run_pull_mode win st)
   | MyState.Normal -> run win (run_normal win st Command.parse_key)
   | MyState.BranchMode ->
       run win (run_normal win st Command.parse_key_branch_mode)
-  | MyState.CheckoutGetBranchNameMode ->
-      run win (run_checkout_get_branch_mode win st)
-  | MyState.CreateGetBranchNameMode ->
-      run win (run_create_get_branch_mode win st)
-  | MyState.DeleteGetBranchNameMode ->
-      run win (run_delete_get_branch_mode win st)
   | MyState.NormalTutorialMode ->
       run win (run_normal win st Command.parse_key_normal_tutorial)
   | MyState.DiffTutorialMode ->
@@ -104,6 +96,9 @@ let rec run win (st : MyState.t) =
       run win (run_normal win st Command.parse_key_push_tutorial)
   | MyState.BranchTutorialMode ->
       run win (run_normal win st Command.parse_key_branch_tutorial)
+  | MyState.StashMode ->
+      run win (run_normal win st Command.parse_key_stash_mode)
+  | _ -> run win (run_input_mode win st)
 
 let run_git args =
   List.iter print_endline (MPlumbing.get_out (MPlumbing.git args))
