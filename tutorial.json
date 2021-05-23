@@ -59,6 +59,10 @@
     {
       "text": "To commit, press 'c'.",
       "color": "blue"
+    },
+    {
+      "text": "To stage, commit, and push all files, press 'a'.",
+      "color": "blue"
     }
   ],
   "diff tutorial": [
