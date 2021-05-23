@@ -151,14 +151,27 @@ module PorcelainImpl (P : Plumbing) = struct
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
 
+  let contains s1 s2 =
+    let re = Str.regexp_string s2 in
+    try
+      ignore (Str.search_forward re s1 0);
+      true
+    with Not_found -> false
+
   let commit_t_of_commit_oneline line =
-    let hash = String.sub line 0 7 in
-    let msg = "  " ^ String.sub line 9 (String.length line - 22) in
+    let hash =
+      if contains line "fatal:" then "" else String.sub line 0 7
+    in
+    let msg =
+      try "  " ^ String.sub line 9 (String.length line - 22)
+      with Invalid_argument _ -> hash ^ " "
+    in
     { tree = hash; msg }
 
   let commit_t_list_of_res res =
     let lines = P.get_out res in
     List.map commit_t_of_commit_oneline lines
+    |> List.filter (fun x -> x.tree <> "")
 
   let log hash =
     match hash with
@@ -169,22 +182,17 @@ module PorcelainImpl (P : Plumbing) = struct
         let res = P.log [| h; "-10" |] in
         commit_t_list_of_res res
 
-  let contains s1 s2 =
-    let re = Str.regexp_string s2 in
-    try
-      ignore (Str.search_forward re s1 0);
-      true
-    with Not_found -> false
-
   let branch_msg name =
     if contains name "fatal:" then ""
     else
-      let res = P.log [| "--graph"; name; "-1"; "--format=%s" |] in
-      let msg =
-        P.get_out res |> List.fold_left (fun acc x -> acc ^ x) ""
-      in
-      let start = String.index msg '*' in
-      String.sub msg (start + 2) (String.length msg - start - 2)
+      try
+        let res = P.log [| "--graph"; name; "-1"; "--format=%s" |] in
+        let msg =
+          P.get_out res |> List.fold_left (fun acc x -> acc ^ x) ""
+        in
+        let start = String.index msg '*' in
+        String.sub msg (start + 2) (String.length msg - start - 2)
+      with Not_found -> ""
 
   let get_head () =
     let long_ref =
@@ -193,10 +201,12 @@ module PorcelainImpl (P : Plumbing) = struct
     let start =
       match long_ref with
       | "" -> 0
-      | _ ->
-          Str.search_backward (Str.regexp "heads") long_ref
-            (String.length long_ref - 1)
-          + 6
+      | _ -> (
+          try
+            Str.search_backward (Str.regexp "heads") long_ref
+              (String.length long_ref - 1)
+            + 6
+          with Not_found -> 0)
     in
     String.sub long_ref start (String.length long_ref - start)
 
@@ -296,7 +306,7 @@ module PorcelainImpl (P : Plumbing) = struct
     | "DU" -> add_to_staged_and_tracked status filename
     | "AA" -> add_to_staged_and_tracked status filename
     | "UU" -> add_to_staged_and_tracked status filename
-    | _ -> failwith "TODO throw some failure exception"
+    | _ -> status
 
   let init (dir : string option) : unit =
     match dir with

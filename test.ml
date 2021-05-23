@@ -188,7 +188,7 @@ let exec_test (name : string) cmd setup effect check : test =
   setup ();
   let st = TestState.init_state "as" in
   let st' = TestState.exec st cmd in
-  effect ();
+  (*effect ();*)
   assert_bool "exec check" (check st')
 
 let exec_tests =
@@ -333,7 +333,7 @@ let parse_key_push_mode_tests =
   [
     parse_key_push_mode_test "p is push" (int_of_char 'p') "push";
     parse_key_push_mode_test "u is push" (int_of_char 'u') "push";
-    parse_key_push_mode_test "e is push" (int_of_char 'e') "pull";
+    parse_key_push_mode_test "e is push" (int_of_char 'e') "push";
     parse_key_push_mode_test "k is NavUp" (int_of_char 'k') "navup";
     parse_key_push_mode_test "j is NavDown" (int_of_char 'j') "navdown";
     parse_key_push_mode_test "Up is NavUp" Curses.Key.up "navup";

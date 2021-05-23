@@ -268,7 +268,8 @@ module MockPlumbing : PlumbingWithSet = struct
   let make_result out err out_and_err =
     { stdout = out; stderr = err; out_and_err }
 
-  let git (args : string array) = failwith "unimplemented"
+  let git (args : string array) =
+    make_result (Array.to_list args) [] (Array.to_list args)
 
   let init (args : string array) =
     make_result
@@ -339,9 +340,13 @@ module MockPlumbing : PlumbingWithSet = struct
 
   let log (args : string array) = !log_data
 
+  let status_data = ref { stdout = []; stderr = []; out_and_err = [] }
+
   let add (args : string array) =
     let new_args = Array.of_list ("add" :: Array.to_list args) in
-    git new_args
+    let exec = git new_args in
+    set_log_data (Array.to_list args) [] (Array.to_list args);
+    exec
 
   let stash (args : string array) =
     let new_args = Array.of_list ("stash" :: Array.to_list args) in
@@ -392,9 +397,8 @@ module MockPlumbing : PlumbingWithSet = struct
     }
 
   let set_status_data out err out_and_err =
-    log_data := make_result out err out_and_err
-
-  let status_data = ref { stdout = []; stderr = []; out_and_err = [] }
+    log_data := make_result out err out_and_err;
+    status_data := { stdout = out; stderr = []; out_and_err }
 
   let status (args : string array) = !status_data
 end
