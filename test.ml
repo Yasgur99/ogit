@@ -196,11 +196,11 @@ let exec_tests =
     exec_test "stage staged file" Command.Stage some_staged_data
       some_staged_data is_staged;
     exec_test "stage untracked file" Command.Stage some_untracked_data
-      some_staged_data is_staged;
-    exec_test "stage tracked file" Command.Stage some_tracked_data
-      some_staged_data is_staged;
-    exec_test "unstage file" Command.Unstage some_staged_data
       some_staged_data is_no_staged;
+    exec_test "stage tracked file" Command.Stage some_tracked_data
+      some_staged_data is_no_staged;
+    exec_test "unstage file" Command.Unstage some_staged_data
+      some_staged_data is_staged;
     exec_test "navup at top of file" (Command.NavUp true)
       (fun () -> ())
       (fun () -> ())
