@@ -12,10 +12,11 @@ type commit_msg = string
     of a user command. *)
 type branch_name = string
 
-(** The type that represents a key. The interpretation of a key is
-    equivalent to the definition's in [Curses.Key]. [Curses.Key] does
-    not expose a type key, and is instead implemented using an integer
-    and some functions that map the name of a key to an integer. *)
+(** The type that represents a key on the keyboard. The interpretation
+    of a key is equivalent to the definition's in [Curses.Key].
+    [Curses.Key] does not expose a type key, and is instead implemented
+    using an integer and some functions that map the name of a key to an
+    integer. *)
 type key = int
 
 (** The type [t] represents a git command that is decomposed into a verb

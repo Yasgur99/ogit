@@ -1,10 +1,10 @@
-
 (** Representation the git repository and user interface *)
 
 open Plumbing
 open Porcelain
 
 module type State = sig
+  (** The porcelain used by an abstract [State] to execute commands *)
   module MPorcelain : Porcelain
 
   (** The abstract type of values representing the git state *)
@@ -113,9 +113,14 @@ module type State = sig
   val curs_at_commit : t -> bool
 end
 
+(** The concrete [State] used by OGit to track effects of various
+    commands *)
 module StateImpl (P : Plumbing) : State = struct
+  (** The porcelain used by StateImpl to run commands *)
   module MPorcelain = PorcelainImpl (P)
 
+  (** The variant type in [StateImpl] representing the differences in
+      the VIM when various commands are called *)
   type render_mode =
     | Normal
     | CommitMode
@@ -140,12 +145,15 @@ module StateImpl (P : Plumbing) : State = struct
     | ResetMode
     | ResetGetCommitMode of bool
 
+  (** The variant type in [StateImpl] representing whether or not the
+      cursor is attempting to go off the screen, and if it is, then
+      whether it is attempting to go up or down*)
   type curs_state =
     | OffScrUp
     | OffScrDown
     | OnScr
 
-  (** The representation type for state. *)
+  (** The representation type for state in [StateImpl]. *)
   type t = {
     commit_history : MPorcelain.commit_t list;
     head : string;
@@ -159,6 +167,8 @@ module StateImpl (P : Plumbing) : State = struct
     curs_st : curs_state;
   }
 
+  (** The representation type in [StateImpl] that specifies what [color]
+      [text] should be printed as. *)
   type printable = {
     text : string;
     color : string;
@@ -200,28 +210,46 @@ module StateImpl (P : Plumbing) : State = struct
   (*********************************************************)
   (* Access/Mutate state *)
   (*********************************************************)
+
+  (** [head st] is the commit pointed to by the head in the current
+      state [st] *)
   let head st = st.head
 
+  (** [merge st] is the commit pointed to by the upstream branch of the
+      current branch *)
   let merge st = st.merge
 
+  (** [push st] is the branch that the current branch is being pushed to *)
   let push st = st.push
 
+  (** [untracked st] is the list of all untracked files in [st] *)
   let untracked st = st.untracked
 
+  (** [tracked st] is the list of all tracked files in [st] *)
   let tracked st = st.tracked
 
+  (**[staged st] is the list of all staged files in [st]*)
   let staged st = st.staged
 
+  (**[commit_history st] is the list of all past commits in [st] in
+     chronological order*)
   let commit_history st = st.commit_history
 
+  (**[get_curs st] is the position of the cursor in [st], with the top
+     of the screen being 0*)
   let get_curs st = st.curs
 
+  (**[get_mode st] is the mode under which [st] is operating. It can be
+     any of the modes in type [render_mode].*)
   let get_mode st = st.mode
 
+  (**[max_curs_pos_normal st] is the maximum possible cursor position
+     assuming [st] is in normal mode*)
   let max_curs_pos_normal st =
     List.length st.untracked
     + List.length st.tracked + List.length st.staged + 21
 
+  (**[set_curs st i] moves the cursor in [st] to position [i]*)
   let set_curs st i curs_st =
     let y =
       match curs_st with
@@ -242,10 +270,7 @@ module StateImpl (P : Plumbing) : State = struct
       curs_st;
     }
 
-  let max_curs_pos_normal st =
-    List.length st.untracked
-    + List.length st.tracked + List.length st.staged + 21
-
+  (**[set_mode st new_mode] sets the render mode of [st] to [new_mode]*)
   let set_mode st new_mode =
     {
       commit_history = st.commit_history;
@@ -260,6 +285,9 @@ module StateImpl (P : Plumbing) : State = struct
       curs_st = st.curs_st;
     }
 
+  (** [update_mode st cmd] automatically changes the mode of [st] to the
+      appropriate mode based on the command [cmd]. The rest of the state
+      stays the same. *)
   let update_mode st cmd =
     let new_mode =
       match cmd with
@@ -272,34 +300,52 @@ module StateImpl (P : Plumbing) : State = struct
     in
     set_mode st new_mode
 
+  (** [get_curs_state st] returns whether or not the cursor of [st] is
+      attempting to leave the screen, and if it is, then whether it is
+      attempting to go up or down *)
   let get_curs_state st = st.curs_st
 
   (*********************************************************)
   (* Printable *)
   (*********************************************************)
+
+  (** [printable_of_file c f] returns the filename of [f] as a printable
+      with color [c]*)
   let printable_of_file c f = { text = f; color = c }
 
+  (**[commit_header] labels the commit history *)
   let commit_header = { text = "Recent Commits"; color = "yellow" }
 
+  (**[head_header] labels the head commit*)
   let head_header = { text = "Head"; color = "yellow" }
 
+  (**[merge_header] labels the merge commit*)
   let merge_header = { text = "Merge"; color = "yellow" }
 
+  (**[push_header] labels the push commit*)
   let push_header = { text = "Push"; color = "yellow" }
 
+  (**[untracked_header] labels the list of untracked files*)
   let untracked_header = { text = "Untracked"; color = "yellow" }
 
+  (**[tracked_header] labels the list of tracked files*)
   let tracked_header = { text = "Tracked"; color = "yellow" }
 
+  (**[staged_header] labels the list of staged files*)
   let staged_header = { text = "Staged"; color = "yellow" }
 
+  (**[help] displays the instructions for toggling help*)
   let help = { text = "(To toggle help, press \'i\'.)"; color = "blue" }
 
+  (**[blank_line] is a line with no text in it*)
   let blank_line = { text = " "; color = "white" }
 
+  (**[printable_of_commit_t c] provides a printable representation for
+     commit [c]*)
   let printable_of_commit_t c =
     { text = MPorcelain.string_of_commit_t c; color = "white" }
 
+  (**[printable_of_state st] provides a printable representation of [st]*)
   let printable_of_state st =
     let commits_printable =
       List.map printable_of_commit_t (commit_history st) |> List.rev
@@ -346,11 +392,14 @@ module StateImpl (P : Plumbing) : State = struct
   (* Exec *)
   (*********************************************************)
 
+  (**[get_curs_content st] returns the name of the file over which the
+     cursor is hovering in [st]*)
   let get_curs_content st =
     let printables = printable_of_state st in
     let printable = List.nth printables st.curs in
     printable.text
 
+  (**[exec_clear st] executes the [Clear] command and updates [st] *)
   let exec_clear st =
     let new_mode_st = set_mode st Normal in
     let new_curs =
@@ -359,26 +408,34 @@ module StateImpl (P : Plumbing) : State = struct
     in
     set_curs new_mode_st new_curs OnScr
 
+  (**[exec_add st] executes the [Stage] command on the file over which
+     the cursor is hovering and updates [st] *)
   let exec_add st =
     let curs_content = get_curs_content st in
     MPorcelain.add [ curs_content ];
     update_git_state st
 
+  (**[exec_unstage st] executes the [Unstage] command on the files over
+     which the cursor is hovering and updates [st] *)
   let exec_unstage st =
     let curs_content = get_curs_content st in
     MPorcelain.restore_staged [ curs_content ];
     update_git_state st
 
+  (** [exec_commit st msg] executes the [Commit] command with message
+      [msg] and updates [st]*)
   let exec_commit st msg =
     let output = MPorcelain.commit msg in
     set_mode (update_git_state st) (CommandDone output)
 
+  (**[exec_diff_tracked st] shows the diff of all tracked files in [st]*)
   let exec_diff_tracked st =
     let out = MPorcelain.diff () in
     MPorcelain.restore_staged st.untracked;
     MPorcelain.restore_staged st.tracked;
     set_mode st (DiffMode out)
 
+  (*[exec_diff_staged st] shows the diff of all staged files in [st]*)
   let exec_diff_staged st =
     MPorcelain.add st.tracked;
     MPorcelain.restore_staged st.staged;
@@ -387,12 +444,15 @@ module StateImpl (P : Plumbing) : State = struct
     MPorcelain.add st.staged;
     set_mode st (DiffMode out)
 
+  (**[exec_diff_all st] shows the diff of all files in [st]*)
   let exec_diff_all st =
     MPorcelain.restore_staged st.staged;
     let out = MPorcelain.diff () in
     MPorcelain.add st.staged;
     set_mode st (DiffMode out)
 
+  (**[exec_diff_file st] shows the diff of the file over which the
+     cursor is hovering in [st]*)
   let exec_diff_file st =
     MPorcelain.add st.tracked;
     let curs_content = get_curs_content st in
@@ -404,10 +464,14 @@ module StateImpl (P : Plumbing) : State = struct
     else ();
     set_mode st (DiffMode out)
 
+  (**[curs_at_commit st] returns true if the cursor of [st] is hovering
+     over a commit*)
   let curs_at_commit st =
     get_curs st <= max_curs_pos_normal st
     && get_curs st >= max_curs_pos_normal st - 9
 
+  (**[exec_pull st u p b] executes the [Pull] command on branch [b] with
+     username [u] and password [p] and updates [st]*)
   let exec_pull st u p b =
     if u = "" || p = "" || b = "" then set_mode st (PullMode (u, p, b))
     else if u = "m" && p = "m" && b = "m" then
@@ -416,6 +480,9 @@ module StateImpl (P : Plumbing) : State = struct
       let out = MPorcelain.pull u p b in
       set_mode st (CommandDone out)
 
+  (**[exec_reset st commit hard] executes the [ResetHard] command if
+     [hard] is [true] or the [ResetSoft] command if [hard] is [false],
+     then updates [st]*)
   let exec_reset st commit hard =
     if commit = "" && not (curs_at_commit st) then
       set_mode st (ResetGetCommitMode hard)
@@ -431,6 +498,8 @@ module StateImpl (P : Plumbing) : State = struct
       in
       set_mode (update_git_state st) (CommandDone out)
 
+  (**[exec_push st u p b] executes the [Push] command on branch [b] with
+     username [u] and password [p] and updates [st]*)
   let exec_push st u p b =
     if u = "" || p = "" || b = "" then set_mode st (PullMode (u, p, b))
     else if u = "m" && p = "m" && b = "m" then
@@ -439,36 +508,51 @@ module StateImpl (P : Plumbing) : State = struct
       let out = MPorcelain.push u p b in
       set_mode st (CommandDone out)
 
+  (**[exec_checkout_branch st branch] executes the [Checkout] command on
+     branch [branch] and updates [st]*)
   let exec_checkout_branch st branch =
     let msg = MPorcelain.checkout branch in
     set_mode (update_git_state st) (CommandDone msg)
 
+  (**[exec_create_branch st branch] executes the [CreateBranch] command
+     on branch [branch] and updates [st]*)
   let exec_create_branch st branch =
     let msg = MPorcelain.create_branch branch in
     set_mode (update_git_state st) (CommandDone msg)
 
+  (**[exec_delete_branch st branch] executes the [DeleteBranch] command
+     on branch [branch] and updates [st]*)
   let exec_delete_branch st branch =
     let msg = MPorcelain.delete_branch branch in
     set_mode (update_git_state st) (CommandDone msg)
 
+  (**[exec_stash_apply st] executes the [StashApply] command and updates
+     [st]*)
   let exec_stash_apply st =
     let out = MPorcelain.stash_apply () in
     set_mode (update_git_state st) (CommandDone out)
 
+  (**[exec_stash_pop st] executes the [StashPop] command and updates
+     [st]*)
   let exec_stash_pop st =
     let out = MPorcelain.stash_pop () in
     set_mode (update_git_state st) (CommandDone out)
 
+  (**[exec_stage_all st] executes the [StageAll] command and updates
+     [st]*)
   let exec_stage_all st =
     MPorcelain.add st.untracked;
     ignore (update_git_state st);
     MPorcelain.add st.tracked;
     update_git_state st
 
+  (**[exec_unstage_all st] executes the [UnstageAll] command and updates
+     [st]*)
   let exec_unstage_all st =
     MPorcelain.restore_staged st.staged;
     update_git_state st
 
+  (**[pos_of_cmd] converts a navigation command to a cursor state*)
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
     | Command.NavDown false -> OffScrDown
@@ -476,6 +560,7 @@ module StateImpl (P : Plumbing) : State = struct
     | Command.NavUp false -> OffScrUp
     | _ -> failwith "Type error"
 
+  (**[exec st cmd] executes [cmd] and updates [st]*)
   let exec st cmd =
     match cmd with
     (* META COMMANDS *)
