@@ -36,7 +36,7 @@ zip:
 			
 clean:
 		ocamlbuild -clean
-			rm -rf _doc.p
+			rm -rf _doc.public
 
 docs: docs-public
 
