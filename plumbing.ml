@@ -250,7 +250,7 @@ module ProdPlumbing : Plumbing = struct
     fork_and_execv "git" (Array.append [| "git"; "stash" |] args)
 
   let reset (args : string array) =
-    fork_and_execv "git" (Array.append [| "git"; "rest" |] args)
+    fork_and_execv "git" (Array.append [| "git"; "reset" |] args)
 
   let git (args : string array) =
     fork_and_execv "git" (Array.append [| "git" |] args)
