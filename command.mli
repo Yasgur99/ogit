@@ -58,6 +58,7 @@ type t =
   | StashApply
   | All
   | StageAll
+  | UnstageAll
   | Clear
   | Nop
 

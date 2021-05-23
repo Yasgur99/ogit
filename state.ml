@@ -427,6 +427,10 @@ module StateImpl (P : Plumbing) : State = struct
     MPorcelain.add st.tracked;
     update_git_state st
 
+  let exec_unstage_all st =
+    MPorcelain.restore_staged st.staged;
+    update_git_state st
+
   let pos_of_cmd = function
     | Command.NavDown true -> OnScr
     | Command.NavDown false -> OffScrDown
@@ -461,6 +465,7 @@ module StateImpl (P : Plumbing) : State = struct
     (* NORMAL MODE *)
     | Command.Stage -> exec_add st
     | Command.StageAll -> exec_stage_all st
+    | Command.UnstageAll -> exec_unstage_all st
     | Command.Unstage -> exec_unstage st
     | Command.Commit msg -> if msg = "" then st else exec_commit st msg
     (* DIFF MODE *)

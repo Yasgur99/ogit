@@ -44,6 +44,7 @@ type t =
   | StashApply
   | All
   | StageAll
+  | UnstageAll
   | Clear
   | Nop
 
@@ -66,6 +67,7 @@ let parse_key key =
   else if key = int_of_char 'S' then Stash
   else if key = int_of_char 'a' then All
   else if key = int_of_char 'y' then StageAll
+  else if key = int_of_char 'w' then UnstageAll
   else Nop
 
 let parse_key_diff_mode key =
@@ -157,5 +159,6 @@ let string_of_cmd cmd =
   | StashPop -> "stash"
   | StashApply -> "apply"
   | StageAll -> "stage all files"
+  | UnstageAll -> "unstage all files"
   | All -> "Push all files"
   | Nop -> "nop"

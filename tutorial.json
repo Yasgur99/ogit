@@ -65,6 +65,10 @@
       "color": "blue"
     },
     {
+      "text": "To unstage all files, press 'w'.",
+      "color": "blue"
+    },
+    {
       "text": "To stage, commit, and push all files, press 'a'.",
       "color": "blue"
     }
