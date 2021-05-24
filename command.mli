@@ -12,10 +12,11 @@ type commit_msg = string
     of a user command. *)
 type branch_name = string
 
-(** The type that represents a key. The interpretation of a key is
-    equivalent to the definition's in [Curses.Key]. [Curses.Key] does
-    not expose a type key, and is instead implemented using an integer
-    and some functions that map the name of a key to an integer. *)
+(** The type that represents a key on the keyboard. The interpretation
+    of a key is equivalent to the definition's in [Curses.Key].
+    [Curses.Key] does not expose a type key, and is instead implemented
+    using an integer and some functions that map the name of a key to an
+    integer. *)
 type key = int
 
 (** The type [t] represents a git command that is decomposed into a verb
@@ -53,10 +54,19 @@ type t =
   | BackPull
   | PushTutorial
   | BackPush
+  | StashTutorial
+  | BackStash
+  | ResetTutorial
+  | BackReset
   | Stash
   | StashPop
   | StashApply
-  (* | All *)
+  | All
+  | StageAll
+  | UnstageAll
+  | ResetMenu
+  | ResetHard of string
+  | ResetSoft of string
   | Clear
   | Nop
 
@@ -90,22 +100,36 @@ val parse_key_branch_mode : key -> t
 val parse_key_normal_tutorial : key -> t
 
 (** [parse_key_diff_tutorial key] has the same function as
-    [parse_key key] but works when normal tutorial has been activated *)
+    [parse_key key] but works when diff tutorial has been activated *)
 val parse_key_diff_tutorial : key -> t
 
 (** [parse_key_pull_tutorial key] has the same function as
-    [parse_key key] but works when normal tutorial has been activated *)
+    [parse_key key] but works when pull tutorial has been activated *)
 val parse_key_pull_tutorial : key -> t
 
 (** [parse_key_push_tutorial key] has the same function as
-    [parse_key key] but works when normal tutorial has been activated *)
+    [parse_key key] but works when push tutorial has been activated *)
 val parse_key_push_tutorial : key -> t
 
 (** [parse_key_branch_tutorial key] has the same function as
-    [parse_key key] but works when normal tutorial has been activated *)
+    [parse_key key] but works when branch tutorial has been activated *)
 val parse_key_branch_tutorial : key -> t
 
+(** [parse_key_reset_tutorial key] has the same function as
+    [parse_key key] but works when reset tutorial has been activated *)
+val parse_key_reset_tutorial : key -> t
+
+(** [parse_key_stash_tutorial key] has the same function as
+    [parse_key key] but works when stash tutorial has been activated *)
+val parse_key_stash_tutorial : key -> t
+
+(** [parse_key_stash_mode key] has the same function as [parse_key key]
+    but works when stash mode has been activated *)
 val parse_key_stash_mode : key -> t
+
+(** [parse_key_reset_mode key] has the same function as [parse_key key]
+    but works when reset mode has been activated *)
+val parse_key_reset_mode : key -> t
 
 (** [string_of_cmd cmd] is the lowercase string representation of [cmd] *)
 val string_of_cmd : t -> string

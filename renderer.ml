@@ -1,7 +1,11 @@
+(** Render state to the terminal *)
+
 open Curses
 open State
 
 module type Renderer = sig
+  (** The abstract module of type [State] uesd by any module of type
+      [Renderer] to access information about the git state *)
   module MState : State
 
   (** [init ()] is a curses window. Its side effects include
@@ -9,24 +13,34 @@ module type Renderer = sig
       disables the curser, and clearning the window *)
   val init : unit -> Curses.window
 
-  (* [top_line] is the number of the line currently at the top of the
-     screen. Initially, [top_line] is 0, but it can increase or decrease
-     as a user scrolls up and down. *)
+  (** [top_line] is the number of the line currently at the top of the
+      screen. Initially, [top_line] is 0, but it can increase or
+      decrease as a user scrolls up and down. *)
   val top_line : int ref
 
   (** [cleanup ()] ends the window and cleans up the side effects
       created by [init ()]*)
   val cleanup : unit -> unit
 
+  (** [render state win] prints all necessary information from [state]
+      to window [win]. *)
   val render : MState.t -> Curses.window -> unit
 
+  (** [render_input_mode state win] prints all necessary information
+      from [state] to window [win] and retrieves input from the user. *)
   val render_input_mode : MState.t -> Curses.window -> string
 
+  (** [get_color str] maps [str], the name of a color, to the integer
+      used by Curses to represent that color. *)
   val get_color : string -> int
 end
 
+(** The concrete [Renderer] used by OGit to display information to the
+    user *)
 module RendererImpl (St : State) : Renderer with module MState = St =
 struct
+  (** The [State] module used by [RendererImpl] to access information
+      about the git state *)
   module MState = St
 
   let check_err err =
@@ -54,6 +68,8 @@ struct
     check_err
       (Curses.init_pair 14 Curses.Color.black Curses.Color.white)
 
+  (** [get_color str] maps [str], the name of a color, to the integer
+      used by Curses to represent that color. *)
   let get_color color =
     let colors =
       [
@@ -80,6 +96,9 @@ struct
 
   let screen = ref [||]
 
+  (** [top_line] is the number of the line currently at the top of the
+      screen. Initially, [top_line] is 0, but it can increase or
+      decrease as a user scrolls up and down. *)
   let top_line = ref 0
 
   let enable_color color =
@@ -88,6 +107,7 @@ struct
   let disable_color color =
     Curses.attroff (Curses.A.color_pair (get_color color))
 
+  (**[init] sets up preferences for the OGit window *)
   let init () : Curses.window =
     let win = Curses.initscr () in
     init_colors ();
@@ -98,6 +118,7 @@ struct
     Curses.clear ();
     win
 
+  (**[cleanup] performs all required operations to quit OGit*)
   let cleanup () =
     check_err (Curses.curs_set 1);
     check_err (Curses.echo ());
@@ -187,6 +208,15 @@ struct
       { text = "x  delete branch"; color = "green" };
     ]
 
+  let reset_options : MState.printable list =
+    [
+      { text = "h  reset hard"; color = "green" };
+      { text = "s  reset soft"; color = "green" };
+    ]
+
+  let reset_prompt : MState.printable =
+    { text = "Enter commit to reset to : "; color = "green" }
+
   let username_prompt : MState.printable =
     { text = "Enter username: "; color = "green" }
 
@@ -262,6 +292,12 @@ struct
   let branch_tutorial : MState.printable list =
     tutorial_from_json "branch tutorial"
 
+  let reset_tutorial : MState.printable list =
+    tutorial_from_json "reset tutorial"
+
+  let stash_tutorial : MState.printable list =
+    tutorial_from_json "stash tutorial"
+
   let render_command_done state win msg =
     render_line win (MState.get_curs state) true blank_line;
     render_line win (MState.get_curs state) true results_header;
@@ -294,6 +330,7 @@ struct
         render_lines win normal_tutorial (MState.get_curs state) true
     | DiffTutorialMode ->
         render_lines win
+<<<<<<< HEAD
           ( [ blank_line ] @ diff_options @ [ blank_line ]
           @ diff_tutorial )
           (MState.get_curs state) true
@@ -311,6 +348,35 @@ struct
         render_lines win
           ( [ blank_line ] @ branch_options @ [ blank_line ]
           @ branch_tutorial )
+=======
+          ([ blank_line ] @ diff_options @ [ blank_line ]
+         @ diff_tutorial)
+          (MState.get_curs state) true
+    | PullTutorialMode ->
+        render_lines win
+          ([ blank_line ] @ pull_options @ [ blank_line ]
+         @ pull_tutorial)
+          (MState.get_curs state) true
+    | PushTutorialMode ->
+        render_lines win
+          ([ blank_line ] @ push_options @ [ blank_line ]
+         @ push_tutorial)
+          (MState.get_curs state) true
+    | BranchTutorialMode ->
+        render_lines win
+          ([ blank_line ] @ branch_options @ [ blank_line ]
+         @ branch_tutorial)
+          (MState.get_curs state) true
+    | StashTutorialMode ->
+        render_lines win
+          ([ blank_line ] @ stash_options @ [ blank_line ]
+         @ stash_tutorial)
+          (MState.get_curs state) true
+    | ResetTutorialMode ->
+        render_lines win
+          ([ blank_line ] @ reset_options @ [ blank_line ]
+         @ reset_tutorial)
+>>>>>>> 4030622dc3ad818c90da558dd1ef973e0410b76e
           (MState.get_curs state) true
     | _ -> failwith "use of wrong renderer"
 
@@ -372,13 +438,18 @@ struct
     | DiffMode str ->
         if str = "MENU" then (
           render_line win (MState.get_curs state) true blank_line;
-          render_lines win diff_options (MState.get_curs state) true )
+          render_lines win diff_options (MState.get_curs state) true)
         else (
           render_line win (MState.get_curs state) true blank_line;
           render_line win (MState.get_curs state) true diff_header;
           render_lines win (diff_to_lines str) (MState.get_curs state)
             true )
     | _ -> failwith "Wrong render function: not in diff mode"
+
+  let render_reset_mode state win =
+    render_normal state win true;
+    render_line win (MState.get_curs state) true blank_line;
+    render_lines win reset_options (MState.get_curs state) true
 
   let render_stash_mode state win =
     render_normal state win true;
@@ -400,6 +471,8 @@ struct
     render_line win (MState.get_curs state) true blank_line;
     render_lines win branch_options (MState.get_curs state) true
 
+  (** [render state win] prints all necessary information from [state]
+      to window [win]. *)
   let rec render state win =
     match MState.get_curs_state state with
     | MState.OffScrUp -> render_scroll_up state win
@@ -422,8 +495,17 @@ struct
         | PushTutorialMode -> render_tutorial state win PushTutorialMode
         | BranchTutorialMode ->
             render_tutorial state win BranchTutorialMode
+        | StashTutorialMode ->
+            render_tutorial state win StashTutorialMode
+        | ResetTutorialMode ->
+            render_tutorial state win ResetTutorialMode
         | StashMode -> render_stash_mode state win
+<<<<<<< HEAD
         | _ -> render_normal state win true )
+=======
+        | ResetMode -> render_reset_mode state win
+        | _ -> render_normal state win true)
+>>>>>>> 4030622dc3ad818c90da558dd1ef973e0410b76e
 
   let render_with_parse state win prompt =
     Curses.werase win;
@@ -466,15 +548,19 @@ struct
     let prompt =
       match MState.get_mode state with
       | CommitMode -> commit_msg_prompt
+      | AllMode -> commit_msg_prompt
       | CheckoutGetBranchNameMode -> get_branch_msg_prompt
       | CreateGetBranchNameMode -> get_branch_msg_prompt
       | DeleteGetBranchNameMode -> get_branch_msg_prompt
+      | ResetGetCommitMode _ -> reset_prompt
       | _ -> failwith "Wrong render function: not in an input mode"
     in
     let out = render_with_parse state win prompt in
     render (MState.update_mode state Command.Nop) win;
     out
 
+  (** [render_input_mode state win] prints all necessary information
+      from [state] to window [win] and retrieves input from the user. *)
   let render_input_mode state win =
     match MState.get_mode state with
     | PullMode (_, _, _) -> render_push_pull_mode state win

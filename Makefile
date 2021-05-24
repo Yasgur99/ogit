@@ -9,6 +9,7 @@ DOCS=command.mli
 TEST=test.byte
 MAIN=ogit.byte
 OCAMLBUILD=ocamlbuild -use-ocamlfind
+PKGS=ounit2,curses,str,yojson
 
 default: build
 
@@ -35,10 +36,12 @@ zip:
 			
 clean:
 		ocamlbuild -clean
-			rm -rf _doc.p
+			rm -rf _doc.public
 
 docs: docs-public
 
 docs-public: build
 	mkdir -p _doc.public
-	ocamlfind ocamldoc -I _build -package $(MLS)
+	ocamlfind ocamldoc -I _build -package $(PKGS) \
+		-html -stars -d _doc.public authors.mli command.mli plumbing.ml porcelain.ml state.ml renderer.ml ogit.ml
+

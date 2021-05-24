@@ -39,10 +39,19 @@ type t =
   | BackPull
   | PushTutorial
   | BackPush
+  | StashTutorial
+  | BackStash
+  | ResetTutorial
+  | BackReset
   | Stash
   | StashPop
   | StashApply
-  (* | All *)
+  | All
+  | StageAll
+  | UnstageAll
+  | ResetMenu
+  | ResetHard of string
+  | ResetSoft of string
   | Clear
   | Nop
 
@@ -63,7 +72,10 @@ let parse_key key =
   else if key = int_of_char 'b' then BranchMenu
   else if key = int_of_char 'i' then NormalTutorial
   else if key = int_of_char 'S' then Stash
-    (* else if key = int_of_char 'a' then All *)
+  else if key = int_of_char 'a' then All
+  else if key = int_of_char 'y' then StageAll
+  else if key = int_of_char 'w' then UnstageAll
+  else if key = int_of_char 'R' then ResetMenu
   else Nop
 
 let parse_key_diff_mode key =
@@ -76,14 +88,14 @@ let parse_key_diff_mode key =
 
 let parse_key_pull_mode key =
   if key = int_of_char 'p' then Pull ("", "", "remote")
-  else if key = int_of_char 'u' then Pull ("", "", "origin master")
+  else if key = int_of_char 'u' then Pull ("", "", "master")
   else if key = int_of_char 'e' then Pull ("", "", "")
   else if key = int_of_char 'i' then PullTutorial
   else parse_key key
 
 let parse_key_push_mode key =
   if key = int_of_char 'p' then Push ("", "", "remote")
-  else if key = int_of_char 'u' then Push ("", "", "origin master")
+  else if key = int_of_char 'u' then Push ("", "", "master")
   else if key = int_of_char 'e' then Push ("", "", "")
   else if key = int_of_char 'i' then PushTutorial
   else parse_key key
@@ -93,6 +105,18 @@ let parse_key_branch_mode key =
   else if key = int_of_char 'c' then CreateBranchPrompt
   else if key = int_of_char 'x' then DeleteBranchPrompt
   else if key = int_of_char 'i' then BranchTutorial
+  else parse_key key
+
+let parse_key_stash_mode key =
+  if key = int_of_char 'p' then StashPop
+  else if key = int_of_char 'a' then StashApply
+  else if key = int_of_char 'i' then StashTutorial
+  else parse_key key
+
+let parse_key_reset_mode key =
+  if key = int_of_char 'h' then ResetHard ""
+  else if key = int_of_char 's' then ResetSoft ""
+  else if key = int_of_char 'i' then ResetTutorial
   else parse_key key
 
 let parse_key_normal_tutorial key =
@@ -111,10 +135,11 @@ let parse_key_branch_tutorial key =
   if key = int_of_char 'i' then BackBranch
   else parse_key_branch_mode key
 
-let parse_key_stash_mode key =
-  if key = int_of_char 'p' then StashPop
-  else if key = int_of_char 'a' then StashApply
-  else parse_key key
+let parse_key_stash_tutorial key =
+  if key = int_of_char 'i' then BackStash else parse_key_stash_mode key
+
+let parse_key_reset_tutorial key =
+  if key = int_of_char 'i' then BackReset else parse_key_reset_mode key
 
 let string_of_cmd cmd =
   match cmd with
@@ -146,6 +171,10 @@ let string_of_cmd cmd =
   | PullTutorial -> "tutorial"
   | PushTutorial -> "tutorial"
   | BranchTutorial -> "tutorial"
+  | StashTutorial -> "tutorial"
+  | BackStash -> "tutorial"
+  | ResetTutorial -> "tutorial"
+  | BackReset -> "tutorial"
   | BackNormal -> "back"
   | BackDiff -> "back"
   | BackPull -> "back"
@@ -154,5 +183,10 @@ let string_of_cmd cmd =
   | Stash -> "stash"
   | StashPop -> "stash"
   | StashApply -> "apply"
-  (* | All -> "Push from untracked" *)
+  | StageAll -> "stage all files"
+  | UnstageAll -> "unstage all files"
+  | All -> "Push all files"
+  | ResetMenu -> "reset"
+  | ResetHard _ -> "reset"
+  | ResetSoft _ -> "reset"
   | Nop -> "nop"
