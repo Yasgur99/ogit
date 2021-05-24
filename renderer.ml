@@ -330,7 +330,6 @@ struct
         render_lines win normal_tutorial (MState.get_curs state) true
     | DiffTutorialMode ->
         render_lines win
-<<<<<<< HEAD
           ( [ blank_line ] @ diff_options @ [ blank_line ]
           @ diff_tutorial )
           (MState.get_curs state) true
@@ -348,35 +347,16 @@ struct
         render_lines win
           ( [ blank_line ] @ branch_options @ [ blank_line ]
           @ branch_tutorial )
-=======
-          ([ blank_line ] @ diff_options @ [ blank_line ]
-         @ diff_tutorial)
-          (MState.get_curs state) true
-    | PullTutorialMode ->
-        render_lines win
-          ([ blank_line ] @ pull_options @ [ blank_line ]
-         @ pull_tutorial)
-          (MState.get_curs state) true
-    | PushTutorialMode ->
-        render_lines win
-          ([ blank_line ] @ push_options @ [ blank_line ]
-         @ push_tutorial)
-          (MState.get_curs state) true
-    | BranchTutorialMode ->
-        render_lines win
-          ([ blank_line ] @ branch_options @ [ blank_line ]
-         @ branch_tutorial)
           (MState.get_curs state) true
     | StashTutorialMode ->
         render_lines win
-          ([ blank_line ] @ stash_options @ [ blank_line ]
-         @ stash_tutorial)
+          ( [ blank_line ] @ stash_options @ [ blank_line ]
+          @ stash_tutorial )
           (MState.get_curs state) true
     | ResetTutorialMode ->
         render_lines win
-          ([ blank_line ] @ reset_options @ [ blank_line ]
-         @ reset_tutorial)
->>>>>>> 4030622dc3ad818c90da558dd1ef973e0410b76e
+          ( [ blank_line ] @ reset_options @ [ blank_line ]
+          @ reset_tutorial )
           (MState.get_curs state) true
     | _ -> failwith "use of wrong renderer"
 
@@ -438,7 +418,7 @@ struct
     | DiffMode str ->
         if str = "MENU" then (
           render_line win (MState.get_curs state) true blank_line;
-          render_lines win diff_options (MState.get_curs state) true)
+          render_lines win diff_options (MState.get_curs state) true )
         else (
           render_line win (MState.get_curs state) true blank_line;
           render_line win (MState.get_curs state) true diff_header;
@@ -500,12 +480,8 @@ struct
         | ResetTutorialMode ->
             render_tutorial state win ResetTutorialMode
         | StashMode -> render_stash_mode state win
-<<<<<<< HEAD
-        | _ -> render_normal state win true )
-=======
         | ResetMode -> render_reset_mode state win
-        | _ -> render_normal state win true)
->>>>>>> 4030622dc3ad818c90da558dd1ef973e0410b76e
+        | _ -> render_normal state win true )
 
   let render_with_parse state win prompt =
     Curses.werase win;
