@@ -184,7 +184,7 @@ module PorcelainImpl (P : Plumbing) = struct
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
     | branch ->
-        P.push [| branch |]
+      P.push [| "origin"; branch |]
         |> P.get_out
         |> List.map rm_leading_spaces
         |> List.rev |> String.concat "\n"
